@@ -1,0 +1,5 @@
+defaults:
+  - default_trainer
+accelerator: gpu
+precision: 16-mixed  # 16-mixed ? 32
+matmul_precision: high

@@ -1,0 +1,20 @@
+# @package _global_
+
+defaults:
+  - _amber_weighted
+  - override /task: mold
+  - _self_
+
+exp_name: amber_mold_weighted
+_version: 1
+
+trainer:
+  max_epochs: 201
+idx: ambw100
+
+hydra:
+  sweeper:
+    ablative_params:
+      - task.max_initial_element_volume: 0.000001
+        algorithm.inference_steps: 1
+        idx: stp100

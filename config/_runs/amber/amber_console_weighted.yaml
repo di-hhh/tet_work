@@ -1,0 +1,36 @@
+# @package _global_
+
+defaults:
+  - _amber_weighted
+  - override /task: console
+  - _self_
+
+exp_name: amber_console_weighted
+_version: 1
+
+trainer:
+  max_epochs: 101
+idx: ambw100
+
+hydra:
+  sweeper:
+    ablative_params:
+      - algorithm.inference_steps: 1
+        idx: stp100
+      - algorithm.initial_mesh_handling: exclude
+        idx: des100
+      - algorithm.sizing_field_damping.damping_factor: 0.0
+        idx: des101
+      - algorithm.prediction_transform.predict_residual: False
+        idx: des102
+      - algorithm.prediction_transform.inverse_transform_in_loss: False
+        idx: des103
+      - algorithm.normalizer.normalize_inputs: 0
+        algorithm.normalizer.normalize_predictions: 0
+        idx: des104
+      - algorithm.dataloader.add_strategy: random
+        idx: des105
+      - algorithm.sizing_field_interpolation_type: element_weighted_sum
+        idx: sfd100
+      - algorithm.sizing_field_interpolation_type: interpolated_vertex
+        idx: sfd101

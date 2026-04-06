@@ -1,0 +1,13 @@
+# @package _global_
+
+defaults:
+  - _gat_unet
+  - override /task: console
+  - _self_
+
+exp_name: gat_unet_console
+_version: 1
+
+trainer:
+  max_epochs: 201
+idx: gatu100

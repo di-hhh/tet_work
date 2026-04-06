@@ -1,0 +1,110 @@
+defaults:
+  - default_dataloader
+  - _self_
+
+batch_size: 300000  # number of data points to process per training batch.
+# For AMBER, this refers to the number of graph nodes + number of graph edges.
+# For ImageAMBER, it is the number of images.
+# 500k nicely fits in 24GB of GPU memory for 20 MPN steps w/ latent dimension 64 at 99ish % capacity.
+
+#每个训练批次处理的数据点数量。
+#对于 AMBER，这指的是图节点数量 + 图边数量。
+#对于 ImageAMBER，则是图像数量。
+#使用 64 维隐空间执行 20 步消息传递时，50 万数据点可在 24GB GPU 内存中以约 99% 占用率运行。
+
+max_size: 500
+
+add_strategy: stratified  # either "random" or "stratified".
+  # 新增 curriculum_prioritized 策略
+
+  # If "random", will add random samples to the buffer
+  # If "stratified", determines a valid depth first and then takes a sample with this depth
+
+  # 如果设置为 "random"，将向缓冲区添加随机样本
+  # 如果设置为 "stratified"，先确定有效深度，然后以该深度进行采样
+
+max_mesh_depth: auto # maximum depth of the mesh to store in the buffer. Depth refers to the number of
+  # refinement steps that have been applied to the mesh, i.e., to the number of inference steps the algorithm
+  # has executed on the mesh. Will add new samples that never exceed this depth.
+  # "auto" sets this to inference_steps
+
+  # max_mesh_depth: auto # 要存储到缓冲区中的网格最大深度。
+  # 深度指应用于网格的细化步骤的数量，即算法在网格上执行的推理步骤的数量。将添加从未超过此深度的新样本。
+  #"auto" 将其设置为 inference_steps
+
+new_samples_per_epoch: 8  # number of new samples to add to the buffer per epoch. "auto" resolves to self.steps_per_epoch//8
+# 每训练周期添加到缓冲区的新样本数量。设为“auto”时，将自动解析为 self.steps_per_epoch//8。
+
+# ============================================================
+# CPR config (new parameters):
+# CPR 配置（新增参数）：
+# ============================================================
+priority_alpha: 0.6              # Priority exponent. Controls sampling skew.
+                                 # 优先级指数。控制采样偏斜。
+                                 # 0.0 = uniform sampling (no prioritization)
+                                 # 0.0 = 均匀采样（无优先级化）
+                                 # 1.0 = fully proportional to error
+                                 # 1.0 = 完全与误差成比例
+                                 # Recommended: 0.4-0.8
+
+priority_epsilon: 0.01           # Small constant to ensure non-zero priority.
+                                 # 小常数确保优先级非零。
+                                 # Prevents samples from becoming permanently ignored.
+                                 # 防止样本被永久忽略。
+
+curriculum_warmup_ratio: 0.3     # Fraction of training for curriculum warmup.
+                                 # 课程预热阶段占总训练时间的比例。
+                                 # During [0, warmup_ratio]: max depth grows 1→max
+                                 # 在 [0, warmup_ratio] 期间：最大深度从 1 增长到 max
+                                 # After warmup_ratio: all depths available
+                                      # warmup_ratio 之后：所有深度可用
+                                      # Recommended: 0.2-0.4
+
+quality_gate_enabled: true       # Enable quality-gated buffer insertion.
+                                      # 启用质量门控缓冲区插入。
+                                      # When true, new samples are filtered before adding.
+                                      # 为 true 时，新样本在添加前被过滤。
+
+min_error_threshold: 0.01        # Minimum prediction error to accept a new sample.
+                                 # 接受新样本的最低预测误差。
+                                 # Samples with error below this are "too easy" and skipped.
+                                 # 误差低于此值的样本"太简单"被跳过。
+
+priority_refresh_interval: 5     # How often (in epochs) to refresh all priorities.
+                                 # 刷新所有优先级的频率（以 epoch 为单位）。
+
+
+# ============================================================
+# Ablation configurations (for paper experiments):
+# 消融实验配置（用于论文实验）：
+# ============================================================
+#
+# Ablation 1: Priority-only (no curriculum)
+# 消融1：仅优先级（无课程）
+#   add_strategy: "curriculum_prioritized"
+#   curriculum_warmup_ratio: 0.0    # No curriculum, all depths from start
+#   priority_alpha: 0.6
+#   quality_gate_enabled: false
+#
+# Ablation 2: Curriculum-only (no priority)
+# 消融2：仅课程（无优先级）
+#   add_strategy: "curriculum_prioritized"
+#   curriculum_warmup_ratio: 0.3
+#   priority_alpha: 0.0             # Uniform sampling within depth (no priority)
+#   quality_gate_enabled: false
+#
+# Ablation 3: Quality gate only
+# 消融3：仅质量门控
+#   add_strategy: "stratified"      # Use original stratified sampling
+#   quality_gate_enabled: true      # But with quality gating (requires minor code change)
+#
+# Ablation 4: Full CPR
+# 消融4：完整 CPR
+#   add_strategy: "curriculum_prioritized"
+#   curriculum_warmup_ratio: 0.3
+#   priority_alpha: 0.6
+#   quality_gate_enabled: true
+#
+# Ablation 5: Original AMBER (baseline)
+# 消融5：原始 AMBER（基线）
+#   add_strategy: "stratified"      # Original strategy, no CPR

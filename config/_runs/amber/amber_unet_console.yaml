@@ -1,0 +1,21 @@
+# @package _global_
+# [Claude Code] 新增：使用 U-Net 架构的 console 任务运行配置。
+
+defaults:
+  - _amber_unet
+  - override /task: console
+  - _self_
+
+exp_name: amber_unet_console
+_version: 1
+
+trainer:
+  max_epochs: 201
+idx: unet100
+
+hydra:
+  sweeper:
+    ablative_params:
+      # 1-step
+      - algorithm.inference_steps: 1
+        idx: unet_stp100

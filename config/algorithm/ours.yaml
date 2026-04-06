@@ -1,0 +1,52 @@
+defaults:
+  - default_algorithm
+  - override architecture: ours_gat
+  - override dataloader: amber_dataloader
+  - _self_
+
+name: ours
+
+prediction_transform:             # 预测变化
+  inverse_transform_in_loss: True # 是否进行逆变换
+  predict_residual: True          #
+  name: softplus                  # 选择softplus
+
+loss_type: mse
+sizing_field_interpolation_type: sampled_vertex
+initial_mesh_handling: topology_only  # Determines how the initial mesh is included in the graph construction.
+# - 'exclude': Do not include the initial mesh.
+# - 'topology_only': Include the initial mesh as a higher-level graph layer without computing features (topology only).
+# - 'full': Include both topology and features for the initial mesh.
+# Including the initial mesh creates a hierarchical graph that enables high-level communication across the fine mesh.
+
+inference_steps: 3
+# how often to repeat the refinement procedure for during evaluation.
+# 在评估过程中，网格细化程序需要重复执行的次数。
+
+sizing_field_damping:
+  last_step_damping: 1.0  # How to scale the sizing field globally for the last step of all meshes and steps.
+    # 1.0 means that we do not do any damping by default.
+    # 为所有网格的最后一步设置全局尺寸场缩放因子。
+    # 默认值为 1.0 表示不进行任何阻尼调整。
+    # 即仅对中间网格进行细化
+
+  damping_factor: 0.618
+    # damping factor for the refinement procedure to reduce the elements in early iterations.
+    # A value of 0 corresponds to no damping
+    # A value >0 will dampen the refinement procedure by setting the sizing field at step n to
+    # sf_n <-- sf_n/damping_factor^(n-N), where N is the maximum number of steps.
+    # Will randomly sample a damping factor from the interval [0, damping] during data collection
+    # We set this to the golden ratio by default to balance stability and speed of convergence
+
+    # 用于细化过程的阻尼因子，旨在减少早期迭代的单元数量。
+    # 值为0表示无阻尼作用
+    # 大于0的值将通过以下公式对第n步的尺寸场进行阻尼衰减：
+    # sf_n <-- sf_n/damping_factor^(n-N)，其中N为最大迭代步数。
+    # 在数据收集阶段会从区间[0, damping_factor]中随机采样阻尼因子
+    # 默认设为黄金分割比例，以平衡稳定性和收敛速度
+
+    # 虽然预测的中间网格允许 AMBER 自适应地提高其采样分辨率，但达到专家网格的完整分辨率既不必要，又计算成本高昂。
+    # 为了缓解这一问题，我们在 t < T − 1 时设置 ct>1 以粗化中间网格，从第一步 t=0 开始。
+    # 这里，设置一个指数衰减的 ct 可以减少中间网格的元素数量而不影响最终网格 M T 的精度。
+    # 此外，在推断过程中，我们还可以设置 cT −1<1 以生成比专家网格分辨率更高的网格。
+    # 这种适应性使模型能够在不重新训练的情况下灵活适应给定的元素预算，通过单个标量参数实现零样本泛化。

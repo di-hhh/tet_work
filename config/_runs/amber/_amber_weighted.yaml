@@ -1,0 +1,22 @@
+# @package _global_
+
+defaults:
+  - _amber
+  - _self_
+
+algorithm:
+  mesh_metrics:
+    physics_weighted_projected_l2_error: True
+  weighted_imitation:
+    # [CodeX] 加权实验预设明确绑定 Console/Mold 的线弹性参考工况与物理加权评估指标。
+    enabled: True
+    metric_use_physics_weights: True
+    datasets: [console, mold]
+    weight_source_mode: console_mold_reference
+    reference_physics_type: linear_elasticity
+    importance_metric: strain_energy_density
+    weight_mode: linear
+    cache_dir: ./data/weighted_imitation
+    auto_prepare: True
+    overwrite_cache: False
+    fallback_to_ones: True

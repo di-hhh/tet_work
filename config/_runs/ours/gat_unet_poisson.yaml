@@ -1,0 +1,13 @@
+# @package _global_
+
+defaults:
+  - _gat_unet
+  - override /task: poisson
+  - _self_
+
+exp_name: gat_unet_poisson
+_version: 1
+
+trainer:
+  max_epochs: 201
+idx: gatu100

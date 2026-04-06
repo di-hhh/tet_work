@@ -1,0 +1,160 @@
+# "abstract" geometric features.
+# These can potentially be extended by task-specific features in, e.g., task/fem/poisson.yaml
+vertex:
+  x_position: False
+  y_position: False
+  z_position: False
+  degree: True          # 度
+  sizing_field: True    # 尺寸
+
+  # new add
+  log_sizing_field: False
+  is_boundary: False        # 该顶点是否位于边界（边界点=1，内部点=0）。
+  boundary_degree: False    # 该顶点在边界边集合中的度数（连接了多少条边界边）
+
+  x_position_norm: False
+  y_position_norm: False
+  z_position_norm: False
+
+  normal_x: False
+  normal_y: False
+  normal_z: False            # 顶点的边界外法向量分量；内部点法向=0。
+
+  normal_var_mean: False      # 该顶点与其 1-ring 邻居之间的法向夹角的平均值（弧度）。
+  normal_var_max: False
+  mean_curvature: False       # 均值曲率
+  gaussian_curvature: False   # 高斯曲率
+
+element:
+  x_position: False
+  y_position: False
+  z_position: False
+  sizing_field: True
+
+pixel: ${task.features.element}
+
+edge:
+  distance_vector: False
+  euclidean_distance: True           # 边长；线临近特征（点和点之间的距离）
+  edge_curvature: True               # (边界)边曲率
+
+  # new add
+  boundary_edge_flag: False          # 是否边界边（0/1）
+  edge_length_over_sqrt_hihj: False  # 长度相对尺寸，|e| / sqrt(h_i h_j)
+  delta_log_sizing_field: False      # 尺寸场梯度沿边，log(h_j) - log(h_i)（有向边）
+  dihedral_angle: False              # 边界表面二面角（弧度）
+  sharp_edge_flag: False             # 基于二面角阈值的 sharp edge（0/1）
+
+add_self_edges: True
+
+
+#  顶点（vertex）新增特征
+#  1) is_boundary
+#  含义：该顶点是否位于边界（边界点=1，内部点=0）。
+#  来源：mesh.boundary_nodes() 得到边界顶点集合。
+#  作用：让模型区分“边界几何细节/特征”与“内部体网格”，避免内部点被错误加密。
+#
+#  2) boundary_degree
+#  含义：该顶点在边界边集合中的度数（连接了多少条边界边）。
+#  计算：先取边界边顶点对 mesh_edges[:, boundary_edges]，对端点做 bincount。
+#  直觉：
+#    普通光滑边界点通常边界度≈2；
+#    特征交汇/角点可能更高（例如多条边界边交汇）。
+#  作用：比普通 degree 更直接反映边界拓扑复杂度，帮助模型定位角点/折线附近需加密区域。
+#
+#  3) x_position_norm, y_position_norm, z_position_norm
+#  含义：顶点坐标的归一化版本（先中心化，再按包围盒对角线缩放）。
+#  计算：
+#    center = (min+max)/2
+#    diag = ||max-min||
+#    p_norm = (p-center)/diag
+#  作用：
+#    消除不同几何体的绝对尺度差异；
+#    改善跨几何的泛化（相同形状但尺寸不同的零件，网络更容易学到相似规律）。
+#
+#  4) normal_x, normal_y, normal_z
+#  含义：顶点的边界外法向量分量；内部点法向=0。
+#  来源/对齐：
+#    compute_boundary_vertex_normals() 返回 (dim, Nb)，按 mesh.boundary_nodes() 顺序；
+#    代码把它散射回全顶点数组 (V, dim)，未在边界上的点置 0。
+#  作用：
+#    在边界上提供局部几何朝向信息；
+#    对判断凸/凹、薄结构局部形态、以及后续做各向异性尺寸场都很关键。
+#
+#  5) normal_var_mean
+#  含义：该顶点与其 1-ring 邻居之间的法向夹角的平均值（弧度）。
+#  计算：对 mesh graph 的每条边 (u,v)，若两端都有非零边界法向，则计算 arccos(nu·nv)，累积到顶点，取均值。
+#  直觉：
+#    光滑区域：邻域法向变化小 → 值接近 0；
+#    高曲率/尖锐区域：变化大 → 值更大。
+#  作用：比单点法向更稳定地反映“局部弯曲程度/变化趋势”。
+#
+#  6) normal_var_max
+#  含义：该顶点与其 1-ring 邻居法向夹角的最大值（弧度）。
+#  直觉：能捕捉“最尖的一侧”，对角点/折线比均值更敏感。
+#  作用：定位 sharp feature（折边、尖角）附近的加密需求。
+#
+#  7) mean_curvature
+#  含义：边界表面的平均曲率幅值
+#  计算方式（代码）：
+#    从 mesh.facets[:, mesh.boundary_facets()] 得到边界三角面；
+#    用 cotan Laplacian 近似：∣H∣ ≈ 1/2Ai ∥∑j wij(xj−xi)∥，其中权重wij来自 cotangent；
+#    内部点输出 0。
+#  作用：
+#    曲率大 → 需要更细网格；
+#    比“仅依赖度/边长”的特征更贴合专家加密规则。
+#
+#  8) gaussian_curvature
+#  含义：边界表面的高斯曲率K（角亏损/面积的离散近似）。
+#  计算方式（代码）：
+#    角亏损：Ki≈(2π−∑θi)/Ai（假设边界表面整体封闭、局部近似流形）；
+#    内部点输出 0。
+#  作用：
+#    帮助区分不同类型曲面：例如圆柱
+#    对识别几何类型、加密区域（尤其复杂自由曲面）有帮助。
+#
+#  边（edge）新增特征
+#
+#  1) boundary_edge_flag
+#  含义：该边是否是边界边（边界边=1，否则=0；self-edge=0）。
+#  计算：undirected[boundary_edge_indices] = 1，再复制成双向边。
+#  作用：让模型区分“边界几何相关边”与内部边；特别有利于边曲率、法向等特征只在边界可靠的情形。
+#
+#  2) edge_length_over_sqrt_hihj
+#  含义：边长相对尺寸场的归一化值,|e| / sqrt(h_i h_j)
+#  直觉：
+#    若该值很大：当前边相对目标尺寸场“偏长”（可能需要细化）；
+#    若该值很小：边相对目标尺寸“偏短”（可能无需再细）。
+#  作用：把几何尺度与目标网格尺度绑定，直接提供“是否符合目标网格密度”的信号。
+#
+#  3) delta_log_sizing_field
+#  含义：沿有向边的尺寸场对数差
+#  性质：
+#    有向特征（反向边符号相反）；
+#    self-edge 上为 0（因为 src=dest）。
+#  作用：
+#    明确告诉模型“尺寸场在该方向上是增大还是减小”；
+#    对学习尺寸场梯度/过渡区（渐变加密）尤其重要。
+#
+#  4) dihedral_angle
+#  含义：边界三角面片上该边的二面角（弧度）。
+#  计算：
+#    对每条无向 mesh edge，收集其在边界面三角形中对应的相邻面法向（至少2个才有意义）；
+#    二面角 = acos(n1·n2)；否则为 0；
+#    再复制成双向边，self-edge 为 0。
+#  作用：
+#    比“端点法向夹角”更贴近经典几何折角定义；
+#    对 sharp edge/折线特征非常敏感。
+#
+#  5) sharp_edge_flag
+#  含义：基于 dihedral_angle 的阈值判定是否为“锐边”（默认阈值 30°）。
+#  计算：abs(dihedral_angle) > 30° → 1，否则 0。
+#  作用：给模型一个更离散、更强的先验：哪里是“必须加密的几何特征边”。
+#
+#  总结：这些新增特征在学习 sizing field 上分别提供了什么信息
+#  几何位置与尺度一致性：*_position_norm
+#  边界语义：is_boundary, boundary_edge_flag
+#  边界拓扑复杂度：boundary_degree
+#  几何朝向与弯曲变化：normal_*, normal_var_mean/max
+#  更直接的曲面形状量：mean_curvature, gaussian_curvature
+#  与目标尺寸场的相对关系：edge_length_over_sqrt_hihj, delta_log_sizing_field

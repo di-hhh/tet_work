@@ -1,0 +1,21 @@
+# @package _global_
+
+defaults:
+  - _gat
+  - override /task: mold
+  - _self_
+
+exp_name: gat_mold
+_version: 1
+
+trainer:
+  max_epochs: 201
+idx: gat100
+
+# 消融实验
+hydra:
+  sweeper:
+    ablative_params:
+      - task.max_initial_element_volume: 0.000001 # 调整初始网格最大单元体积
+        algorithm.inference_steps: 1  # 单步推理
+        idx: stp100
