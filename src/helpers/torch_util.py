@@ -32,7 +32,7 @@ def count_parameters(model):
 
 
 @torch._dynamo.disable
-def make_batch(data: torch.Tensor | Batch | Data | List[Data] | List[torch.Tensor], **kwargs):
+def make_batch(data: Union[torch.Tensor, Batch, Data, List[Data], List[torch.Tensor]], **kwargs):
     """
     adds the .batch-argument with zeros
     Args:

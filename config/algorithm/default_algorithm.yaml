@@ -24,8 +24,22 @@ gmsh:
 
 evaluation_frequency: 5
 
+# [CodeX] 下面这组配置用于“expert prior + physics residual”的最小模型侧修正实现，默认关闭以保持旧路径不变。
+enable_physics_correction_branch: False
+physics_feature_mode: normalized_importance
+lambda_expert_aux: 0.1
+lambda_corr_aux: 0.5
+lambda_corr_reg: 1.0e-4
+gate_activation: sigmoid
+gate_max: 1.0
+gate_init_bias: -2.5
+physics_readout_init_std: 1.0e-3
+correction_warmup_epochs: 3
+init_from_weighted_baseline_checkpoint: null
+inference_missing_physics_fallback: gate_zero
+
 weighted_imitation:
-  # [CodeX] Console/Mold 默认参考物理改为三维线弹性静力问题；其余训练链路保持不变。
+  # [CodeX] Console/Mold 默认参考物理改为三维线弹性静力问题，其余训练链路保持不变。
   enabled: False
   metric_use_physics_weights: True
   datasets: [console, mold]

@@ -1,0 +1,27 @@
+# @package _global_
+
+defaults:
+  - _amber_physics_correction_codex
+  - override /task: console
+  - _self_
+
+exp_name: amber_console_physics_correction_codex
+_version: 1
+
+trainer:
+  max_epochs: 101
+
+idx: ambpc100
+
+algorithm:
+  # [CodeX] Console 实验默认使用单步推理，和现有 weighted 版本保持一致，便于直接对比 expert prior-only 与 final prediction。
+  inference_steps: 3
+
+hydra:
+  sweeper:
+    ablative_params:
+      # [CodeX] 这里先保留与 weighted 基线一致的关键控制项，避免 physics correction 入口额外引入无关实验变量。
+      - algorithm.initial_mesh_handling: exclude
+        idx: des100
+      - algorithm.sizing_field_damping.damping_factor: 0.0
+        idx: des101

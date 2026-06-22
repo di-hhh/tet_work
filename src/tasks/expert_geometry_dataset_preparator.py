@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from typing import Tuple
 
@@ -8,7 +10,6 @@ from src.tasks.domains import ExtendedMeshTet1, ExtendedMeshTri1
 from src.tasks.domains.gmsh_util import geom_fn_from_file, get_bounding_box
 from src.tasks.domains.mesh_extension_mixin import MeshExtensionMixin
 from src.tasks.domains.mesh_wrapper import MeshWrapper
-from src.tasks.features.inlet_feature_provider import InletFeatureProvider
 
 DATASET_ROOT_PATH = "data"
 
@@ -74,6 +75,7 @@ class ExpertGeometryDatasetPreparator(DatasetPreparator):
         # todo: Refactor.
         if "mold" in self.task_config.name:
             from src.helpers.qol import filter_included_fields
+            from src.tasks.features.inlet_feature_provider import InletFeatureProvider
 
             inlet_file = data_point_path + "_features.txt"
             observation_features = filter_included_fields(self.task_config.inlet_features)

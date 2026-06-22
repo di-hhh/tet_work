@@ -82,7 +82,7 @@ class AmberDataset(MeshGenerationDataset):
             # Efficient extraction of depths and filtering using list comprehension and set for uniqueness
             valid_depths = set(p.refinement_depth for p in self.data if p.refinement_depth < self.max_mesh_depth)
             if not valid_depths:
-                raise ValueError(f"No valid data points with {self.max_mesh_depth=}")
+                raise ValueError(f"No valid data points with self.max_mesh_depth={self.max_mesh_depth}")
             target_depth = np.random.choice(list(valid_depths))
 
             # Collect indices of all data points matching the target depth in one pass, select one of them randomly

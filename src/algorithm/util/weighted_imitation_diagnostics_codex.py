@@ -6,7 +6,6 @@ import numpy as np
 
 
 def normalize_importance_codex(importance: np.ndarray, config: Optional[Dict[str, Any]] = None) -> np.ndarray:
-    # [CodeX] 将物理重要性统一映射到 [0, 1]，供不同权重模式和诊断指标复用。
     config = config or {}
     epsilon = float(config.get("epsilon", 1.0e-8))
     lower_quantile = float(config.get("normalization_lower_quantile", 0.05))
@@ -45,7 +44,6 @@ def build_weights_from_normalized_importance_codex(
     ternary_low_quantile_key: str = "ternary_low_quantile",
     ternary_high_quantile_key: str = "ternary_high_quantile",
 ) -> np.ndarray:
-    # [CodeX] 用统一入口支持 linear / power / binary_topk / ternary_quantile 四种权重模式。
     config = config or {}
     epsilon = float(config.get("epsilon", 1.0e-8))
     min_weight = float(config.get("clip_min", config.get("weight_clip_min", 1.0)))
@@ -88,7 +86,6 @@ def build_weights_from_normalized_importance_codex(
 
 
 def compute_distribution_stats_codex(values: np.ndarray, *, topk_percent: float = 0.2, prefix: str = "") -> Dict[str, float]:
-    # [CodeX] 统一输出均值、分位数、头部占比和有效样本比，用来判断权重是否过平或过尖。
     arr = np.asarray(values, dtype=np.float64).reshape(-1)
     if arr.size == 0:
         nan_stats = {
@@ -128,7 +125,6 @@ def compute_distribution_stats_codex(values: np.ndarray, *, topk_percent: float 
 
 
 def compute_correlation_stats_codex(weights: np.ndarray, labels: np.ndarray, *, epsilon: float = 1.0e-8) -> Dict[str, float]:
-    # [CodeX] 同时记录与尺寸标签、与 -log(size) 的相关性，帮助判断物理权重是否与监督目标基本错位。
     weights_np = _clean_flat_array_codex(weights)
     labels_np = _clean_flat_array_codex(labels)
     if weights_np.size == 0 or labels_np.size == 0 or weights_np.size != labels_np.size:
@@ -158,7 +154,6 @@ def compute_size_error_metrics_codex(
     topk_percent: float = 0.2,
     bucket_count: int = 5,
 ) -> Dict[str, float]:
-    # [CodeX] 用统一的高重要区、分桶和加权指标替代单一全域 L2，直接检验误差是否被重新分配。
     pred = _clean_flat_array_codex(predictions)
     target = _clean_flat_array_codex(labels)
     sample_weights = np.maximum(_clean_flat_array_codex(weights), epsilon)
@@ -180,7 +175,10 @@ def compute_size_error_metrics_codex(
     weighted_size_l2 = float(np.sum(sample_weights * squared_error) / (np.sum(sample_weights) + epsilon))
 
     topk_indices = _topk_indices_codex(ranking_importance, topk_percent=topk_percent)
-    topk_high_importance_l2 = float(np.mean(squared_error[topk_indices])) if topk_indices.size > 0 else float(np.mean(squared_error))
+    if topk_indices.size > 0:
+        topk_high_importance_l2 = float(np.mean(squared_error[topk_indices]))
+    else:
+        topk_high_importance_l2 = float(np.mean(squared_error))
 
     bucket_metrics = _bucket_error_metrics_codex(
         squared_error=squared_error,
@@ -201,7 +199,6 @@ def compute_projection_diagnostics_codex(
     *,
     topk_percent: float = 0.2,
 ) -> Dict[str, float]:
-    # [CodeX] 比较参考网格与投影后网格的重要性分布，判断高重要区域是否在投影时被压平。
     reference_stats = compute_distribution_stats_codex(reference_importance, topk_percent=topk_percent, prefix="reference_")
     projected_stats = compute_distribution_stats_codex(projected_importance, topk_percent=topk_percent, prefix="projected_")
     reference_q95 = reference_stats.get("reference_q95", np.nan)
@@ -228,7 +225,6 @@ def should_enable_stage2_codex(
     resumed_from_checkpoint: bool,
     stage2_resume_mode: bool,
 ) -> bool:
-    # [CodeX] 用纯函数统一阶段二切换逻辑，方便在无训练依赖环境下做单元测试。
     if not stage2_enable or stage2_epochs <= 0:
         return False
     if resumed_from_checkpoint and stage2_resume_mode:
@@ -250,8 +246,8 @@ def _bucket_error_metrics_codex(*, squared_error: np.ndarray, importance: np.nda
         bucket_values.append(bucket_error)
         metrics[f"bucket_{bucket_idx}_size_l2"] = bucket_error
 
-    low_value = bucket_values[0] if len(bucket_values) > 0 else np.nan
-    high_value = bucket_values[-1] if len(bucket_values) > 0 else np.nan
+    low_value = bucket_values[0] if bucket_values else np.nan
+    high_value = bucket_values[-1] if bucket_values else np.nan
     metrics["bucket_low_size_l2"] = low_value
     metrics["bucket_high_size_l2"] = high_value
     if np.isfinite(low_value) and low_value > epsilon and np.isfinite(high_value):
@@ -270,11 +266,147 @@ def _topk_indices_codex(values: np.ndarray, *, topk_percent: float) -> np.ndarra
     return np.asarray(order[-topk:], dtype=np.int64)
 
 
+def compute_branch_statistics_codex(
+    *,
+    gate: np.ndarray,
+    delta_phys: np.ndarray,
+    applied_correction: np.ndarray,
+    importance: np.ndarray,
+    topk_percent: float = 0.2,
+) -> Dict[str, float]:
+    gate_arr = _clean_flat_array_codex(gate)
+    delta_phys_arr = np.abs(_clean_flat_array_codex(delta_phys))
+    applied_correction_arr = np.abs(_clean_flat_array_codex(applied_correction))
+    importance_arr = _clean_flat_array_codex(importance)
+
+    if gate_arr.size == 0:
+        return {
+            "gate_mean": np.nan,
+            "gate_std": np.nan,
+            "gate_min": np.nan,
+            "gate_max": np.nan,
+            "gate_high_importance_mean": np.nan,
+            "gate_low_importance_mean": np.nan,
+            "delta_phys_abs_mean": np.nan,
+            "delta_phys_high_importance_abs_mean": np.nan,
+            "delta_phys_low_importance_abs_mean": np.nan,
+            "applied_correction_abs_mean": np.nan,
+            "applied_correction_high_importance_abs_mean": np.nan,
+            "applied_correction_low_importance_abs_mean": np.nan,
+        }
+
+    if importance_arr.size != gate_arr.size:
+        importance_arr = np.ones_like(gate_arr)
+
+    high_indices = _topk_indices_codex(importance_arr, topk_percent=topk_percent)
+    low_indices = _bottomk_indices_codex(importance_arr, topk_percent=topk_percent)
+    return {
+        "gate_mean": float(np.mean(gate_arr)),
+        "gate_std": float(np.std(gate_arr)),
+        "gate_min": float(np.min(gate_arr)),
+        "gate_max": float(np.max(gate_arr)),
+        "gate_high_importance_mean": _safe_indexed_mean_codex(gate_arr, high_indices),
+        "gate_low_importance_mean": _safe_indexed_mean_codex(gate_arr, low_indices),
+        "delta_phys_abs_mean": float(np.mean(delta_phys_arr)),
+        "delta_phys_high_importance_abs_mean": _safe_indexed_mean_codex(delta_phys_arr, high_indices),
+        "delta_phys_low_importance_abs_mean": _safe_indexed_mean_codex(delta_phys_arr, low_indices),
+        "applied_correction_abs_mean": float(np.mean(applied_correction_arr)),
+        "applied_correction_high_importance_abs_mean": _safe_indexed_mean_codex(applied_correction_arr, high_indices),
+        "applied_correction_low_importance_abs_mean": _safe_indexed_mean_codex(applied_correction_arr, low_indices),
+    }
+
+
+def compute_prediction_comparison_metrics_codex(
+    *,
+    final_predictions: np.ndarray,
+    expert_predictions: np.ndarray,
+    labels: np.ndarray,
+    weights: np.ndarray,
+    importance: np.ndarray,
+    epsilon: float = 1.0e-8,
+    topk_percent: float = 0.2,
+    bucket_count: int = 5,
+) -> Dict[str, float]:
+    final_metrics = _single_prediction_metrics_codex(
+        predictions=final_predictions,
+        labels=labels,
+        weights=weights,
+        importance=importance,
+        epsilon=epsilon,
+        topk_percent=topk_percent,
+        bucket_count=bucket_count,
+        prefix="final_prediction_",
+    )
+    expert_metrics = _single_prediction_metrics_codex(
+        predictions=expert_predictions,
+        labels=labels,
+        weights=weights,
+        importance=importance,
+        epsilon=epsilon,
+        topk_percent=topk_percent,
+        bucket_count=bucket_count,
+        prefix="expert_prior_",
+    )
+    return final_metrics | expert_metrics
+
+
 def _quantile_threshold_codex(values: np.ndarray, quantile: float) -> float:
     arr = _clean_flat_array_codex(values)
     if arr.size == 0:
         return 0.0
     return float(np.quantile(arr, np.clip(quantile, 0.0, 1.0)))
+
+
+def _bottomk_indices_codex(values: np.ndarray, *, topk_percent: float) -> np.ndarray:
+    arr = _clean_flat_array_codex(values)
+    if arr.size == 0:
+        return np.zeros(0, dtype=np.int64)
+    topk = max(1, int(np.ceil(arr.size * topk_percent)))
+    order = np.argsort(arr, kind="mergesort")
+    return np.asarray(order[:topk], dtype=np.int64)
+
+
+def _single_prediction_metrics_codex(
+    *,
+    predictions: np.ndarray,
+    labels: np.ndarray,
+    weights: np.ndarray,
+    importance: np.ndarray,
+    epsilon: float,
+    topk_percent: float,
+    bucket_count: int,
+    prefix: str,
+) -> Dict[str, float]:
+    pred = _clean_flat_array_codex(predictions)
+    target = _clean_flat_array_codex(labels)
+    if pred.size == 0 or pred.size != target.size:
+        return {
+            f"{prefix}size_l2": np.nan,
+            f"{prefix}weighted_size_l2": np.nan,
+            f"{prefix}topk_high_importance_l2": np.nan,
+        }
+
+    squared_error = np.square(pred - target)
+    base_metrics = compute_size_error_metrics_codex(
+        predictions=pred,
+        labels=target,
+        weights=weights,
+        importance=importance,
+        epsilon=epsilon,
+        topk_percent=topk_percent,
+        bucket_count=bucket_count,
+    )
+    return {
+        f"{prefix}size_l2": float(np.mean(squared_error)),
+        f"{prefix}weighted_size_l2": base_metrics.get("weighted_size_l2", np.nan),
+        f"{prefix}topk_high_importance_l2": base_metrics.get("topk_high_importance_l2", np.nan),
+    }
+
+
+def _safe_indexed_mean_codex(values: np.ndarray, indices: np.ndarray) -> float:
+    if indices.size == 0:
+        return np.nan
+    return float(np.mean(values[indices]))
 
 
 def _clean_flat_array_codex(values: np.ndarray) -> np.ndarray:

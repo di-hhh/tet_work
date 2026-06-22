@@ -3,6 +3,7 @@ from typing import Optional
 import numpy as np
 import torch
 
+from src.helpers.torch_scatter_compat_codex import scatter_add_codex
 from src.helpers.custom_types import MeshNodeType
 from src.tasks.domains.mesh_wrapper import MeshWrapper
 
@@ -55,16 +56,14 @@ def project_elements_to_vertices(mesh: MeshWrapper, element_values: np.ndarray) 
     Returns:
 
     """
-    from torch_scatter import scatter_add
-
     from src.helpers.torch_util import detach
 
     volumes = mesh.simplex_volumes
     volumes = torch.tensor(np.repeat(volumes, mesh.t.shape[0]))
     element_values = torch.tensor(np.repeat(element_values, mesh.t.shape[0]))
     index = torch.tensor(mesh.t.T.flatten(), dtype=torch.int64)
-    vertex_sums = scatter_add(src=element_values * volumes, index=index, dim=0, dim_size=mesh.nvertices)
-    vertex_weights = scatter_add(src=volumes, index=index, dim=0, dim_size=mesh.nvertices)
+    vertex_sums = scatter_add_codex(src=element_values * volumes, index=index, dim=0, dim_size=mesh.nvertices)
+    vertex_weights = scatter_add_codex(src=volumes, index=index, dim=0, dim_size=mesh.nvertices)
     values_per_vertex = vertex_sums / vertex_weights
     values_per_vertex = detach(values_per_vertex)
     return values_per_vertex

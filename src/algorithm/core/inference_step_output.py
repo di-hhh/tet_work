@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 import torch
@@ -20,6 +22,7 @@ class InferenceStepOutput:
     predictions: torch.Tensor
     output_mesh: MeshWrapper
     mesh_generation_status: MeshGenerationStatus
+    prediction_bundle: dict | None = None
 
     @property
     def refinement_success(self) -> bool:

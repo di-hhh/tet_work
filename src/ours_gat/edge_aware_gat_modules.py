@@ -5,8 +5,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.data.batch import Batch
 from torch_geometric.utils import softmax
-from torch_scatter import scatter_add
 
+from src.helpers.torch_scatter_compat_codex import scatter_add_codex
 from src.mpn.common.latent_mlp import LatentMLP
 
 
@@ -187,7 +187,7 @@ class EdgeAwareGATNodeModule(nn.Module):
             alpha = torch.ones_like(logits)
 
         msg_node = z_src * alpha.unsqueeze(-1)
-        h = scatter_add(msg_node, dst, dim=0, dim_size=n_nodes)
+        h = scatter_add_codex(msg_node, dst, dim=0, dim_size=n_nodes)
 
         if self.aggregate_edge and self.use_edge_in_value:
             ez = self.fc_edge(e).view(-1, self.num_heads, self.d_head)
@@ -195,7 +195,7 @@ class EdgeAwareGATNodeModule(nn.Module):
                 msg_edge = ez * alpha.unsqueeze(-1)
             else:
                 msg_edge = ez
-            h = h + scatter_add(msg_edge, dst, dim=0, dim_size=n_nodes)
+            h = h + scatter_add_codex(msg_edge, dst, dim=0, dim_size=n_nodes)
 
         h = h.reshape(n_nodes, self.d)
         h = self.out_proj_norm(self.out_proj(h))

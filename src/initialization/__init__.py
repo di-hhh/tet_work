@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Dict
 
@@ -56,6 +58,9 @@ def initialize(*, config: DictConfig) -> InitializationReturn:
 
     # Instantiate the algorithm using the provided configuration
     algorithm = create_algorithm(algorithm_config=config.algorithm, train_dataset=datasets.get("train"))
+    if hasattr(algorithm, "initialize_from_weighted_baseline_checkpoint_codex"):
+        # [CodeX] 在 Trainer 接管前显式做一次 baseline checkpoint 迁移初始化，避免新旧结构不一致时 strict 加载失败。
+        algorithm.initialize_from_weighted_baseline_checkpoint_codex()
 
     # Initialize WandB logger if enabled in the configuration
     if config.logger.wandb.enabled:

@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from functools import cached_property
 from typing import List, Literal
 
+import numpy as np
 import torch
 from torch_geometric.data.data import Data
 
@@ -14,6 +17,7 @@ from src.tasks.domains.mesh_wrapper import MeshWrapper
 class AmberData(MeshGenerationData):
     edge_feature_names: List[str] = None
     weighted_imitation_config: dict = None
+    physics_correction_config: dict = None
     add_self_edges: bool = True
     initial_mesh_handling: Literal["exclude", "topology_only", "full"] = "exclude"
     refinement_depth: int = 0
@@ -35,6 +39,7 @@ class AmberData(MeshGenerationData):
             node_type=reference.node_type,
             sizing_field_interpolation_type=reference.sizing_field_interpolation_type,
             weighted_imitation_config=reference.weighted_imitation_config,
+            physics_correction_config=reference.physics_correction_config,
             node_feature_names=reference.node_feature_names,
             edge_feature_names=reference.edge_feature_names,
             add_self_edges=reference.add_self_edges,
@@ -51,10 +56,8 @@ class AmberData(MeshGenerationData):
         if self._observation is None:
             graph = self._get_observation_graph()
             graph.y = torch.tensor(self._labels, dtype=torch.float32)
-            graph.imitation_weights = torch.tensor(
-                self._imitation_weights,
-                dtype=torch.float32,
-            )  # [CodeX] 将投影后的最终训练权重绑定到监督节点上，保证损失聚合直接使用同一组节点。
+            graph.imitation_weights = torch.tensor(self._imitation_weights, dtype=torch.float32)
+            # [CodeX] 将当前输出节点对应的物理重要性和权重显式挂到图对象上，继续复用现有 weighted imitation loss 与诊断逻辑。
             graph.imitation_raw_importance = torch.tensor(
                 self._imitation_weight_bundle["raw_importance"],
                 dtype=torch.float32,
@@ -78,15 +81,7 @@ class AmberData(MeshGenerationData):
 
     @cached_property
     def _imitation_weight_bundle(self):
-        from src.algorithm.util.fem_imitation_weights import get_imitation_weight_bundle
-
-        return get_imitation_weight_bundle(
-            queried_mesh=self.mesh,
-            source_data=self.source_data,
-            sizing_field_interpolation_type=self.sizing_field_interpolation_type,
-            node_type=self.node_type,
-            weighted_imitation_config=self.weighted_imitation_config,
-        )
+        return self._get_imitation_weight_bundle_for_mesh_codex(mesh=self.mesh)
 
     @cached_property
     def _imitation_weights(self):
@@ -144,6 +139,17 @@ class AmberData(MeshGenerationData):
             ).bool()
             graph.x = torch.cat([graph.x, torch.zeros(len(graph.x))[:, None]], dim=1)
 
+            if hasattr(graph, "physics_feature_available") and hasattr(initial_graph, "physics_feature_available"):
+                graph.physics_feature_available = torch.cat(
+                    [graph.physics_feature_available, initial_graph.physics_feature_available],
+                    dim=0,
+                )
+            if hasattr(graph, "physics_feature") and hasattr(initial_graph, "physics_feature"):
+                graph.physics_feature = torch.cat(
+                    [graph.physics_feature, initial_graph.physics_feature],
+                    dim=0,
+                )
+
             if self.initial_mesh_handling == "topology_only":
                 initial_graph.x = torch.zeros_like(initial_graph.x)
 
@@ -162,6 +168,7 @@ class AmberData(MeshGenerationData):
             feature_provider=self.feature_provider,
             add_self_edges=self.add_self_edges,
         )
+        graph = self._add_physics_feature(mesh=mesh, graph=graph)
         graph = self._add_current_sizing_field(mesh=mesh, graph=graph)
         return graph
 
@@ -169,3 +176,130 @@ class AmberData(MeshGenerationData):
         sizing_field = get_sizing_field(mesh, mesh_node_type=self.node_type)
         graph.current_sizing_field = torch.Tensor(sizing_field).float()
         return graph
+
+    def _add_physics_feature(self, mesh: MeshWrapper, graph: Data) -> Data:
+        config = self.physics_correction_config or {}
+        if not config.get("enable_physics_correction_branch", False):
+            return graph
+
+        num_nodes = graph.x.shape[0]
+        availability = torch.zeros((num_nodes, 1), dtype=torch.float32)
+        physics_feature = torch.zeros((num_nodes, 1), dtype=torch.float32)
+        dataset_name = getattr(self.source_data, "dataset_name", None)
+        if dataset_name in {"console", "mold"}:
+            # [CodeX] 仅对 Console/Mold 追加 physics importance 特征，并按当前 mesh 单独查询，兼容多步推理的层级图。
+            feature_values, feature_available = self._get_physics_feature_values(
+                mesh=mesh,
+                expected_size=num_nodes,
+            )
+            physics_feature = torch.tensor(feature_values, dtype=torch.float32).reshape(num_nodes, 1)
+            graph.x = torch.cat([graph.x, physics_feature], dim=1)
+            availability = torch.full((num_nodes, 1), float(feature_available), dtype=torch.float32)
+
+        # [CodeX] 记录每个节点的物理特征可用性，供 gate_zero / disable_branch 在缺特征时安全回退。
+        graph.physics_feature_available = availability
+        graph.physics_feature = physics_feature
+        return graph
+
+    def _get_imitation_weight_bundle_for_mesh_codex(self, mesh: MeshWrapper) -> dict:
+        cache = getattr(self, "_imitation_weight_bundle_cache_codex", None)
+        if cache is None:
+            cache = {}
+            self._imitation_weight_bundle_cache_codex = cache
+
+        cache_key = id(mesh)
+        if cache_key not in cache:
+            cache[cache_key] = self._get_uncached_imitation_weight_bundle_for_mesh_codex(mesh=mesh)
+        return cache[cache_key]
+
+    def _get_uncached_imitation_weight_bundle_for_mesh_codex(self, mesh: MeshWrapper) -> dict:
+        from src.algorithm.util.fem_imitation_weights import get_imitation_weight_bundle
+
+        # [CodeX] 统一复用现有 reference physics -> queried mesh 投影链路，但显式绕过 AmberData 的本地缓存。
+        return get_imitation_weight_bundle(
+            queried_mesh=mesh,
+            source_data=self.source_data,
+            sizing_field_interpolation_type=self.sizing_field_interpolation_type,
+            node_type=self.node_type,
+            weighted_imitation_config=self.weighted_imitation_config,
+        )
+
+    def _select_physics_feature_values_from_bundle_codex(self, *, bundle: dict, feature_mode: str) -> tuple[np.ndarray, bool]:
+        raw_importance = np.asarray(bundle["raw_importance"], dtype=np.float32)
+        normalized_importance = np.asarray(bundle["normalized_importance"], dtype=np.float32)
+        feature_available = bool(bundle.get("loaded", False))
+
+        if feature_mode in {"normalized_importance", "importance", "node_importance"}:
+            feature_values = normalized_importance
+        elif feature_mode == "raw_importance":
+            feature_values = raw_importance
+        elif feature_mode == "log_raw_importance":
+            feature_values = np.log1p(np.maximum(raw_importance, 0.0)).astype(np.float32)
+        elif feature_mode == "clipped_raw_importance":
+            clip_value = float(np.quantile(raw_importance, 0.95)) if raw_importance.size > 0 else 0.0
+            feature_values = np.clip(raw_importance, a_min=0.0, a_max=clip_value).astype(np.float32)
+        else:
+            raise ValueError(f"Unsupported physics_feature_mode '{feature_mode}'")
+        return feature_values.astype(np.float32), feature_available
+
+    def _reproject_physics_feature_values_codex(
+        self,
+        *,
+        mesh: MeshWrapper,
+        feature_mode: str,
+        expected_size: int,
+    ) -> tuple[np.ndarray | None, bool]:
+        try:
+            reprojected_bundle = self._get_uncached_imitation_weight_bundle_for_mesh_codex(mesh=mesh)
+        except Exception:
+            return None, False
+
+        cache = getattr(self, "_imitation_weight_bundle_cache_codex", None)
+        if cache is not None:
+            # [CodeX] 若重投影成功，则刷新当前 mesh 的本地 bundle 缓存，避免同一轮重复触发 mismatch 补救。
+            cache[id(mesh)] = reprojected_bundle
+
+        reprojected_values, reprojected_available = self._select_physics_feature_values_from_bundle_codex(
+            bundle=reprojected_bundle,
+            feature_mode=feature_mode,
+        )
+        if not reprojected_available:
+            reprojected_values = np.zeros_like(reprojected_values, dtype=np.float32)
+        if reprojected_values.shape[0] != expected_size:
+            return None, False
+        return reprojected_values.astype(np.float32), reprojected_available
+
+    def _get_physics_feature_values(self, mesh: MeshWrapper, expected_size: int | None = None) -> tuple[np.ndarray, bool]:
+        config = self.physics_correction_config or {}
+        feature_mode = str(config.get("physics_feature_mode", "normalized_importance"))
+        bundle = self._get_imitation_weight_bundle_for_mesh_codex(mesh=mesh)
+        feature_values, feature_available = self._select_physics_feature_values_from_bundle_codex(
+            bundle=bundle,
+            feature_mode=feature_mode,
+        )
+
+        if not feature_available:
+            # [CodeX] 若当前 mesh 没有可用 physics cache，则先退化到零特征；只有长度 mismatch 时再尝试显式重投影补救。
+            feature_values = np.zeros_like(feature_values, dtype=np.float32)
+
+        if expected_size is None:
+            expected_size = _graph_node_count_from_mesh(mesh=mesh, node_type=self.node_type)
+        if feature_values.shape[0] != expected_size:
+            # [CodeX] 长度不匹配时先基于 reference fields 对当前 mesh 再做一次显式重投影；只有仍失败时才退化为零特征。
+            reprojected_values, reprojected_available = self._reproject_physics_feature_values_codex(
+                mesh=mesh,
+                feature_mode=feature_mode,
+                expected_size=int(expected_size),
+            )
+            if reprojected_values is not None:
+                return reprojected_values.astype(np.float32), reprojected_available
+            feature_values = np.zeros(int(expected_size), dtype=np.float32)
+            feature_available = False
+        return feature_values.astype(np.float32), feature_available
+
+
+def _graph_node_count_from_mesh(*, mesh: MeshWrapper, node_type: str) -> int:
+    # [CodeX] 统一根据 node_type 计算图节点数，避免顶点图和单元图切换时出现静默错位。
+    if node_type == "element":
+        return mesh.num_elements
+    return mesh.num_vertices

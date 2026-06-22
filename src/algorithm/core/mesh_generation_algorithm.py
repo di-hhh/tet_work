@@ -1,30 +1,28 @@
+from __future__ import annotations
+
 import copy
 from abc import ABC, abstractmethod
-from typing import Dict, List
+from typing import TYPE_CHECKING, Dict, List
 
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import torch
 from lightning import LightningModule
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader
 from torch_geometric.data import Batch
 from tqdm import tqdm
 
-from src.algorithm.dataloader.mesh_generation_data import MeshGenerationData
-from src.algorithm.dataloader.mesh_generation_dataset import MeshGenerationDataset
-from src.algorithm.normalizer import RunningNormalizer, get_normalizer
-from src.algorithm.optimizer import get_optimizer_and_scheduler
-from src.algorithm.prediction_transform import get_transform
-from src.algorithm.util.amber_util import get_reconstructed_mesh
-from src.algorithm.util.parse_input_types import get_mesh_node_type
-from src.algorithm.visualization.amber_visualization import get_reference_plot
 from src.helpers.qol import add_to_dictionary, aggregate_metrics, prefix_keys, safe_mean
 from src.helpers.torch_util import count_parameters, detach
-from src.mesh_util.mesh_metrics import MeshMetrics
+
+if TYPE_CHECKING:
+    from src.algorithm.dataloader.mesh_generation_data import MeshGenerationData
+    from src.algorithm.dataloader.mesh_generation_dataset import MeshGenerationDataset
+    from src.algorithm.normalizer import RunningNormalizer
 
 
 class MeshGenerationAlgorithm(LightningModule, ABC):
@@ -33,98 +31,71 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
     to training and evaluating a deep learning model for mesh generation.
     """
 
-    def __init__(self, algorithm_config: DictConfig, train_dataset: MeshGenerationDataset):
-        """
-        Initialize the mesh generation algorithm with the given configuration and training dataset.
-
-        Args:
-            algorithm_config (DictConfig): Configuration parameters for the algorithm.
-            train_dataset (MeshGenerationDataset): Dataset used for training the model.
-        """
+    def __init__(self, algorithm_config: DictConfig, train_dataset: "MeshGenerationDataset"):
         super().__init__()
 
         self.config = algorithm_config
         self.train_dataset = train_dataset
 
-        ##########################
-        # Instantiate parameters #
-        ##########################
-        # How to derive the sizing field and what to do with it
-        self.mesh_node_type = get_mesh_node_type(self.config.sizing_field_interpolation_type)
+        from src.algorithm.util.parse_input_types import get_mesh_node_type
+        from src.algorithm.prediction_transform import get_transform
 
-        # Mesh generation parameters
+        self.mesh_node_type = get_mesh_node_type(self.config.sizing_field_interpolation_type)
         self.force_mesh_generation = self.config.force_mesh_generation
         self.gmsh_kwargs: Dict[str, float] = self._get_gmsh_kwargs(gmsh_config=self.config.gmsh)
         self.max_mesh_elements: float = self._get_max_mesh_elements(self.config.max_mesh_elements)
 
-        # Evaluation frequency
         self.evaluation_frequency = self.config.evaluation_frequency
-
-        # Plotting configuration
         self.plotting_sample_idxs: List[int] = self.config.plotting.sample_idxs
         self.plot_frequency: int = self.config.plotting.frequency
         self.plot_initial_epoch: bool = self.config.plotting.initial_epoch
 
-        ########################
-        # Model and normalizer #
-        ########################
         self.model = self._get_model()
         self.prediction_transform = get_transform(transform_config=algorithm_config.prediction_transform)
         self.criterion = self._get_optimization_criterion()
         if hasattr(self.criterion, "weighted_imitation_config") and not getattr(self.criterion, "weighted_imitation_config"):
-            self.criterion.weighted_imitation_config = algorithm_config.get("weighted_imitation") or {}  # [CodeX] 沿用现有配置树初始化物理加权相关开关，避免损失函数和 Hydra 配置脱节。
+            # [CodeX] 沿用现有配置树初始化 weighted imitation，避免 loss 与 Hydra 配置脱节。
+            self.criterion.weighted_imitation_config = algorithm_config.get("weighted_imitation") or {}
+        if hasattr(self.criterion, "weighted_imitation_config"):
+            if isinstance(self.criterion.weighted_imitation_config, DictConfig):
+                # [CodeX] 将结构化 Hydra 配置转成可写普通字典，避免新增 physics loss 系数时被 struct 限制拦截。
+                self.criterion.weighted_imitation_config = OmegaConf.to_container(
+                    self.criterion.weighted_imitation_config,
+                    resolve=False,
+                )
+            # [CodeX] 将新增的模型侧修正损失系数注入 loss 配置，保持用户可从算法根配置直接控制。
+            self.criterion.weighted_imitation_config["lambda_expert_aux"] = float(
+                algorithm_config.get("lambda_expert_aux", self.criterion.weighted_imitation_config.get("lambda_expert_aux", 0.25))
+            )
+            self.criterion.weighted_imitation_config["lambda_corr_reg"] = float(
+                algorithm_config.get("lambda_corr_reg", self.criterion.weighted_imitation_config.get("lambda_corr_reg", 1.0e-3))
+            )
+            self.criterion.weighted_imitation_config["lambda_corr_aux"] = float(
+                algorithm_config.get("lambda_corr_aux", self.criterion.weighted_imitation_config.get("lambda_corr_aux", 0.5))
+            )
         self.normalizer = self._get_normalizer()
-        ###########
-        # Logging #
-        ###########
 
-        # Create dicts to save metrics over steps
         self.training_step_outputs = []
         self.validation_step_outputs = []
         self.test_step_outputs = []
         self.grad_norms = []
 
-        # save config as hyperparameter for loading
         self.save_hyperparameters("algorithm_config")
+        self._weighted_baseline_init_report = None
 
     ###################
     # Algorithm setup #
     ###################
 
     def _get_model(self):
-        """
-        Abstract method to define and return the model.
-
-        Returns:
-            The deep learning model used for mesh generation.
-        """
         raise NotImplementedError
 
     def _get_optimization_criterion(self):
-        """
-        Abstract method to define and return the loss function used for optimization.
-
-        Returns:
-            Loss function used for training the model.
-        """
         raise NotImplementedError
 
-    def _get_normalizer(self) -> RunningNormalizer:
-        """
-        Initializes the normalizer based on the given configuration and dataset.
-        The normalizer acts on online data and does 2 things:
-        * It normalizes the input features (which can be a graph or an image, depending on the underlying algorithm)
-            to be in N(0,1) per features
-        * It denormalizes the predictions to the original scale of the data, potentially taking care of any prediction
-            transformations (e.g., exp or softplus) acting on the predictions. Thus, it allows the model to learn on
-            a transformed target space that is similar to N(0,1), while still predicting the original target space.
+    def _get_normalizer(self) -> "RunningNormalizer":
+        from src.algorithm.normalizer import get_normalizer
 
-        This function is run during both training and evaluation.
-        However, we overwrite the initial normalizer statistics with saved checkpoints if running in evaluation mode.
-
-        Returns:
-            RunningNormalizer: The normalizer for input data.
-        """
         normalizer = get_normalizer(
             normalizer_config=self.config.normalizer,
             example_input=self.train_dataset.first.observation,
@@ -133,16 +104,93 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
         [normalizer.update_normalizers(x.observation) for x in self.train_dataset.data]
         return normalizer
 
+    def _get_architecture_config_with_physics_codex(self) -> DictConfig:
+        architecture_config = OmegaConf.create(OmegaConf.to_container(self.config.architecture, resolve=False))
+        # [CodeX] 将算法级 physics correction 配置注入 architecture config，避免重构现有 get_gnn 接口。
+        architecture_config.enable_physics_correction_branch = bool(
+            self.config.get("enable_physics_correction_branch", False)
+        )
+        architecture_config.gate_activation = self.config.get("gate_activation", "sigmoid")
+        architecture_config.gate_max = float(self.config.get("gate_max", 1.0))
+        architecture_config.gate_init_bias = float(self.config.get("gate_init_bias", -2.5))
+        architecture_config.physics_readout_init_std = float(self.config.get("physics_readout_init_std", 1.0e-3))
+        architecture_config.inference_missing_physics_fallback = self.config.get(
+            "inference_missing_physics_fallback",
+            "gate_zero",
+        )
+        return architecture_config
+
+    def initialize_from_weighted_baseline_checkpoint_codex(self) -> Dict[str, object]:
+        checkpoint_path = self.config.get("init_from_weighted_baseline_checkpoint")
+        if checkpoint_path in [None, False, ""]:
+            self._weighted_baseline_init_report = {
+                "applied": False,
+                "checkpoint_path": None,
+                "loaded_keys": 0,
+                "adapted_keys": [],
+                "skipped_keys": [],
+            }
+            return self._weighted_baseline_init_report
+
+        checkpoint = torch.load(checkpoint_path, map_location="cpu")
+        source_state_dict = checkpoint.get("state_dict", checkpoint)
+        current_state_dict = self.state_dict()
+        loadable_state_dict = {}
+        adapted_keys = []
+        skipped_keys = []
+
+        for key, checkpoint_value in source_state_dict.items():
+            if key not in current_state_dict:
+                continue
+            current_value = current_state_dict[key]
+            checkpoint_value = checkpoint_value.to(dtype=current_value.dtype)
+
+            if current_value.shape == checkpoint_value.shape:
+                loadable_state_dict[key] = checkpoint_value
+                continue
+
+            adapted_value = self._adapt_checkpoint_tensor_codex(
+                current_value=current_value,
+                checkpoint_value=checkpoint_value,
+            )
+            if adapted_value is not None:
+                loadable_state_dict[key] = adapted_value
+                adapted_keys.append(key)
+            else:
+                skipped_keys.append(key)
+
+        load_result = self.load_state_dict(loadable_state_dict, strict=False)
+        self._weighted_baseline_init_report = {
+            "applied": True,
+            "checkpoint_path": checkpoint_path,
+            "loaded_keys": len(loadable_state_dict),
+            "adapted_keys": adapted_keys,
+            "skipped_keys": skipped_keys,
+            "missing_keys": list(load_result.missing_keys),
+            "unexpected_keys": list(load_result.unexpected_keys),
+        }
+        return self._weighted_baseline_init_report
+
+    @staticmethod
+    def _adapt_checkpoint_tensor_codex(
+        *,
+        current_value: torch.Tensor,
+        checkpoint_value: torch.Tensor,
+    ) -> torch.Tensor | None:
+        # [CodeX] 兼容“旧输入特征维度 +1”的 checkpoint 迁移：旧列直接复制，新 physics 列保持零影响。
+        if current_value.ndim == 2 and checkpoint_value.ndim == 2:
+            if current_value.shape[0] == checkpoint_value.shape[0] and current_value.shape[1] == checkpoint_value.shape[1] + 1:
+                adapted = torch.zeros_like(current_value)
+                adapted[:, : checkpoint_value.shape[1]] = checkpoint_value
+                return adapted
+        if current_value.ndim == 1 and checkpoint_value.ndim == 1:
+            if current_value.shape[0] == checkpoint_value.shape[0] + 1:
+                adapted = current_value.clone()
+                adapted[: checkpoint_value.shape[0]] = checkpoint_value
+                return adapted
+        return None
+
     def _get_gmsh_kwargs(self, gmsh_config: DictConfig) -> Dict:
-        """
-        Computes the Gmsh parameters for mesh generation based on the dataset properties.
-
-        Args:
-            gmsh_config (DictConfig): Configuration for Gmsh parameters.
-
-        Returns:
-            Dict[str, float]: Dictionary containing min and max sizing fields for mesh generation.
-        """
         from src.mesh_util.sizing_field_util import get_sizing_field
 
         min_sizing_field = gmsh_config.get("min_sizing_field")
@@ -157,45 +205,28 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
         return {"min_sizing_field": min_sizing_field, "max_sizing_field": max_sizing_field}
 
     def _get_max_mesh_elements(self, max_elements: str | float) -> float:
-        """
-        Determines the maximum number of mesh elements allowed.
-
-        Args:
-            max_elements (Union[str, float]): The maximum number of elements, either as a fixed value or as a scaling factor.
-
-        Returns:
-            float: The computed maximum number of mesh elements.
-        """
         if isinstance(max_elements, str):
             max_data_elements = max([mesh.nelements for mesh in self.train_dataset.expert_meshes])
             if max_elements == "auto":
                 max_elements = int(max_data_elements * 1.5)
             elif max_elements.startswith("x"):
-                # has form xF, where F is a float. E.g., x1.5 --> max_elements == max_data_elements*1.2
                 factor = float(max_elements[1:])
                 max_elements = int(max_data_elements * factor)
         return max_elements
 
     def configure_optimizers(self) -> Optimizer | Dict[str, Optimizer | Dict[str, LRScheduler | str]]:
-        """
-        Configures the optimizer and, if applicable, the learning rate scheduler.
+        from src.algorithm.optimizer import get_optimizer_and_scheduler
 
-        Returns:
-            Union[Optimizer, Dict[str, Union[Optimizer, Dict[str, Union[LRScheduler, str]]]]]]:
-                The optimizer with or without a scheduler.
-        """
-
-        return get_optimizer_and_scheduler(optimizer_dict=self.config.optimizer, model=self.model, num_epochs=self.trainer.max_epochs)
+        return get_optimizer_and_scheduler(
+            optimizer_dict=self.config.optimizer,
+            model=self.model,
+            num_epochs=self.trainer.max_epochs,
+        )
 
     ##################
     # Start training #
     ##################
     def on_train_start(self):
-        """
-        Calculate on-time metrics
-        Returns:
-
-        """
         validation_loader = self.trainer.val_dataloaders
         self._log_constant_metrics(validation_loader)
         self._log_constant_plots(dataloader=validation_loader, prefix="val")
@@ -223,7 +254,7 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
         }
         metric_dict_list = {}
         for data in tqdm(validation_loader, desc="Initial Metrics".title()):
-            data: MeshGenerationData
+            data: "MeshGenerationData"
             sample_dict = self._evaluate_initial_sample(data=data)
             add_to_dictionary(metric_dict_list, new_scalars=sample_dict)
         metric_dict_list = {key: safe_mean(value) for key, value in metric_dict_list.items()}
@@ -233,24 +264,32 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
 
         self.log_dict(constant_metrics, on_step=False, prog_bar=True)
 
-    def _evaluate_initial_sample(self, data: MeshGenerationData) -> Dict[str, float]:
+    def _evaluate_initial_sample(self, data: "MeshGenerationData") -> Dict[str, float]:
+        from src.algorithm.util.amber_util import get_reconstructed_mesh
+        from src.mesh_util.mesh_metrics import MeshMetrics
+
         initial_mesh = data.mesh
         expert_mesh = data.expert_mesh
-        # get comparison between expert and initial mesh.
         initial2expert_similarity_metrics = MeshMetrics(
-            metric_config=self.config.mesh_metrics, reference_mesh=expert_mesh, evaluated_mesh=initial_mesh, fem_problem=data.fem_problem
+            metric_config=self.config.mesh_metrics,
+            reference_mesh=expert_mesh,
+            evaluated_mesh=initial_mesh,
+            fem_problem=data.fem_problem,
         )()
         initial2expert_similarity_metrics = prefix_keys(initial2expert_similarity_metrics, prefix="initial")
-        # get comparison between the expert and an "ideal" reconstruction of the expert's sizing field
         reconstructed_mesh = get_reconstructed_mesh(expert_mesh, gmsh_kwargs=self.gmsh_kwargs)
         reconstruction2expert_similarity_metrics = MeshMetrics(
-            metric_config=self.config.mesh_metrics, reference_mesh=expert_mesh, evaluated_mesh=reconstructed_mesh, fem_problem=data.fem_problem
+            metric_config=self.config.mesh_metrics,
+            reference_mesh=expert_mesh,
+            evaluated_mesh=reconstructed_mesh,
+            fem_problem=data.fem_problem,
         )()
         reconstruction2expert_similarity_metrics = prefix_keys(reconstruction2expert_similarity_metrics, prefix="rec")
-        sample_dict = reconstruction2expert_similarity_metrics | initial2expert_similarity_metrics
-        return sample_dict
+        return reconstruction2expert_similarity_metrics | initial2expert_similarity_metrics
 
     def _log_constant_plots(self, dataloader: DataLoader, prefix: str) -> None:
+        from src.algorithm.visualization.amber_visualization import get_reference_plot
+
         for plotting_sample_idx in self.plotting_sample_idxs:
             if len(dataloader.dataset) <= plotting_sample_idx:
                 continue
@@ -271,7 +310,7 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
                 current_epoch=self.current_epoch,
                 max_epochs=self.trainer.max_epochs,
                 resumed_from_checkpoint=bool(getattr(self.trainer, "ckpt_path", None)),
-            )  # [CodeX] 在不改训练循环结构的前提下，让 loss 根据 epoch / checkpoint 状态切换到阶段二微调模式。
+            )  # [CodeX] 在不重构训练循环的前提下，让 loss 能根据 epoch / checkpoint 状态切换阶段设置。
         loss, scalars = self._training_step(batch, batch_idx)
         if hasattr(self.criterion, "last_loss_metrics"):
             loss_metrics = self.criterion.last_loss_metrics
@@ -310,7 +349,30 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
                 "imitation_projected_top20_ratio": loss_metrics.get("projected_top20_ratio", np.nan),
                 "imitation_projection_top20_ratio_delta": loss_metrics.get("projection_top20_ratio_delta", np.nan),
                 "imitation_stage2_active": loss_metrics.get("stage2_active", 0.0),
-            }  # [CodeX] 通过现有训练日志通道输出权重分布、相关性、投影失真和高重要区误差诊断。
+                "loss_main": loss_metrics.get("loss_main", np.nan),
+                "loss_expert_aux": loss_metrics.get("loss_expert_aux", 0.0),
+                "loss_corr_aux": loss_metrics.get("loss_corr_aux", 0.0),
+                "loss_corr_reg": loss_metrics.get("loss_corr_reg", 0.0),
+                "physics_gate_mean": loss_metrics.get("gate_mean", 0.0),
+                "physics_gate_std": loss_metrics.get("gate_std", 0.0),
+                "physics_gate_min": loss_metrics.get("gate_min", 0.0),
+                "physics_gate_max": loss_metrics.get("gate_max", 0.0),
+                "physics_gate_high_importance_mean": loss_metrics.get("gate_high_importance_mean", 0.0),
+                "physics_gate_low_importance_mean": loss_metrics.get("gate_low_importance_mean", 0.0),
+                "physics_delta_phys_abs_mean": loss_metrics.get("delta_phys_abs_mean", 0.0),
+                "physics_delta_phys_high_importance_abs_mean": loss_metrics.get("delta_phys_high_importance_abs_mean", 0.0),
+                "physics_delta_phys_low_importance_abs_mean": loss_metrics.get("delta_phys_low_importance_abs_mean", 0.0),
+                "physics_applied_correction_abs_mean": loss_metrics.get("applied_correction_abs_mean", 0.0),
+                "physics_applied_correction_high_importance_abs_mean": loss_metrics.get("applied_correction_high_importance_abs_mean", 0.0),
+                "physics_applied_correction_low_importance_abs_mean": loss_metrics.get("applied_correction_low_importance_abs_mean", 0.0),
+                "expert_prior_size_l2": loss_metrics.get("expert_prior_size_l2", np.nan),
+                "expert_prior_weighted_size_l2": loss_metrics.get("expert_prior_weighted_size_l2", np.nan),
+                "expert_prior_topk_high_importance_l2": loss_metrics.get("expert_prior_topk_high_importance_l2", np.nan),
+                "final_prediction_size_l2": loss_metrics.get("final_prediction_size_l2", np.nan),
+                "final_prediction_weighted_size_l2": loss_metrics.get("final_prediction_weighted_size_l2", np.nan),
+                "final_prediction_topk_high_importance_l2": loss_metrics.get("final_prediction_topk_high_importance_l2", np.nan),
+            }
+        # [CodeX] 通过现有训练日志通道补充 gate / correction / expert-vs-final 的关键诊断，不改动 logger 结构。
         self.training_step_outputs.append(scalars)
         return loss
 
@@ -323,12 +385,11 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
         self.grad_norms.append(total_norm)
 
     def on_train_epoch_end(self) -> None:
-        # Log mean of training metrics over epoch to WandB
         epoch_averages = aggregate_metrics(metrics=self.training_step_outputs)
         epoch_averages = prefix_keys(epoch_averages, prefix="metrics.train")
         epoch_averages["grad_norm"] = np.mean(self.grad_norms)
         self.log_dict(epoch_averages, on_epoch=True, prog_bar=True)
-        self.training_step_outputs.clear()  # free memory
+        self.training_step_outputs.clear()
 
     ##########################
     # Evaluation and testing #
@@ -340,7 +401,6 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
 
         if self.current_epoch % self.plot_frequency == 0 and (self.plot_initial_epoch or self.current_epoch > 0):
             if batch_idx in self.plotting_sample_idxs:
-                # Plot some validation samples
                 plot_dict = self._visualize_data_point(data=batch)
                 plot_dict = prefix_keys(plot_dict, prefix=f"val{batch_idx}")
                 self._log_plots(plot_dict)
@@ -350,7 +410,6 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
         self.test_step_outputs.append(evaluation_dict)
 
         if batch_idx in self.plotting_sample_idxs:
-            # Plot some validation samples
             plot_dict = self._visualize_data_point(data=batch)
             plot_dict = prefix_keys(plot_dict, prefix=f"test{batch_idx}")
             self._log_plots(plot_dict)
@@ -362,23 +421,24 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
         raise NotImplementedError
 
     def on_validation_epoch_end(self):
-        if len(self.validation_step_outputs) > 0:  # have some evaluation to log
+        if len(self.validation_step_outputs) > 0:
             validation_averages = aggregate_metrics(metrics=self.validation_step_outputs)
             validation_averages = prefix_keys(validation_averages, prefix="metrics.val", separator="_")
             self.log_dict(validation_averages, on_epoch=True, prog_bar=True)
-            self.validation_step_outputs.clear()  # free memory
+            self.validation_step_outputs.clear()
 
     def on_test_end(self) -> None:
         test_averages = aggregate_metrics(metrics=self.test_step_outputs)
         test_averages = prefix_keys(test_averages, prefix="metrics.test", separator="_")
-        self.logger.experiment.log(test_averages, step=self.current_epoch)
+        experiment_logger = self._get_experiment_logger_codex()
+        if experiment_logger is not None:
+            experiment_logger.log(test_averages, step=self.current_epoch)
 
-        # log metrics as dataframe/table
         test_step_outputs_df = pd.DataFrame(self.test_step_outputs)
-        self.logger.experiment.log({"test_table": test_step_outputs_df}, step=self.current_epoch)
-        self.test_step_outputs.clear()  # free memory
+        if experiment_logger is not None:
+            experiment_logger.log({"test_table": test_step_outputs_df}, step=self.current_epoch)
+        self.test_step_outputs.clear()
 
-        # log expert meshes for test set
         test_loader = self.trainer.test_dataloaders
         self._log_constant_plots(dataloader=test_loader, prefix="test")
 
@@ -386,43 +446,140 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
     # prediction/model forward #
     ############################
 
-    def _predict(self, batch: Batch | torch.Tensor, is_train: bool = False, flatten: bool = True) -> torch.Tensor:
-        """
-        Predict the output for a (batch of) graph(s).
-        Args:
-            batch: Batch of graphs or images to predict the output for
-            is_train: Whether the model is currently in training mode and the prediction will be used to compute a loss
-
-        Returns: A 1d tensor of predictions corresponding to the number of mesh elements in the input batch
-
-        """
+    def _predict(
+        self,
+        batch: Batch | torch.Tensor,
+        is_train: bool = False,
+        flatten: bool = True,
+        return_details: bool = False,
+    ) -> torch.Tensor | Dict[str, torch.Tensor]:
         batch = batch.to(self.device)
         batch = self.normalizer.normalize_inputs(batch)
-        predictions = self.model(batch)
-        if flatten:
-            predictions = predictions.flatten()
+        model_outputs = self.model(
+            batch,
+            correction_warmup_factor=self._get_correction_warmup_factor_codex(is_train=is_train),
+        )
+        prediction_bundle = self._build_prediction_bundle_codex(
+            batch=batch,
+            model_outputs=model_outputs,
+            is_train=is_train,
+            flatten=flatten,
+        )
+        return prediction_bundle if return_details else prediction_bundle["final"]
 
-        predictions = self.normalizer.denormalize_predictions(predictions)
-
-        # Add baseline if exists to allow predicting residuals.
+    def _build_prediction_bundle_codex(
+        self,
+        *,
+        batch: Batch | torch.Tensor,
+        model_outputs,
+        is_train: bool,
+        flatten: bool,
+    ) -> Dict[str, torch.Tensor]:
         if hasattr(batch, "current_sizing_field"):
             current_sizing_field = batch.current_sizing_field
         else:
             current_sizing_field = None
-        predictions = self.prediction_transform.forward(predictions, baseline=current_sizing_field, is_train=is_train)
-        return predictions
+
+        if isinstance(model_outputs, dict):
+            expert_output = model_outputs["expert_output"]
+            physics_output = model_outputs["physics_output"]
+            gate = model_outputs["gate"]
+            gate_logits = model_outputs["gate_logits"]
+            physics_feature_available = model_outputs.get(
+                "physics_feature_available",
+                torch.ones_like(gate),
+            )
+        else:
+            expert_output = model_outputs
+            physics_output = torch.zeros_like(expert_output)
+            gate = torch.zeros_like(expert_output)
+            gate_logits = torch.zeros_like(expert_output)
+            physics_feature_available = torch.zeros_like(expert_output)
+
+        if flatten:
+            expert_output = expert_output.flatten()
+            physics_output = physics_output.flatten()
+            gate = gate.flatten()
+            gate_logits = gate_logits.flatten()
+            physics_feature_available = physics_feature_available.flatten()
+
+        semantic_expert_delta = self.normalizer.denormalize_predictions(expert_output)
+        semantic_phys_delta = self._denormalize_correction_residual_codex(physics_output)
+        applied_correction = gate * semantic_phys_delta
+        semantic_total_delta = semantic_expert_delta + applied_correction
+
+        final_predictions = self.prediction_transform.forward(
+            semantic_total_delta,
+            baseline=current_sizing_field,
+            is_train=is_train,
+        )
+        expert_predictions = self.prediction_transform.forward(
+            semantic_expert_delta,
+            baseline=current_sizing_field,
+            is_train=is_train,
+        )
+        # [CodeX] 统一返回 final / expert-only / correction 相关张量，训练和验证共用同一诊断入口。
+        return {
+            "final": final_predictions,
+            "expert": expert_predictions,
+            "semantic_expert_delta": semantic_expert_delta,
+            "semantic_phys_delta": semantic_phys_delta,
+            "semantic_total_delta": semantic_total_delta,
+            "applied_correction": applied_correction,
+            "gate": gate,
+            "gate_logits": gate_logits,
+            "physics_feature_available": physics_feature_available,
+        }
+
+    def _denormalize_correction_residual_codex(self, correction_output: torch.Tensor) -> torch.Tensor:
+        prediction_normalizer = getattr(self.normalizer, "prediction_normalizer", None)
+        if prediction_normalizer is None:
+            return correction_output
+
+        scale = torch.sqrt(prediction_normalizer.var + self.normalizer.epsilon).to(
+            device=correction_output.device,
+            dtype=correction_output.dtype,
+        )
+        if correction_output.ndim == 1:
+            if scale.numel() == 1:
+                return correction_output * scale.squeeze(0)
+            return correction_output * scale
+
+        view_shape = [1] * correction_output.ndim
+        view_shape[-1] = -1
+        return correction_output * scale.view(view_shape)
+
+    def _get_correction_warmup_factor_codex(self, *, is_train: bool) -> float:
+        warmup_epochs = int(self.config.get("correction_warmup_epochs", 0) or 0)
+        if warmup_epochs <= 0:
+            return 1.0
+        progress_epoch = float(self.current_epoch) + 1.0
+        if not is_train:
+            return min(1.0, progress_epoch / float(warmup_epochs))
+        return min(1.0, progress_epoch / float(warmup_epochs))
 
     def _clip_detach(self, sizing_field: torch.Tensor) -> np.ndarray:
-        sizing_field = np.clip(detach(sizing_field), self.gmsh_kwargs.get("min_sizing_field"), self.gmsh_kwargs.get("max_sizing_field"))
+        sizing_field = np.clip(
+            detach(sizing_field),
+            self.gmsh_kwargs.get("min_sizing_field"),
+            self.gmsh_kwargs.get("max_sizing_field"),
+        )
         return sizing_field
 
     ###########
     # logging #
     ###########
 
+    def _get_experiment_logger_codex(self):
+        # [CodeX] 在关闭 WandB 或使用不带 experiment 接口的 logger 时安全回退，避免测试与绘图阶段因日志调用崩溃。
+        logger = getattr(self, "logger", None)
+        return getattr(logger, "experiment", None)
+
     def _log_plots(self, plot_dict: Dict[str, go.Figure]):
+        experiment_logger = self._get_experiment_logger_codex()
+        if experiment_logger is None:
+            # [CodeX] 无外部实验日志器时直接跳过图像上报，保留训练与评估主流程。
+            return
         plot_dict = prefix_keys(plot_dict, prefix="figure", separator=".")
-        # import wandb
-        # wandb.log(plot_dict)
         plot_dict["epoch"] = self.current_epoch
-        self.logger.experiment.log(plot_dict, step=int(plot_dict["epoch"]))
+        experiment_logger.log(plot_dict, step=int(plot_dict["epoch"]))

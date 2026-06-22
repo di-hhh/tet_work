@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from functools import partial, update_wrapper
 from typing import Any, Dict, Iterable, List, Union
 

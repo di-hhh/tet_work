@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 r"""
 Class that loads a given .txt file with an inlet position and provides according features to the mesh.
 """
 import warnings
+
 from pathlib import Path
 from typing import List, Optional
 

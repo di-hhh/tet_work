@@ -5,7 +5,6 @@ from omegaconf import DictConfig
 
 from src.tasks.domains.extended_mesh_tet1 import ExtendedMeshTet1
 from src.tasks.domains.extended_mesh_tri1 import ExtendedMeshTri1
-from src.tasks.domains.gmsh_geometries import lattice_geom
 
 
 def get_initial_mesh_from_domain_config(
@@ -101,5 +100,8 @@ def _get_lattice_mesh(
     n_holes = random_state.randint(low=domain_config.min_holes, high=domain_config.max_holes)
     hole_size = random_state.uniform(low=domain_config.min_hole_size, high=domain_config.max_hole_size)
     domain_size = domain_config.get("size", 1)
+    # [CodeX] 将 lattice 几何生成延迟到真正需要时导入，避免无关图路径在导入阶段触发 pygmsh/meshio 依赖链。
+    from src.tasks.domains.gmsh_geometries import lattice_geom
+
     geom_fn = lambda: lattice_geom(n_holes=n_holes, hole_size=hole_size, domain_size=domain_size)
     return ExtendedMeshTri1.init_from_geom_fn(geom_fn=geom_fn, max_element_volume=max_initial_element_volume)

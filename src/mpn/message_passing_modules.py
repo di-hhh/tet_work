@@ -3,8 +3,8 @@ from typing import Dict
 
 import torch
 from torch_geometric.data import Batch
-from torch_scatter import scatter_mean
 
+from src.helpers.torch_scatter_compat_codex import scatter_mean_codex
 from src.mpn.common.latent_mlp import LatentMLP
 
 
@@ -67,7 +67,7 @@ class MessagePassingNodeModule(MessagePassingMetaModule):
         # 将图中每条边的特征（edge_attr）根据边的目标节点进行聚合
         # 然后将聚合后的边特征与原始节点特征拼接，形成增强的节点表示。
         _, dest_indices = graph.edge_index
-        aggregated_edge_features = scatter_mean(graph.edge_attr, dest_indices, dim=0, dim_size=graph.x.shape[0])
+        aggregated_edge_features = scatter_mean_codex(graph.edge_attr, dest_indices, dim=0, dim_size=graph.x.shape[0])
         aggregated_features = torch.cat([graph.x, aggregated_edge_features], dim=1)
 
         # update

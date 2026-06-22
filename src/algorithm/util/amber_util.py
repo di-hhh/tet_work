@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from skfem import Basis, ElementTetP1, ElementTriP1
 
+from src.helpers.torch_scatter_compat_codex import scatter_max_codex, scatter_mean_codex, scatter_min_codex
 from src.helpers.custom_types import MeshNodeType
 from src.mesh_util.sizing_field_util import get_sizing_field
 from src.tasks.domains.mesh_wrapper import MeshWrapper
@@ -76,22 +77,14 @@ def get_vertex_probes(probed_mesh: MeshWrapper, query_points: np.ndarray) -> np.
 
 def get_scatter_reduce(interpolation_type: str) -> callable:
     if interpolation_type == "mean":
-        from torch_scatter import scatter_mean
-
-        scatter_reduce = scatter_mean
+        scatter_reduce = scatter_mean_codex
 
     elif interpolation_type == "max":
-        from torch_scatter import scatter_max
-
-        scatter_reduce = lambda *args, **kwargs: scatter_max(*args, **kwargs)[0]
+        scatter_reduce = scatter_max_codex
     elif interpolation_type == "min":
-        from torch_scatter import scatter_min
-
-        scatter_reduce = lambda *args, **kwargs: scatter_min(*args, **kwargs)[0]
+        scatter_reduce = scatter_min_codex
     elif interpolation_type == "rmse":
-        from torch_scatter import scatter_mean
-
-        scatter_reduce = lambda src, *args, **kwargs: torch.sqrt(scatter_mean(src**2, *args, **kwargs))
+        scatter_reduce = lambda src, *args, **kwargs: torch.sqrt(scatter_mean_codex(src**2, *args, **kwargs))
     else:
         raise ValueError(f"Unknown interpolation type '{interpolation_type}'")
     return scatter_reduce

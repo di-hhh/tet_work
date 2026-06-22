@@ -18,7 +18,8 @@ class ImageAmberData(MeshGenerationData):
         super().__post_init__()
         assert self.node_type == "pixel", f"Node type {self.node_type} not supported for ImageAmberData"
         assert self.sizing_field_interpolation_type == "pixel", (
-            f"Sizing field interpolation type {self.sizing_field_interpolation_type=} " f"not supported for ImageAmberData"
+            f"Sizing field interpolation type self.sizing_field_interpolation_type={self.sizing_field_interpolation_type} "
+            f"not supported for ImageAmberData"
         )
 
     @property

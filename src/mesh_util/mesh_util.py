@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 from skfem import Basis, ElementTetP1, ElementTriP1, Mesh
 

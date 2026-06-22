@@ -1,16 +1,21 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from functools import cached_property
-from typing import List, Optional, get_args
+from typing import TYPE_CHECKING, List, Optional, get_args
 
 import numpy as np
 from torch_geometric.data import Data
 
 from src.algorithm.dataloader.source_data import SourceData
 from src.helpers.custom_types import MeshNodeType, SizingFieldInterpolationType
-from src.mesh_util.transforms.mesh_to_image import MeshImage
 from src.tasks.domains.mesh_wrapper import MeshWrapper
 from src.tasks.features.feature_provider import FeatureProvider
 from src.tasks.features.fem.fem_problem import FEMProblem
+
+if TYPE_CHECKING:
+    # [CodeX] 仅在类型检查时导入 MeshImage，避免图路径在运行时被图像依赖提前阻塞。
+    from src.mesh_util.transforms.mesh_to_image import MeshImage
 
 
 @dataclass

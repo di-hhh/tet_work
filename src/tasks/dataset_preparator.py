@@ -172,6 +172,15 @@ def _get_data_init_kwargs(*, algorithm_config: DictConfig, task_config: DictConf
     if algorithm_name in ["amber", "graphmesh", "ours"]:
         # Act on graphs
         input_kwargs["weighted_imitation_config"] = algorithm_config.get("weighted_imitation")
+        input_kwargs["physics_correction_config"] = {
+            # [CodeX] 将模型侧 physics correction 的配置显式下传到图数据构造阶段，便于在统一入口追加物理节点特征。
+            "enable_physics_correction_branch": bool(algorithm_config.get("enable_physics_correction_branch", False)),
+            "physics_feature_mode": algorithm_config.get("physics_feature_mode", "normalized_importance"),
+            "inference_missing_physics_fallback": algorithm_config.get(
+                "inference_missing_physics_fallback",
+                "gate_zero",
+            ),
+        }
         input_kwargs["edge_feature_names"] = filter_included_fields(task_config.features["edge"])
         input_kwargs["initial_mesh_handling"] = algorithm_config.initial_mesh_handling
         input_kwargs["add_self_edges"] = task_config.features["add_self_edges"]

@@ -1,4 +1,6 @@
-from typing import Callable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable
 
 import torch
 from omegaconf import DictConfig
@@ -8,12 +10,15 @@ from src.algorithm.normalizer.dummy_running_normalizer import DummyRunningNormal
 from src.algorithm.normalizer.graph_running_normalizer import GraphRunningNormalizer
 from src.algorithm.normalizer.running_normalizer import RunningNormalizer
 from src.algorithm.prediction_transform.prediction_transform import PredictionTransform
-from src.mesh_util.transforms.mesh_to_image import MeshImage
+
+if TYPE_CHECKING:
+    # [CodeX] 仅在类型检查阶段引入 MeshImage，避免图网络路径在导入期依赖图像模块。
+    from src.mesh_util.transforms.mesh_to_image import MeshImage
 
 
 def get_normalizer(
     normalizer_config: DictConfig,
-    example_input: Data | MeshImage,
+    example_input: Data | "MeshImage",
     prediction_transform: PredictionTransform,
 ) -> RunningNormalizer:
     """
@@ -49,20 +54,22 @@ def get_normalizer(
                 input_clip=input_clip,
             )
 
-        elif isinstance(example_input, MeshImage):
-            # Use image-based normalizer
-            from src.algorithm.normalizer.mesh_image_running_normalizer import (
-                MeshImageRunningNormalizer,
-            )
-
-            return MeshImageRunningNormalizer(
-                example_mesh_image=example_input,
-                normalize_inputs=normalize_inputs,
-                normalize_predictions=normalize_predictions,
-                prediction_transform=prediction_transform,
-                input_clip=input_clip,
-            )
         else:
+            from src.mesh_util.transforms.mesh_to_image import MeshImage
+
+            if isinstance(example_input, MeshImage):
+                # Use image-based normalizer
+                from src.algorithm.normalizer.mesh_image_running_normalizer import (
+                    MeshImageRunningNormalizer,
+                )
+
+                return MeshImageRunningNormalizer(
+                    example_mesh_image=example_input,
+                    normalize_inputs=normalize_inputs,
+                    normalize_predictions=normalize_predictions,
+                    prediction_transform=prediction_transform,
+                    input_clip=input_clip,
+                )
             raise ValueError(f"Unsupported input type {type(example_input)}")
     else:
         # No normalization required

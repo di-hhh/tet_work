@@ -4,6 +4,7 @@ import numpy as np
 from skfem import Basis, ElementTetP1, ElementTriP1
 
 from src.algorithm.util.amber_util import get_scatter_reduce, interpolate_vertex_field
+from src.helpers.torch_scatter_compat_codex import scatter_add_codex
 from src.helpers.custom_types import SizingField, SizingFieldInterpolationType
 from src.mesh_util.mesh_util import get_midpoint_correspondences
 from src.mesh_util.sizing_field_util import get_sizing_field
@@ -137,7 +138,6 @@ def interpolate_element_sizing_field(fine_mesh, queried_mesh) -> SizingField:
 
 def interpolate_element_field(fine_mesh, queried_mesh, fine_field) -> SizingField:
     import torch
-    from torch_scatter import scatter_add
 
     from src.helpers.torch_util import detach
 
@@ -146,8 +146,13 @@ def interpolate_element_field(fine_mesh, queried_mesh, fine_field) -> SizingFiel
     fine_sizing_field = torch.tensor(fine_field, dtype=torch.float32)
 
     volumes = torch.tensor(fine_mesh.simplex_volumes)
-    summed_sizing_fields = scatter_add(src=fine_sizing_field * volumes, index=fine2coarse_correspondences, dim=0, dim_size=queried_mesh.nelements)
-    element_weights = scatter_add(src=volumes, index=fine2coarse_correspondences, dim=0, dim_size=queried_mesh.nelements)
+    summed_sizing_fields = scatter_add_codex(
+        src=fine_sizing_field * volumes,
+        index=fine2coarse_correspondences,
+        dim=0,
+        dim_size=queried_mesh.nelements,
+    )
+    element_weights = scatter_add_codex(src=volumes, index=fine2coarse_correspondences, dim=0, dim_size=queried_mesh.nelements)
     missing_elements = summed_sizing_fields == 0
     element_weights[missing_elements] = 1  # avoid division by zero.
     # This is just a placeholder value, since both summed_sizing_fields and element_weights should be zero.

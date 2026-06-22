@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 from omegaconf import OmegaConf, open_dict

@@ -4,63 +4,70 @@ from omegaconf import DictConfig
 from torch_geometric.data import Batch, Data
 
 from src.algorithm.architecture.mlp import MLP
-
+from src.algorithm.architecture.physics_correction_branch_codex import PhysicsCorrectionHeadsCodex
 from src.ours_gat.get_gat_base import get_gat_from_graph
 
 
 class EdgeAwareGat(nn.Module):
     def __init__(self, architecture_config: DictConfig, example_graph: Data):
-        """
-
-        初始化 Edge-Aware GAT架构。
-        这是一个带有边特征感知的 GAT 网络
-
-        参数：
-            example_graph：示例图，用于推断节点和边的输入特征维度
-            architecture_config：策略网络和价值网络的配置
-
-        """
-        super(EdgeAwareGat, self).__init__()
+        super().__init__()
 
         self._node_type = "node"
-        latent_dimension = architecture_config.latent_dimension # 潜在维度=64
+        latent_dimension = architecture_config.latent_dimension
         self.gat = get_gat_from_graph(
             example_graph=example_graph,
             latent_dimension=latent_dimension,
             node_name=self._node_type,
             base_config=architecture_config,
-        ) # Edge-Aware GAT Layer
+        )
 
-        # 解码器 mlp
         mlp_config = architecture_config.decoder
         self.decoder_mlp = MLP(
             in_features=latent_dimension,
             mlp_config=mlp_config,
             latent_dimension=latent_dimension,
         )
-        self.readout = nn.Linear(latent_dimension, 1) # 线性层
+        self.readout = nn.Linear(latent_dimension, 1)
+        self.physics_correction_heads = None
+        if architecture_config.get("enable_physics_correction_branch", False):
+            direct_physics_feature_dim = _get_direct_physics_feature_dim(example_graph=example_graph)
+            self.physics_correction_heads = PhysicsCorrectionHeadsCodex(
+                latent_dimension=latent_dimension,
+                mlp_config=mlp_config,
+                direct_physics_feature_dim=direct_physics_feature_dim,
+                gate_activation=architecture_config.get("gate_activation", "sigmoid"),
+                gate_max=float(architecture_config.get("gate_max", 1.0)),
+                gate_init_bias=float(architecture_config.get("gate_init_bias", -2.5)),
+                physics_readout_init_std=float(architecture_config.get("physics_readout_init_std", 1.0e-3)),
+                inference_missing_physics_fallback=architecture_config.get(
+                    "inference_missing_physics_fallback",
+                    "gate_zero",
+                ),
+            )
 
     def forward(self, observations: Batch, **kwargs) -> torch.Tensor:
-        """
-        Args:
-            observations: (Batch of) observation graph(s)
-        Returns:
-            A scalar value for each node in the batch of graphs
+        node_features, _, _ = self.gat(observations)
+        node_features = node_features.get(self._node_type)
 
-        参数：
-            observations：（批量）观测图
-        返回：
-            图批次中每个节点的标量值
-        """
-        node_features, _, _ = self.gat(observations)       # MPN（20层message passing step）处理输入的图数据 observations
-        node_features = node_features.get(self._node_type) # 特征提取，hvL（最终层输出）
+        if hasattr(observations, "mask_output"):
+            node_features = node_features[observations.mask_output]
 
-        #  `mask_output` 属性，它是一个形状为 `(num_nodes,)` 的布尔张量，其中属于学习网格的节点为 `True`，属于初始网格的节点为 `False`
-        #  该属性用于在 GNN 前向传播时屏蔽初始网格节点的输出，确保预测仅针对当前物理网格（学习网格）进行，而非初始网格。
-        if hasattr(observations, "mask_output"):                     # 如果 mask_output 存在，则使用它作为索引从完整的 node_features 张量中提取一个子集。
-            node_features = node_features[observations.mask_output]  # 仅保留属于学习网格的节点特征（topology_only模式下，初始节点特征子集中元素均为0）
+        decoded_node_features = self.decoder_mlp(node_features)
+        outputs = self.readout(decoded_node_features)
+        if self.physics_correction_heads is None:
+            return outputs
+        return self.physics_correction_heads(
+            latent_features=node_features,
+            expert_outputs=outputs,
+            observations=observations,
+            correction_warmup_factor=kwargs.get("correction_warmup_factor", 1.0),
+        )
 
-        decoded_node_features = self.decoder_mlp(node_features)   # 将MPN最终层输出的节点特征hvL输入到 self.decoder_mlp（多层感知机）进行解码
-        outputs = self.readout(decoded_node_features)             # 通过 self.readout 线性层生成最终输出，每个节点对应一个标量值
 
-        return outputs  # 返回一个 torch.Tensor，包含批次中每个节点的一个标量预测值，xj
+def _get_direct_physics_feature_dim(*, example_graph: Data) -> int:
+    if not hasattr(example_graph, "physics_feature"):
+        return 0
+    direct_physics_feature = example_graph.physics_feature
+    if direct_physics_feature.ndim <= 1:
+        return 1
+    return int(direct_physics_feature.shape[-1])

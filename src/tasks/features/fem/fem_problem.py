@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 r"""
 Wrapper of a given finite element problem.
 In particular, the FEM Problem consists of an original coarse mesh and basis, and a fine-grained mesh, basis,

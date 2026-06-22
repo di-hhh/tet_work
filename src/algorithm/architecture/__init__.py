@@ -1,9 +1,14 @@
+from __future__ import annotations
+
 import torch
+from typing import TYPE_CHECKING
 from omegaconf import DictConfig
 from torch import nn
 from torch_geometric.data import Data
 
-from src.mesh_util.transforms.mesh_to_image import MeshImage
+if TYPE_CHECKING:
+    # [CodeX] 仅在类型检查阶段导入 MeshImage，避免图网络测试因无关图像模块的运行时导入而失败。
+    from src.mesh_util.transforms.mesh_to_image import MeshImage
 
 
 def get_gnn(architecture_config: DictConfig, example_graph: Data) -> nn.Module:
@@ -23,7 +28,7 @@ def get_gnn(architecture_config: DictConfig, example_graph: Data) -> nn.Module:
         raise ValueError(f"Unknown GNN architecture {architecture_config.name}")
 
 
-def get_cnn(architecture_config: DictConfig, example_mesh_image: MeshImage) -> nn.Module:
+def get_cnn(architecture_config: DictConfig, example_mesh_image: "MeshImage") -> nn.Module:
     if architecture_config.name == "unet":
         from src.algorithm.architecture.unet import UNet
 
