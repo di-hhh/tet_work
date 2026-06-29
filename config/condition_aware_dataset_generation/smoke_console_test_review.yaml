@@ -1,0 +1,63 @@
+﻿# 生成时间：2026-04-08 23:47:18 +08:00（北京时间）
+output_root: output/condition_aware_dataset_generation/smoke_console_test_review
+random_seed: 23
+workers: 1
+overwrite: true
+log_level: INFO
+limit_geometries: 2
+
+geometry_source:
+  name: local_directory
+  source_name: console_test_smoke_review
+  root: data/console/test
+  patterns:
+    - "002.step"
+    - "005.step"
+  recursive: false
+
+preprocessing:
+  coarse_element_volume: 1.0
+  min_extent: 1.0e-6
+  sharp_dihedral_deg: 40.0
+  save_geometry_feature_metadata: true
+
+condition_sampling:
+  default_conditions_per_geometry: 1
+  pde_families:
+    - scalar_elliptic
+  budgets:
+    - 300
+  scalar_elliptic:
+    band_fraction: 0.12
+    diffusion_range: [0.5, 2.0]
+    dirichlet_value_range: [0.0, 1.0]
+    flux_probability: 0.5
+    source_amplitude_range: [-2.0, 2.0]
+
+teacher:
+  initial_mesh_element_volume: 0.9
+  reference_refinement_levels: 1
+  max_adaptive_steps: 1
+  refine_theta: 0.6
+  store_trajectory: true
+  allow_budget_shortfall: true
+  enable_geometry_fidelity_constraints: true
+  min_circle_segments: 20
+  hole_edge_length_ratio: 0.24
+  hole_radial_refinement_layers: 3
+  hole_radial_growth_rate: 1.45
+  curvature_refinement_strength: 1.5
+  feature_size_refinement_strength: 1.5
+  surface_first_meshing: true
+  max_circle_fit_error: 0.04
+  max_boundary_deviation: 0.02
+  max_normal_deviation: 22.5
+  max_geometry_retry: 2
+  geometry_pde_fusion_mode: min
+
+split:
+  seed: 23
+  ratios:
+    train: 0.5
+    val: 0.25
+    test: 0.25

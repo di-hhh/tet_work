@@ -1,0 +1,62 @@
+﻿output_root: output/condition_aware_dataset_generation/abc_example
+random_seed: 13
+workers: 1
+overwrite: false
+log_level: INFO
+
+geometry_source:
+  name: abc_dataset
+  source_name: abc_extracted
+  root: data/abc/step
+  patterns:
+    - "*.step"
+    - "*.stp"
+    - "*.7z"
+  recursive: true
+
+preprocessing:
+  coarse_element_volume: 0.05
+  min_extent: 1.0e-6
+  sharp_dihedral_deg: 40.0
+  save_geometry_feature_metadata: true
+
+condition_sampling:
+  default_conditions_per_geometry: 4
+  pde_families:
+    - scalar_elliptic
+    - linear_elasticity
+  budgets:
+    - 80
+    - 140
+
+teacher:
+  initial_mesh_element_volume: 0.08
+  reference_refinement_levels: 1
+  max_adaptive_steps: 4
+  refine_theta: 0.55
+  store_trajectory: true
+  allow_budget_shortfall: true
+  enable_geometry_fidelity_constraints: true
+  min_circle_segments: 20
+  hole_edge_length_ratio: 0.24
+  hole_radial_refinement_layers: 3
+  hole_radial_growth_rate: 1.45
+  curvature_refinement_strength: 1.5
+  feature_size_refinement_strength: 1.5
+  surface_first_meshing: true
+  max_circle_fit_error: 0.04
+  max_boundary_deviation: 0.02
+  max_normal_deviation: 22.5
+  max_geometry_retry: 2
+  geometry_pde_fusion_mode: min
+
+  adaptive_refinement_local_refine_for_complex_3d_enable: true
+  adaptive_refinement_local_refine_complexity_threshold: 1.85
+  adaptive_refinement_local_refine_reference_elements: 2500
+
+split:
+  seed: 13
+  ratios:
+    train: 0.7
+    val: 0.15
+    test: 0.15
