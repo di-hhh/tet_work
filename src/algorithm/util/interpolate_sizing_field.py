@@ -55,6 +55,12 @@ def interpolate_sizing_field(
         SizingFieldInterpolationType
     ), f"sizing_field_interpolation_type '{sizing_field_interpolation_type}' not recognized"
 
+    if _same_mesh_geometry_and_topology(queried_mesh=queried_mesh, reference_mesh=fine_mesh):
+        if sizing_field_interpolation_type == "interpolated_vertex":
+            return get_sizing_field(fine_mesh, mesh_node_type="vertex")
+        if sizing_field_interpolation_type == "element_weighted_sum":
+            return get_sizing_field(fine_mesh, mesh_node_type="element")
+
     # handle sizing fields on mesh vertices
     if "vertex" in sizing_field_interpolation_type:
         return interpolate_vertex_sizing_field(
@@ -66,6 +72,20 @@ def interpolate_sizing_field(
         return interpolate_element_sizing_field(fine_mesh, queried_mesh)
     else:
         raise ValueError(f"Interpolation type '{sizing_field_interpolation_type}' not recognized")
+
+
+def _same_mesh_geometry_and_topology(*, queried_mesh: MeshWrapper, reference_mesh: MeshWrapper) -> bool:
+    if queried_mesh.num_vertices != reference_mesh.num_vertices:
+        return False
+    if queried_mesh.num_elements != reference_mesh.num_elements:
+        return False
+    queried_positions = np.asarray(queried_mesh.vertex_positions, dtype=np.float64)
+    reference_positions = np.asarray(reference_mesh.vertex_positions, dtype=np.float64)
+    if queried_positions.shape != reference_positions.shape or not np.allclose(queried_positions, reference_positions):
+        return False
+    queried_elements = np.asarray(queried_mesh.element_indices, dtype=np.int64)
+    reference_elements = np.asarray(reference_mesh.element_indices, dtype=np.int64)
+    return queried_elements.shape == reference_elements.shape and np.array_equal(queried_elements, reference_elements)
 
 
 def interpolate_vertex_sizing_field(

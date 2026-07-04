@@ -185,9 +185,8 @@ class AmberData(MeshGenerationData):
         num_nodes = graph.x.shape[0]
         availability = torch.zeros((num_nodes, 1), dtype=torch.float32)
         physics_feature = torch.zeros((num_nodes, 1), dtype=torch.float32)
-        dataset_name = getattr(self.source_data, "dataset_name", None)
-        if dataset_name in {"console", "mold"}:
-            # [CodeX] 仅对 Console/Mold 追加 physics importance 特征，并按当前 mesh 单独查询，兼容多步推理的层级图。
+        if self._should_append_physics_feature():
+            # [CodeX] Reuse the existing importance feature slot for legacy Console/Mold and pipeline samples.
             feature_values, feature_available = self._get_physics_feature_values(
                 mesh=mesh,
                 expected_size=num_nodes,
@@ -200,6 +199,16 @@ class AmberData(MeshGenerationData):
         graph.physics_feature_available = availability
         graph.physics_feature = physics_feature
         return graph
+
+    def _should_append_physics_feature(self) -> bool:
+        dataset_name = getattr(self.source_data, "dataset_name", None)
+        if dataset_name in {"console", "mold"}:
+            return True
+        cache = getattr(self.source_data, "imitation_weight_cache", None) or {}
+        if cache.get("weight_source_mode") == "pipeline_indicator":
+            return True
+        weighted_config = self.weighted_imitation_config or {}
+        return weighted_config.get("weight_source_mode") == "pipeline_indicator"
 
     def _get_imitation_weight_bundle_for_mesh_codex(self, mesh: MeshWrapper) -> dict:
         cache = getattr(self, "_imitation_weight_bundle_cache_codex", None)

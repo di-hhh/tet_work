@@ -1,0 +1,43 @@
+defaults:
+  - default_task
+  - _self_
+
+name: pipeline_condition_aware
+dataset_preparator: pipeline_condition_aware
+
+pipeline_output_root: ???
+manifest_name: sample_manifest
+
+input_mesh_mode: initial_mesh
+target_mode: final_target_mesh
+
+split_source: sample_manifest
+required_splits: [train, val, test]
+empty_split_policy: fail
+
+allowed_statuses:
+  - success_budget_closed
+  - success_near_desired_budget
+
+budget_filter: null
+require_single_budget: true
+pde_family_filter: null
+geometry_id_filter: null
+condition_id_filter: null
+one_condition_per_geometry: false
+
+condition_spec_mode: metadata_only
+physics_weight_source: pipeline_indicator
+physics_feature_source: pipeline_indicator
+require_indicator: true
+
+mesh_cell_type: tetra
+cell_type_policy: filter_tetra_then_fail_if_empty
+
+min_initial_elements: null
+max_initial_elements: null
+min_target_elements: 1
+max_target_elements: null
+over_limit_policy: skip
+
+max_initial_element_volume: 0.0

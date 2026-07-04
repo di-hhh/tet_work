@@ -1,0 +1,25 @@
+# @package _global_
+
+defaults:
+  - _amber_weighted
+  - override /task: pipeline_condition_aware
+  - _self_
+
+exp_name: amber_pipeline_weighted
+_version: 1
+idx: ambpw100
+
+trainer:
+  max_epochs: 101
+
+algorithm:
+  enable_physics_correction_branch: False
+  mesh_metrics:
+    physics_weighted_projected_l2_error: True
+  weighted_imitation:
+    enabled: True
+    metric_use_physics_weights: True
+    datasets: [pipeline_condition_aware]
+    weight_source_mode: pipeline_indicator
+    auto_prepare: False
+    fallback_to_ones: False

@@ -132,7 +132,7 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
             }
             return self._weighted_baseline_init_report
 
-        checkpoint = torch.load(checkpoint_path, map_location="cpu")
+        checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
         source_state_dict = checkpoint.get("state_dict", checkpoint)
         current_state_dict = self.state_dict()
         loadable_state_dict = {}

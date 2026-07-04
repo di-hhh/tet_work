@@ -159,7 +159,7 @@ def _resolve_max_epochs_for_stage2(config: DictConfig) -> int:
     if stage2_epochs <= 0:
         return max_epochs
 
-    checkpoint = torch.load(ckpt_path, map_location="cpu")
+    checkpoint = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     checkpoint_epoch = int(checkpoint.get("epoch", -1))
     return max(max_epochs, checkpoint_epoch + 1 + stage2_epochs)
 

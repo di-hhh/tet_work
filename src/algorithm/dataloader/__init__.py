@@ -14,7 +14,14 @@ def get_datasets(algorithm_config: DictConfig, task_config: DictConfig) -> Dict[
 
     """
     task_name = task_config.get("name")
-    if task_name in ["poisson", "laplace"]:
+    dataset_preparator = task_config.get("dataset_preparator")
+    if dataset_preparator == "pipeline_condition_aware":
+        from src.tasks.pipeline_condition_aware_dataset_preparator import (
+            PipelineConditionAwareDatasetPreparator,
+        )
+
+        data_preparator_cls = PipelineConditionAwareDatasetPreparator
+    elif task_name in ["poisson", "laplace"]:
         from src.tasks.features.fem.elliptic_problem.elliptic_data_generator import (
             EllipticDataGenerator,
         )
