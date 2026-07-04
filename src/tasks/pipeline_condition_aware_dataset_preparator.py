@@ -7,7 +7,7 @@ from typing import Any, Iterable, Tuple
 
 import meshio
 import numpy as np
-from omegaconf import DictConfig, ListConfig
+from omegaconf import DictConfig, ListConfig, OmegaConf
 from skfem import MeshTet, MeshTri
 from skfem.io import from_meshio
 
@@ -20,6 +20,8 @@ from src.tasks.domains.mesh_wrapper import MeshWrapper
 
 
 STEP_SUFFIXES = {".step", ".stp", ".brep", ".iges", ".igs"}
+PIPELINE_PHYSICS_SOURCES = {"pipeline_indicator", "stage_field", "stage_field_fusion"}
+STAGE_FIELD_SOURCES = {"stage_field", "stage_field_fusion"}
 
 
 class PipelineConditionAwareDatasetPreparator(DatasetPreparator):
@@ -50,6 +52,9 @@ class PipelineConditionAwareDatasetPreparator(DatasetPreparator):
         self.require_indicator = bool(task_config.require_indicator)
         self.physics_weight_source = str(task_config.physics_weight_source)
         self.physics_feature_source = str(task_config.physics_feature_source)
+        self.stage_field_config = _plain_container(task_config.get("stage_field", {}))
+        self.quality_filter_config = _plain_container(task_config.get("quality_filter", {}))
+        self.stage_field_fail_on_missing = bool(self.stage_field_config.get("fail_on_missing", True))
         self.condition_spec_mode = str(task_config.condition_spec_mode)
         self.required_splits = list(_as_list(task_config.required_splits))
 
@@ -57,13 +62,14 @@ class PipelineConditionAwareDatasetPreparator(DatasetPreparator):
             raise ValueError(f"Unsupported pipeline target_mode '{self.target_mode}'.")
         if self.input_mesh_mode not in {"initial_mesh", "coarse_mesh"}:
             raise ValueError(f"Unsupported pipeline input_mesh_mode '{self.input_mesh_mode}'.")
-        if self.physics_weight_source != "pipeline_indicator":
+        if self.physics_weight_source not in PIPELINE_PHYSICS_SOURCES:
             raise ValueError(f"Unsupported physics_weight_source '{self.physics_weight_source}'.")
-        if self.physics_feature_source != "pipeline_indicator":
+        if self.physics_feature_source not in PIPELINE_PHYSICS_SOURCES:
             raise ValueError(f"Unsupported physics_feature_source '{self.physics_feature_source}'.")
         if self.condition_spec_mode != "metadata_only":
             raise ValueError("The current adapter stores condition_spec as metadata only.")
 
+        self._quality_verdict_by_sample_id = self._read_quality_verdict_lookup()
         self._records_by_split = self._load_records_by_split()
 
     def get_dataset(self, dataset_mode: str):
@@ -84,6 +90,7 @@ class PipelineConditionAwareDatasetPreparator(DatasetPreparator):
         target_mesh_path = self._resolve_path(record["final_target_mesh_path"])
         source_path = self._resolve_path(record["geometry_artifact_paths"]["source_path"])
         indicator_path = self._resolve_path(record.get("optional_error_indicator_path"))
+        stage_field_path = self._resolve_path(record.get("optional_stage_field_path"))
 
         geometry_fn = _geometry_fn_from_path(source_path)
         initial_mesh = self._load_mesh(initial_mesh_path)
@@ -99,13 +106,17 @@ class PipelineConditionAwareDatasetPreparator(DatasetPreparator):
             data_point_path=str(target_mesh_path),
             imitation_weight_cache={
                 "weight_source_mode": self.physics_weight_source,
+                "physics_feature_source": self.physics_feature_source,
                 "indicator_path": str(indicator_path) if indicator_path is not None else None,
+                "stage_field_path": str(stage_field_path) if stage_field_path is not None else None,
+                "stage_field_config": self.stage_field_config,
                 "sample_id": record.get("sample_id"),
                 "geometry_id": record.get("geometry_id"),
                 "condition_id": record.get("condition_id"),
                 "budget": record.get("budget"),
                 "pde_family": record.get("pde_family"),
                 "condition_spec": record.get("condition_spec"),
+                "quality_verdict": self._quality_verdict_by_sample_id.get(str(record.get("sample_id"))),
             },
         )
         source_data.expert_mesh.source_data = source_data
@@ -154,6 +165,39 @@ class PipelineConditionAwareDatasetPreparator(DatasetPreparator):
                     records.append(json.loads(line))
         return records
 
+    def _read_quality_verdict_lookup(self) -> dict[str, str]:
+        config = self.quality_filter_config
+        if not bool(config.get("enabled", False)):
+            return {}
+
+        report_relative_path = str(config.get("report_relative_path", "reports/smoke_report.json"))
+        report_path = self._resolve_path(report_relative_path)
+        if report_path is None or not report_path.exists():
+            policy = str(config.get("missing_report_policy", "fail"))
+            if policy == "ignore":
+                return {}
+            raise FileNotFoundError(f"Pipeline quality report not found: {report_path}")
+
+        payload = json.loads(report_path.read_text(encoding="utf-8"))
+        verdict_by_sample_id: dict[str, str] = {}
+        for geometry_report in _iter_quality_geometry_reports(payload):
+            verdict = geometry_report.get("verdict")
+            if not verdict:
+                continue
+            for sample_metrics in geometry_report.get("sample_metrics", []):
+                sample_id = sample_metrics.get("sample_id")
+                if not sample_id:
+                    continue
+                sample_id = str(sample_id)
+                existing = verdict_by_sample_id.get(sample_id)
+                if existing is not None and existing != verdict:
+                    raise ValueError(
+                        f"Pipeline quality report assigns sample '{sample_id}' conflicting verdicts: "
+                        f"{existing} and {verdict}."
+                    )
+                verdict_by_sample_id[sample_id] = str(verdict)
+        return verdict_by_sample_id
+
     def _read_split_lookup(self) -> dict[str, str]:
         split_path = self.pipeline_output_root / "manifests" / "split_manifest.json"
         if not split_path.exists():
@@ -183,7 +227,35 @@ class PipelineConditionAwareDatasetPreparator(DatasetPreparator):
             return False
         if self.require_indicator and not record.get("optional_error_indicator_path"):
             return False
+        if not self._record_passes_quality_filter(record):
+            return False
+        if self._record_requires_stage_field() and not record.get("optional_stage_field_path"):
+            if self.stage_field_fail_on_missing:
+                raise ValueError(
+                    f"Pipeline sample '{record.get('sample_id')}' requested stage field source but has no "
+                    "optional_stage_field_path."
+                )
+            return False
         return True
+
+    def _record_passes_quality_filter(self, record: dict[str, Any]) -> bool:
+        config = self.quality_filter_config
+        if not bool(config.get("enabled", False)):
+            return True
+        sample_id = str(record.get("sample_id"))
+        verdict = self._quality_verdict_by_sample_id.get(sample_id)
+        if verdict is None:
+            policy = str(config.get("missing_sample_policy", "fail"))
+            if policy == "allow":
+                return True
+            if policy == "skip":
+                return False
+            raise ValueError(f"Pipeline quality report does not contain sample '{sample_id}'.")
+        allowed_verdicts = set(_as_list(config.get("allowed_verdicts", [])))
+        return not allowed_verdicts or verdict in allowed_verdicts
+
+    def _record_requires_stage_field(self) -> bool:
+        return self.physics_weight_source in STAGE_FIELD_SOURCES or self.physics_feature_source in STAGE_FIELD_SOURCES
 
     def _record_passes_mesh_filters(self, record: dict[str, Any]) -> bool:
         try:
@@ -297,3 +369,29 @@ def _status_priority(status: str) -> int:
         "success_partial_under_budget": 2,
     }
     return priority.get(status, 99)
+
+
+def _plain_container(value: Any) -> Any:
+    if isinstance(value, (DictConfig, ListConfig)):
+        return OmegaConf.to_container(value, resolve=True)
+    return value
+
+
+def _iter_quality_geometry_reports(payload: dict[str, Any]) -> Iterable[dict[str, Any]]:
+    seen_report_ids: set[int] = set()
+    candidate_lists = [
+        payload.get("geometry_reports", []),
+        payload.get("scalar_smoke", {}).get("geometry_reports", []),
+        payload.get("elasticity_smoke", {}).get("geometry_reports", []),
+    ]
+    for geometry_reports in candidate_lists:
+        if not isinstance(geometry_reports, list):
+            continue
+        for geometry_report in geometry_reports:
+            if not isinstance(geometry_report, dict):
+                continue
+            report_id = id(geometry_report)
+            if report_id in seen_report_ids:
+                continue
+            seen_report_ids.add(report_id)
+            yield geometry_report

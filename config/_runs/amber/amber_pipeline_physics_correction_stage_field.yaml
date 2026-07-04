@@ -5,9 +5,9 @@ defaults:
   - override /task: pipeline_condition_aware
   - _self_
 
-exp_name: amber_pipeline_physics_correction_codex
+exp_name: amber_pipeline_physics_correction_stage_field
 _version: 1
-idx: ambppc100
+idx: ambppcsf100
 
 trainer:
   max_epochs: 101
@@ -15,7 +15,14 @@ trainer:
 task:
   pipeline_output_root: D:/SITP/tet_work/dataest-pipeline/output/condition_aware_dataset_generation/default_fix_budget_run
   physics_weight_source: pipeline_indicator
-  physics_feature_source: pipeline_indicator
+  physics_feature_source: stage_field_fusion
+  stage_field:
+    mode: single_field
+    single_field:
+      name: s_pde_raw
+      direction: high_is_important
+      transform: log1p
+      normalize: robust_minmax
 
 algorithm:
   enable_physics_correction_branch: True

@@ -31,6 +31,39 @@ physics_weight_source: pipeline_indicator
 physics_feature_source: pipeline_indicator
 require_indicator: true
 
+quality_filter:
+  enabled: true
+  report_relative_path: reports/smoke_report.json
+  allowed_verdicts:
+    - PASS_STRONG
+    - PASS_WEAK
+  missing_report_policy: fail
+  missing_sample_policy: fail
+
+stage_field:
+  mode: single_field
+  projection: idw
+  idw_k: 4
+  idw_epsilon: 1.0e-12
+  fail_on_missing: true
+  normalize: robust_minmax
+  robust_lower_quantile: 0.05
+  robust_upper_quantile: 0.95
+  single_field:
+    name: s_pde_raw
+    direction: high_is_important
+    transform: log1p
+    normalize: robust_minmax
+  fusion:
+    combine: weighted_mean
+    renormalize: true
+    fields:
+      - name: s_pde_raw
+        direction: high_is_important
+        transform: log1p
+        normalize: robust_minmax
+        weight: 1.0
+
 mesh_cell_type: tetra
 cell_type_policy: filter_tetra_then_fail_if_empty
 

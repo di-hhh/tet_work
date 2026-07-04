@@ -12,6 +12,11 @@ idx: ambpw100
 trainer:
   max_epochs: 101
 
+task:
+  pipeline_output_root: D:/SITP/tet_work/dataest-pipeline/output/condition_aware_dataset_generation/default_fix_budget_run
+  physics_weight_source: pipeline_indicator
+  physics_feature_source: pipeline_indicator
+
 algorithm:
   enable_physics_correction_branch: False
   mesh_metrics:

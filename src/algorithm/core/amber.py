@@ -76,6 +76,18 @@ class Amber(MeshGenerationAlgorithm):
                 "batch_components": batch.num_edges + batch.num_nodes,
                 "batch_graphs": batch.ptr.shape[0] - 1,
             }
+            if hasattr(batch, "physics_feature"):
+                physics_feature = batch.physics_feature.float()
+                train_scalars["physics_feature_mean"] = float(torch.mean(physics_feature).item())
+                train_scalars["physics_feature_std"] = float(torch.std(physics_feature, unbiased=False).item())
+            if hasattr(batch, "physics_feature_stage_field_loaded"):
+                train_scalars["physics_feature_stage_field_loaded"] = float(
+                    batch.physics_feature_stage_field_loaded.float().mean().item()
+                )
+            if hasattr(batch, "physics_feature_pipeline_indicator_loaded"):
+                train_scalars["physics_feature_pipeline_indicator_loaded"] = float(
+                    batch.physics_feature_pipeline_indicator_loaded.float().mean().item()
+                )
 
         self._current_training_step += 1
         return loss, train_scalars

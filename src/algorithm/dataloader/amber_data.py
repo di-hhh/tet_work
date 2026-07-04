@@ -149,6 +149,16 @@ class AmberData(MeshGenerationData):
                     [graph.physics_feature, initial_graph.physics_feature],
                     dim=0,
                 )
+            for attr_name in [
+                "physics_feature_stage_field_loaded",
+                "physics_feature_pipeline_indicator_loaded",
+            ]:
+                if hasattr(graph, attr_name) and hasattr(initial_graph, attr_name):
+                    setattr(
+                        graph,
+                        attr_name,
+                        torch.cat([getattr(graph, attr_name), getattr(initial_graph, attr_name)], dim=0),
+                    )
 
             if self.initial_mesh_handling == "topology_only":
                 initial_graph.x = torch.zeros_like(initial_graph.x)
@@ -185,6 +195,7 @@ class AmberData(MeshGenerationData):
         num_nodes = graph.x.shape[0]
         availability = torch.zeros((num_nodes, 1), dtype=torch.float32)
         physics_feature = torch.zeros((num_nodes, 1), dtype=torch.float32)
+        feature_available = False
         if self._should_append_physics_feature():
             # [CodeX] Reuse the existing importance feature slot for legacy Console/Mold and pipeline samples.
             feature_values, feature_available = self._get_physics_feature_values(
@@ -198,17 +209,33 @@ class AmberData(MeshGenerationData):
         # [CodeX] 记录每个节点的物理特征可用性，供 gate_zero / disable_branch 在缺特征时安全回退。
         graph.physics_feature_available = availability
         graph.physics_feature = physics_feature
+        feature_source = self._get_physics_feature_source()
+        graph.physics_feature_stage_field_loaded = torch.full(
+            (num_nodes, 1),
+            float(feature_available and feature_source in {"stage_field", "stage_field_fusion"}),
+            dtype=torch.float32,
+        )
+        graph.physics_feature_pipeline_indicator_loaded = torch.full(
+            (num_nodes, 1),
+            float(feature_available and feature_source == "pipeline_indicator"),
+            dtype=torch.float32,
+        )
         return graph
 
     def _should_append_physics_feature(self) -> bool:
         dataset_name = getattr(self.source_data, "dataset_name", None)
         if dataset_name in {"console", "mold"}:
             return True
+        return self._get_physics_feature_source() in {"pipeline_indicator", "stage_field", "stage_field_fusion"}
+
+    def _get_physics_feature_source(self) -> str:
         cache = getattr(self.source_data, "imitation_weight_cache", None) or {}
-        if cache.get("weight_source_mode") == "pipeline_indicator":
-            return True
+        if cache.get("physics_feature_source"):
+            return str(cache.get("physics_feature_source"))
+        if cache.get("weight_source_mode"):
+            return str(cache.get("weight_source_mode"))
         weighted_config = self.weighted_imitation_config or {}
-        return weighted_config.get("weight_source_mode") == "pipeline_indicator"
+        return str(weighted_config.get("weight_source_mode", "console_mold_reference"))
 
     def _get_imitation_weight_bundle_for_mesh_codex(self, mesh: MeshWrapper) -> dict:
         cache = getattr(self, "_imitation_weight_bundle_cache_codex", None)
@@ -231,6 +258,34 @@ class AmberData(MeshGenerationData):
             sizing_field_interpolation_type=self.sizing_field_interpolation_type,
             node_type=self.node_type,
             weighted_imitation_config=self.weighted_imitation_config,
+        )
+
+    def _get_physics_feature_bundle_for_mesh_codex(self, mesh: MeshWrapper) -> dict:
+        cache = getattr(self, "_physics_feature_bundle_cache_codex", None)
+        if cache is None:
+            cache = {}
+            self._physics_feature_bundle_cache_codex = cache
+
+        feature_source = self._get_physics_feature_source()
+        cache_key = (id(mesh), feature_source)
+        if cache_key not in cache:
+            cache[cache_key] = self._get_uncached_physics_feature_bundle_for_mesh_codex(
+                mesh=mesh,
+                feature_source=feature_source,
+            )
+        return cache[cache_key]
+
+    def _get_uncached_physics_feature_bundle_for_mesh_codex(self, mesh: MeshWrapper, feature_source: str) -> dict:
+        from src.algorithm.util.fem_imitation_weights import get_imitation_weight_bundle
+
+        feature_config = dict(self.weighted_imitation_config or {})
+        feature_config["weight_source_mode"] = feature_source
+        return get_imitation_weight_bundle(
+            queried_mesh=mesh,
+            source_data=self.source_data,
+            sizing_field_interpolation_type=self.sizing_field_interpolation_type,
+            node_type=self.node_type,
+            weighted_imitation_config=feature_config,
         )
 
     def _select_physics_feature_values_from_bundle_codex(self, *, bundle: dict, feature_mode: str) -> tuple[np.ndarray, bool]:
@@ -259,14 +314,17 @@ class AmberData(MeshGenerationData):
         expected_size: int,
     ) -> tuple[np.ndarray | None, bool]:
         try:
-            reprojected_bundle = self._get_uncached_imitation_weight_bundle_for_mesh_codex(mesh=mesh)
+            reprojected_bundle = self._get_uncached_physics_feature_bundle_for_mesh_codex(
+                mesh=mesh,
+                feature_source=self._get_physics_feature_source(),
+            )
         except Exception:
             return None, False
 
-        cache = getattr(self, "_imitation_weight_bundle_cache_codex", None)
+        cache = getattr(self, "_physics_feature_bundle_cache_codex", None)
         if cache is not None:
             # [CodeX] 若重投影成功，则刷新当前 mesh 的本地 bundle 缓存，避免同一轮重复触发 mismatch 补救。
-            cache[id(mesh)] = reprojected_bundle
+            cache[(id(mesh), self._get_physics_feature_source())] = reprojected_bundle
 
         reprojected_values, reprojected_available = self._select_physics_feature_values_from_bundle_codex(
             bundle=reprojected_bundle,
@@ -281,7 +339,10 @@ class AmberData(MeshGenerationData):
     def _get_physics_feature_values(self, mesh: MeshWrapper, expected_size: int | None = None) -> tuple[np.ndarray, bool]:
         config = self.physics_correction_config or {}
         feature_mode = str(config.get("physics_feature_mode", "normalized_importance"))
-        bundle = self._get_imitation_weight_bundle_for_mesh_codex(mesh=mesh)
+        if hasattr(self, "_get_physics_feature_bundle_for_mesh_codex"):
+            bundle = self._get_physics_feature_bundle_for_mesh_codex(mesh=mesh)
+        else:
+            bundle = self._get_imitation_weight_bundle_for_mesh_codex(mesh=mesh)
         feature_values, feature_available = self._select_physics_feature_values_from_bundle_codex(
             bundle=bundle,
             feature_mode=feature_mode,
