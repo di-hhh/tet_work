@@ -13,7 +13,12 @@ trainer:
   max_epochs: 101
 
 task:
-  pipeline_output_root: D:/SITP/tet_work/dataest-pipeline/output/condition_aware_dataset_generation/default_fix_budget_run
+  pipeline_output_root: ../dataest-pipeline/output/condition_aware_dataset_generation/default_fix_budget_run
+  geometry_source_root: ../dataest-pipeline/data/mold
+  path_relocation:
+    enabled: true
+    old_root: D:/SITP/tet_work/dataest-pipeline
+    new_root: ../dataest-pipeline
   physics_weight_source: pipeline_indicator
   physics_feature_source: pipeline_indicator
 
@@ -28,3 +33,11 @@ algorithm:
     weight_source_mode: pipeline_indicator
     auto_prepare: False
     fallback_to_ones: False
+
+experiment_protocol:
+  method_id: M1
+  formal_run: true
+  require_seed_matched_m1_checkpoint: false
+  evaluation_checkpoint: last.ckpt
+  training_budget_epochs: 101
+  require_clean_repositories: true

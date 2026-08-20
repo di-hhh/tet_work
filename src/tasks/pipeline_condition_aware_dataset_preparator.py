@@ -13,6 +13,7 @@ from skfem.io import from_meshio
 
 from src.algorithm.dataloader.source_data import SourceData
 from src.tasks.dataset_preparator import DatasetPreparator
+from src.tasks.pipeline_dataset_audit import DatasetPathResolver, audit_pipeline_dataset
 from src.tasks.domains.extended_mesh_tet1 import ExtendedMeshTet1
 from src.tasks.domains.extended_mesh_tri1 import ExtendedMeshTri1
 from src.tasks.domains.gmsh_util import geom_fn_from_file
@@ -29,7 +30,9 @@ class PipelineConditionAwareDatasetPreparator(DatasetPreparator):
 
     def __init__(self, algorithm_config: DictConfig, task_config: DictConfig):
         super().__init__(algorithm_config=algorithm_config, task_config=task_config)
-        self.pipeline_output_root = Path(str(task_config.pipeline_output_root)).resolve()
+        self.path_resolver = DatasetPathResolver(_plain_container(task_config))
+        self.pipeline_output_root = self.path_resolver.pipeline_output_root
+        self.geometry_source_root = self.path_resolver.geometry_source_root
         self.manifest_name = str(task_config.manifest_name)
         self.split_source = str(task_config.split_source)
         self.empty_split_policy = str(task_config.empty_split_policy)
@@ -41,6 +44,7 @@ class PipelineConditionAwareDatasetPreparator(DatasetPreparator):
         self.pde_family_filter = _optional_set(task_config.pde_family_filter)
         self.geometry_id_filter = _optional_set(task_config.geometry_id_filter)
         self.condition_id_filter = _optional_set(task_config.condition_id_filter)
+        self.sample_id_filter = _optional_set(task_config.get("sample_id_filter"))
         self.one_condition_per_geometry = bool(task_config.one_condition_per_geometry)
         self.mesh_cell_type = str(task_config.mesh_cell_type)
         self.cell_type_policy = str(task_config.cell_type_policy)
@@ -82,15 +86,18 @@ class PipelineConditionAwareDatasetPreparator(DatasetPreparator):
             self.prepare_data_point(data_idx=data_idx, dataset_mode=dataset_mode)
             for data_idx in range(len(records))
         ]
-        return self.dataset_class(algorithm_config=self.algorithm_config, persistent_data=data_points)
+        dataset = self.dataset_class(algorithm_config=self.algorithm_config, persistent_data=data_points)
+        dataset.pipeline_audit_result = self.audit_result
+        return dataset
 
     def _prepare_source_and_mesh(self, data_idx: int, dataset_mode: str) -> Tuple[SourceData, MeshWrapper]:
         record = self._records_by_split[dataset_mode][data_idx]
-        initial_mesh_path = self._input_mesh_path(record)
-        target_mesh_path = self._resolve_path(record["final_target_mesh_path"])
-        source_path = self._resolve_path(record["geometry_artifact_paths"]["source_path"])
-        indicator_path = self._resolve_path(record.get("optional_error_indicator_path"))
-        stage_field_path = self._resolve_path(record.get("optional_stage_field_path"))
+        resolved_paths = record["_resolved_paths"]
+        initial_mesh_path = Path(resolved_paths["input_mesh_path"])
+        target_mesh_path = Path(resolved_paths["target_mesh_path"])
+        source_path = Path(resolved_paths["source_path"])
+        indicator_path = _optional_path(resolved_paths.get("indicator_path"))
+        stage_field_path = _optional_path(resolved_paths.get("stage_field_path"))
 
         geometry_fn = _geometry_fn_from_path(source_path)
         initial_mesh = self._load_mesh(initial_mesh_path)
@@ -117,6 +124,9 @@ class PipelineConditionAwareDatasetPreparator(DatasetPreparator):
                 "pde_family": record.get("pde_family"),
                 "condition_spec": record.get("condition_spec"),
                 "quality_verdict": self._quality_verdict_by_sample_id.get(str(record.get("sample_id"))),
+                "reference_solution_path": resolved_paths.get("optional_reference_solution_path"),
+                "evaluation_reference_path": resolved_paths.get("optional_evaluation_reference_path"),
+                "preprocess_record_path": resolved_paths.get("preprocess_record_path"),
             },
         )
         source_data.expert_mesh.source_data = source_data
@@ -124,35 +134,9 @@ class PipelineConditionAwareDatasetPreparator(DatasetPreparator):
         return source_data, source_data.initial_mesh
 
     def _load_records_by_split(self) -> dict[str, list[dict[str, Any]]]:
-        records = self._read_manifest()
-        split_lookup = self._read_split_lookup() if self.split_source == "split_manifest" else None
-        filtered: list[dict[str, Any]] = []
-        for record in records:
-            split = self._record_split(record, split_lookup)
-            if split not in {"train", "val", "test"}:
-                continue
-            if not self._record_passes_metadata_filters(record):
-                continue
-            record = dict(record)
-            record["split"] = split
-            if not self._record_passes_mesh_filters(record):
-                continue
-            filtered.append(record)
-        if self.one_condition_per_geometry:
-            filtered = self._keep_one_condition_per_geometry(filtered)
-        if self.require_single_budget:
-            budgets = {int(record.get("budget")) for record in filtered}
-            if len(budgets) > 1:
-                raise ValueError(
-                    f"Pipeline adapter requires a single budget, but found {sorted(budgets)}. "
-                    "Set task.budget_filter or disable task.require_single_budget."
-                )
-        records_by_split: dict[str, list[dict[str, Any]]] = defaultdict(list)
-        for record in filtered:
-            records_by_split[str(record["split"])].append(record)
-        for split_records in records_by_split.values():
-            split_records.sort(key=lambda rec: str(rec.get("sample_id", "")))
-        return dict(records_by_split)
+        self.audit_result = audit_pipeline_dataset(self.task_config)
+        self.audit_result.raise_for_errors()
+        return self.audit_result.records_by_split
 
     def _read_manifest(self) -> list[dict[str, Any]]:
         manifest_path = self.pipeline_output_root / "manifests" / f"{self.manifest_name}.jsonl"
@@ -223,6 +207,8 @@ class PipelineConditionAwareDatasetPreparator(DatasetPreparator):
             return False
         if self.condition_id_filter is not None and str(record.get("condition_id")) not in self.condition_id_filter:
             return False
+        if self.sample_id_filter is not None and str(record.get("sample_id")) not in self.sample_id_filter:
+            return False
         if not record.get("final_target_mesh_path"):
             return False
         if self.require_indicator and not record.get("optional_error_indicator_path"):
@@ -258,13 +244,8 @@ class PipelineConditionAwareDatasetPreparator(DatasetPreparator):
         return self.physics_weight_source in STAGE_FIELD_SOURCES or self.physics_feature_source in STAGE_FIELD_SOURCES
 
     def _record_passes_mesh_filters(self, record: dict[str, Any]) -> bool:
-        try:
-            initial_counts = self._mesh_counts(self._input_mesh_path(record))
-            target_counts = self._mesh_counts(self._resolve_path(record["final_target_mesh_path"]))
-        except Exception:
-            if self.over_limit_policy == "fail":
-                raise
-            return False
+        initial_counts = self._mesh_counts(self._input_mesh_path(record))
+        target_counts = self._mesh_counts(self._resolve_path(record["final_target_mesh_path"]))
         return self._check_count(initial_counts, self.min_initial_elements, self.max_initial_elements, "initial") and self._check_count(
             target_counts,
             self.min_target_elements,
@@ -290,17 +271,15 @@ class PipelineConditionAwareDatasetPreparator(DatasetPreparator):
         return list(best_by_geometry.values())
 
     def _input_mesh_path(self, record: dict[str, Any]) -> Path:
+        resolved = record.get("_resolved_paths", {})
+        if resolved.get("input_mesh_path"):
+            return Path(resolved["input_mesh_path"])
         if self.input_mesh_mode == "initial_mesh":
             return self._resolve_path(record["initial_mesh_path"])
         return self._resolve_path(record["geometry_artifact_paths"]["coarse_mesh_path"])
 
-    def _resolve_path(self, path_value: str | None) -> Path | None:
-        if path_value in {None, ""}:
-            return None
-        path = Path(str(path_value))
-        if path.is_absolute():
-            return path
-        return (self.pipeline_output_root / path).resolve()
+    def _resolve_path(self, path_value: str | None, *, anchor: str = "pipeline_output") -> Path | None:
+        return self.path_resolver.resolve(path_value, anchor=anchor, must_exist=False)
 
     def _mesh_counts(self, mesh_path: Path | None) -> int:
         if mesh_path is None:
@@ -375,6 +354,10 @@ def _plain_container(value: Any) -> Any:
     if isinstance(value, (DictConfig, ListConfig)):
         return OmegaConf.to_container(value, resolve=True)
     return value
+
+
+def _optional_path(value: str | None) -> Path | None:
+    return None if value in {None, ""} else Path(str(value))
 
 
 def _iter_quality_geometry_reports(payload: dict[str, Any]) -> Iterable[dict[str, Any]]:

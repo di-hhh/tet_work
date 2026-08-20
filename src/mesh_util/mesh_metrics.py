@@ -91,7 +91,35 @@ class MeshMetrics:
         if self.metric_config.element_delta:
             computed_metrics["element_delta"] = self.evaluated_mesh.num_elements - self.reference_mesh.num_elements
 
+        if self.metric_config.get("tetra_quality", False) and self.evaluated_mesh.mesh.dim() == 3:
+            computed_metrics |= self.tetra_quality_metrics()
+
         return computed_metrics
+
+    def tetra_quality_metrics(self) -> MetricDict:
+        points = np.asarray(self.evaluated_mesh.vertex_positions, dtype=np.float64)
+        tetra = np.asarray(self.evaluated_mesh.element_indices, dtype=np.int64)
+        vertices = points[tetra]
+        signed_six_volume = np.einsum(
+            "ij,ij->i",
+            np.cross(vertices[:, 1] - vertices[:, 0], vertices[:, 2] - vertices[:, 0]),
+            vertices[:, 3] - vertices[:, 0],
+        )
+        volumes = np.abs(signed_six_volume) / 6.0
+        edge_pairs = ((0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3))
+        squared_edge_sum = sum(
+            np.sum((vertices[:, left] - vertices[:, right]) ** 2, axis=1)
+            for left, right in edge_pairs
+        )
+        valid = (volumes > 1.0e-15) & np.isfinite(volumes) & (squared_edge_sum > 0.0)
+        quality = np.zeros(len(tetra), dtype=np.float64)
+        quality[valid] = 12.0 * np.power(3.0 * volumes[valid], 2.0 / 3.0) / squared_edge_sum[valid]
+        return {
+            "tetra_quality_mean": float(np.mean(quality)) if quality.size else float("nan"),
+            "tetra_quality_min": float(np.min(quality)) if quality.size else float("nan"),
+            "tetra_quality_p05": float(np.quantile(quality, 0.05)) if quality.size else float("nan"),
+            "tetra_degenerate_fraction": float(np.mean(~valid)) if quality.size else float("nan"),
+        }
 
     def get_fem_metrics(self) -> MetricDict:
         """

@@ -29,6 +29,7 @@ class InitializationReturn:
     """
 
     dataloaders: Dict[str, DataLoader]
+    datasets: Dict[str, object]
     algorithm: LightningModule
     wandb_logger: bool | CustomWandBLogger
 
@@ -67,4 +68,4 @@ def initialize(*, config: DictConfig) -> InitializationReturn:
         wandb_logger = get_wandb_logger(config=config)
     else:
         wandb_logger = False
-    return InitializationReturn(dataloaders, algorithm, wandb_logger)
+    return InitializationReturn(dataloaders, datasets, algorithm, wandb_logger)

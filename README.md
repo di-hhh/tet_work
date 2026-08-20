@@ -246,6 +246,69 @@ python main.py +_runs/amber=amber_console_weighted \
 
 For a dedicated explanation of the available weighting modes, see [weighted_imitation_weight_modes_codex.md](./weighted_imitation_weight_modes_codex.md).
 
+## Condition-aware pipeline experiment protocol (M0-M4)
+
+All relative roots below are anchored to the repository layout, so the whole
+`tet_work/` directory may be copied without changing commands.  Build the
+versioned one-level test references first, then audit and freeze the exact
+retained view:
+
+```powershell
+cd ../dataest-pipeline
+python evaluate_pipeline_pde.py build-references `
+  --root output/condition_aware_dataset_generation/default_fix_budget_run `
+  --geometry-source-root data/mold
+
+cd ../amber
+python audit_pipeline_dataset.py `
+  --root ../dataest-pipeline/output/condition_aware_dataset_generation/default_fix_budget_run `
+  --geometry-source-root ../dataest-pipeline/data/mold `
+  --config config/task/pipeline_condition_aware.yaml `
+  --json-output ../dataest-pipeline/output/condition_aware_dataset_generation/default_fix_budget_run/reports/dataset_audit.json `
+  --csv-output ../dataest-pipeline/output/condition_aware_dataset_generation/default_fix_budget_run/reports/retained_samples.csv `
+  --freeze-fingerprint ../dataest-pipeline/output/condition_aware_dataset_generation/default_fix_budget_run/manifests/dataset_fingerprint.json
+
+# Freeze once, then perform one independent full-content verification.
+python audit_pipeline_dataset.py `
+  --root ../dataest-pipeline/output/condition_aware_dataset_generation/default_fix_budget_run `
+  --geometry-source-root ../dataest-pipeline/data/mold `
+  --config config/task/pipeline_condition_aware.yaml `
+  --verify-fingerprint ../dataest-pipeline/output/condition_aware_dataset_generation/default_fix_budget_run/manifests/dataset_fingerprint.json
+```
+
+M0 and M1 have no initialization dependency:
+
+```powershell
+python main.py +_runs/amber=amber_pipeline_baseline seed=0
+python main.py +_runs/amber=amber_pipeline_weighted seed=0
+```
+
+M2/M3/M4 automatically resolve the unique `last.ckpt` from the M1 run with the
+same seed and frozen dataset fingerprint.  The
+preflight rejects another method, another seed, a non-`last.ckpt` filename, a
+different epoch budget, dirty repositories, or an unfrozen dataset:
+
+```powershell
+python main.py +_runs/amber=amber_pipeline_feature_only seed=0
+python main.py +_runs/amber=amber_pipeline_physics_correction_stage_field seed=0
+python main.py +_runs/amber=amber_pipeline_physics_correction_codex seed=0
+```
+
+Each formal run writes local checkpoints, resolved/config/code/dataset version
+records, train/val CSVs, prediction VTKs, a prediction manifest, per-sample
+metrics, and aggregate JSON.  Run the expensive PDE comparison offline:
+
+```powershell
+cd ../dataest-pipeline
+python evaluate_pipeline_pde.py evaluate `
+  --root output/condition_aware_dataset_generation/default_fix_budget_run `
+  --geometry-source-root data/mold `
+  --predictions ../amber/output/path/to/run/test_predictions/prediction_manifest.csv `
+  --prediction-root ../amber/output/path/to/run `
+  --output-csv ../amber/output/path/to/run/pde_per_sample_metrics.csv `
+  --aggregate-json ../amber/output/path/to/run/pde_aggregate_metrics.json
+```
+
 How to read the new results:
 
 - if global unweighted L2 does not improve but `topk_high_importance_l2` or `bucket_high_size_l2` improves, the model is reallocating accuracy toward physically important regions

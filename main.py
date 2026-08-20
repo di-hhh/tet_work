@@ -33,6 +33,12 @@ from omegaconf import DictConfig, OmegaConf
 from src.initialization import initialize
 from src.initialization.init_config import load_omega_conf_resolvers
 from src.logger.progress_bar import CustomProgressBar
+from src.experiment_artifacts import (
+    FormalLastCheckpointCallback,
+    LocalMetricsCallback,
+    initialize_run_artifacts,
+    preflight_experiment_protocol,
+)
 
 # full stack trace,设置 Hydra 显示完整堆栈跟踪信息，便于调试。
 os.environ["HYDRA_FULL_ERROR"] = "1"
@@ -61,6 +67,13 @@ def train(config: DictConfig) -> None:
 
         # 获取 Hydra 运行时的输出目录，这是实验日志和检查点的保存位置
         exp_root = hydra.core.hydra_config.HydraConfig.get().runtime.output_dir
+        os.makedirs(exp_root, exist_ok=True)
+        OmegaConf.save(config=config, f=os.path.join(exp_root, "resolved_config.yaml"), resolve=True)
+        protocol_preflight = (
+            preflight_experiment_protocol(config)
+            if config.get("experiment_protocol")
+            else None
+        )
 
         # 如果配置中指定了矩阵乘法精度，设置 PyTorch 的浮点矩阵乘法精度；可能的值："high", "medium", "highest"
         if config.trainer.get("matmul_precision", None) is not None:
@@ -68,6 +81,13 @@ def train(config: DictConfig) -> None:
 
         # 核心初始化调用：调用 initialize() 函数，返回一个包含多个组件的对象
         initialization_return = initialize(config=config)
+        if protocol_preflight is not None:
+            initialize_run_artifacts(
+                config=config,
+                run_root=exp_root,
+                initialization_return=initialization_return,
+                preflight=protocol_preflight,
+            )
 
         # 构建训练组件
         logger = initialization_return.wandb_logger # 从初始化返回中获取 WandB 日志记录器
@@ -106,8 +126,18 @@ def train(config: DictConfig) -> None:
             val_dataloaders=dataloaders.get("val"),
             ckpt_path=trainer_config.get("ckpt_path"),
         )
-        # 训练后测试，训练完成后，立即在测试集上评估模型
-        trainer.test(algorithm, dataloaders=dataloaders.get("test"))
+        if protocol_preflight is not None:
+            # 正式协议固定使用本次训练明确落盘的 last.ckpt，而不是内存中的最终状态。
+            last_checkpoint = os.path.join(exp_root, "checkpoints", "last.ckpt")
+            if not os.path.exists(last_checkpoint):
+                raise FileNotFoundError(f"Required formal evaluation checkpoint not found: {last_checkpoint}")
+            trainer.test(
+                algorithm,
+                dataloaders=dataloaders.get("test"),
+                ckpt_path=last_checkpoint,
+            )
+        else:
+            trainer.test(algorithm, dataloaders=dataloaders.get("test"))
 
     except Exception:
         traceback.print_exc(file=sys.stderr)
@@ -131,7 +161,9 @@ def get_callbacks(config: DictConfig, exp_root: str, wandb_logger, checkpoint_fr
         save_last=True,  # Optionally save the most recent model
     )
     # 初始化回调列表，包含自定义进度条
-    callbacks = [CustomProgressBar()]
+    callbacks = [CustomProgressBar(), LocalMetricsCallback(exp_root)]
+    if config.get("experiment_protocol"):
+        callbacks.append(FormalLastCheckpointCallback(exp_root))
 
     # 如果启用了检查点保存，添加检查点回调
     if config.trainer.enable_checkpointing:

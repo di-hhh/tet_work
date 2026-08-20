@@ -26,8 +26,10 @@ def shortener(input_string: str | None = None, length=3, show_config_stack=False
         return "job_type"
     output_parts = []
 
-    for part in input_string.split(","):
-        key, value = part.split("=")
+    for part in _split_top_level_overrides(input_string):
+        key, separator, value = part.partition("=")
+        if not separator:
+            raise ValueError(f"Invalid Hydra override without '=': {part!r}")
         modified_key = ""
 
         key_parts = key.split(".")
@@ -42,6 +44,47 @@ def shortener(input_string: str | None = None, length=3, show_config_stack=False
         output_parts.append(f"{modified_key}={value}")
 
     return ",".join(output_parts)
+
+
+def _split_top_level_overrides(input_string: str) -> list[str]:
+    """Split Hydra's override dirname without splitting list/dict values."""
+    parts: list[str] = []
+    start = 0
+    depth = 0
+    quote: str | None = None
+    escaped = False
+    matching = {"]": "[", "}": "{", ")": "("}
+    stack: list[str] = []
+
+    for index, character in enumerate(input_string):
+        if escaped:
+            escaped = False
+            continue
+        if character == "\\":
+            escaped = True
+            continue
+        if quote is not None:
+            if character == quote:
+                quote = None
+            continue
+        if character in {"'", '"'}:
+            quote = character
+            continue
+        if character in "[{(":
+            stack.append(character)
+            depth += 1
+            continue
+        if character in matching:
+            if stack and stack[-1] == matching[character]:
+                stack.pop()
+                depth -= 1
+            continue
+        if character == "," and depth == 0:
+            parts.append(input_string[start:index])
+            start = index + 1
+
+    parts.append(input_string[start:])
+    return [part for part in parts if part]
 
 
 def load_omega_conf_resolvers():

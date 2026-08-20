@@ -1,6 +1,8 @@
 import os
+import tempfile
 import types
 import unittest
+from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
@@ -15,6 +17,7 @@ from src.algorithm.core.mesh_generation_algorithm import MeshGenerationAlgorithm
 from src.algorithm.loss.amber_loss import AmberLoss
 from src.algorithm.normalizer.dummy_running_normalizer import DummyRunningNormalizer
 from src.algorithm.prediction_transform.no_transform import NoTransform
+from src.mesh_util.mesh_metrics import MeshMetrics
 
 
 def _make_graph(*, node_features: int) -> Data:
@@ -309,6 +312,57 @@ class PhysicsCorrectionTests(unittest.TestCase):
 
         self.assertEqual(fake_algorithm.test_step_outputs, [])
         self.assertEqual(log_constant_calls, [([], "test")])
+
+    def test_local_test_artifacts_are_reconstructible_without_wandb(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fake_algorithm = SimpleNamespace(
+                local_artifact_root=tmpdir,
+                test_sample_rows=[
+                    {
+                        "sample_id": "sample_a",
+                        "mesh_generation_success": True,
+                        "last_cur_elements": 8,
+                    }
+                ],
+                test_prediction_rows=[
+                    {
+                        "sample_id": "sample_a",
+                        "prediction_mesh_path": "test_predictions/sample_a.vtk",
+                        "mesh_generation_success": True,
+                    }
+                ],
+            )
+            MeshGenerationAlgorithm._write_local_test_artifacts(
+                fake_algorithm,
+                {"metrics.test_last_cur_elements": 8.0},
+            )
+
+            root = Path(tmpdir)
+            self.assertTrue((root / "per_sample_metrics.csv").exists())
+            self.assertTrue((root / "test_predictions" / "prediction_manifest.csv").exists())
+            aggregate = (root / "aggregate_metrics.json").read_text(encoding="utf-8")
+            self.assertIn('"checkpoint": "checkpoints/last.ckpt"', aggregate)
+            self.assertEqual(fake_algorithm.test_sample_rows, [])
+            self.assertEqual(fake_algorithm.test_prediction_rows, [])
+
+    def test_regular_tetra_mean_ratio_quality_is_one(self):
+        points = np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [0.5, np.sqrt(3.0) / 2.0, 0.0],
+                [0.5, np.sqrt(3.0) / 6.0, np.sqrt(2.0 / 3.0)],
+            ]
+        )
+        fake_metrics = SimpleNamespace(
+            evaluated_mesh=SimpleNamespace(
+                vertex_positions=points,
+                element_indices=np.array([[0, 1, 2, 3]], dtype=np.int64),
+            )
+        )
+        metrics = MeshMetrics.tetra_quality_metrics(fake_metrics)
+        self.assertAlmostEqual(metrics["tetra_quality_mean"], 1.0, places=12)
+        self.assertEqual(metrics["tetra_degenerate_fraction"], 0.0)
 
     def test_console_run_config_composes_physics_correction_preset(self):
         # [CodeX] 验证新增的 Console run 入口能正确展开到 physics correction 预设，便于直接启动实验。

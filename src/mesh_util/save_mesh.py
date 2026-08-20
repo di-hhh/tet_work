@@ -24,6 +24,13 @@ def save_as_vtk(mesh: Mesh | MeshWrapper, output_vtk_path: str | Path, verbose: 
         # Unwrap
         mesh = mesh.mesh
 
+    # skfem's converter uses an exact-type lookup and therefore does not
+    # recognize the project's ExtendedMesh* subclasses.  Reconstruct only
+    # the serialization view as the matching skfem base class; coordinates
+    # and connectivity are preserved unchanged.
+    base_mesh_class = getattr(mesh, "base_mesh_class", None)
+    if base_mesh_class is not None:
+        mesh = base_mesh_class(mesh.p, mesh.t)
     mesh = to_meshio(mesh)
     with tempfile.NamedTemporaryFile(suffix=".msh", delete=False) as tmp:
         tmp_path = tmp.name

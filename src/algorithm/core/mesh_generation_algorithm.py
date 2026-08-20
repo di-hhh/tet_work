@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import copy
+import csv
+import json
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List
 
 import numpy as np
@@ -23,6 +26,39 @@ if TYPE_CHECKING:
     from src.algorithm.dataloader.mesh_generation_data import MeshGenerationData
     from src.algorithm.dataloader.mesh_generation_dataset import MeshGenerationDataset
     from src.algorithm.normalizer import RunningNormalizer
+
+
+def _safe_filename(value: str) -> str:
+    return "".join(character if character.isalnum() or character in {"-", "_"} else "_" for character in value)
+
+
+def _write_dict_rows_csv(path: Path, rows: List[Dict[str, object]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = sorted({key for row in rows for key in row})
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({key: _csv_safe(row.get(key)) for key in fieldnames})
+
+
+def _csv_safe(value):
+    if isinstance(value, torch.Tensor):
+        return value.detach().cpu().item() if value.numel() == 1 else str(value.shape)
+    if isinstance(value, np.generic):
+        return value.item()
+    return value
+
+
+def _json_safe(value):
+    if isinstance(value, dict):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    value = _csv_safe(value)
+    if isinstance(value, float) and not np.isfinite(value):
+        return None
+    return value
 
 
 class MeshGenerationAlgorithm(LightningModule, ABC):
@@ -78,6 +114,8 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
         self.training_step_outputs = []
         self.validation_step_outputs = []
         self.test_step_outputs = []
+        self.test_sample_rows = []
+        self.test_prediction_rows = []
         self.grad_norms = []
 
         self.save_hyperparameters("algorithm_config")
@@ -408,6 +446,13 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
     def test_step(self, batch, batch_idx: int) -> None:
         evaluation_dict = self._evaluate_data_point(data=batch)
         self.test_step_outputs.append(evaluation_dict)
+        sample_metadata = self._pipeline_sample_metadata(batch=batch, batch_idx=batch_idx)
+        prediction_metadata = self._export_test_prediction(
+            sample_metadata=sample_metadata,
+            batch_idx=batch_idx,
+        )
+        self.test_sample_rows.append(sample_metadata | prediction_metadata | evaluation_dict)
+        self.test_prediction_rows.append(sample_metadata | prediction_metadata)
 
         if batch_idx in self.plotting_sample_idxs:
             plot_dict = self._visualize_data_point(data=batch)
@@ -437,10 +482,82 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
         test_step_outputs_df = pd.DataFrame(self.test_step_outputs)
         if experiment_logger is not None:
             experiment_logger.log({"test_table": test_step_outputs_df}, step=self.current_epoch)
+        if hasattr(self, "_write_local_test_artifacts"):
+            self._write_local_test_artifacts(test_averages)
         self.test_step_outputs.clear()
 
         test_loader = self.trainer.test_dataloaders
         self._log_constant_plots(dataloader=test_loader, prefix="test")
+
+    def _pipeline_sample_metadata(self, *, batch, batch_idx: int) -> Dict[str, object]:
+        source_data = getattr(batch, "source_data", None)
+        cache = getattr(source_data, "imitation_weight_cache", None) or {}
+        run_metadata = getattr(self, "local_run_metadata", {}) or {}
+        return {
+            "sample_id": cache.get("sample_id") or f"test_{batch_idx:05d}",
+            "geometry_id": cache.get("geometry_id"),
+            "condition_id": cache.get("condition_id"),
+            "pde_family": cache.get("pde_family"),
+            "budget": cache.get("budget"),
+            "quality_verdict": cache.get("quality_verdict"),
+            "method_id": run_metadata.get("method_id"),
+            "seed": run_metadata.get("seed"),
+            "checkpoint": run_metadata.get("evaluation_checkpoint"),
+            "dataset_fingerprint_sha256": run_metadata.get("dataset_fingerprint_sha256"),
+        }
+
+    def _export_test_prediction(
+        self,
+        *,
+        sample_metadata: Dict[str, object],
+        batch_idx: int,
+    ) -> Dict[str, object]:
+        artifact_root = getattr(self, "local_artifact_root", None)
+        mesh = getattr(self, "_last_evaluation_mesh", None)
+        success = bool(getattr(self, "_last_evaluation_success", False))
+        status = str(getattr(self, "_last_evaluation_status", "unknown"))
+        if not artifact_root or mesh is None:
+            return {
+                "prediction_mesh_path": None,
+                "mesh_generation_success": success,
+                "mesh_generation_status": status,
+            }
+        from src.mesh_util.save_mesh import save_as_vtk
+
+        sample_id = _safe_filename(str(sample_metadata.get("sample_id") or f"test_{batch_idx:05d}"))
+        output_path = Path(artifact_root) / "test_predictions" / f"{sample_id}.vtk"
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        save_as_vtk(mesh, output_path)
+        return {
+            "prediction_mesh_path": output_path.relative_to(Path(artifact_root)).as_posix(),
+            "mesh_generation_success": success,
+            "mesh_generation_status": status,
+            "predicted_elements": int(mesh.nelements),
+        }
+
+    def _write_local_test_artifacts(self, aggregate_metrics_payload: Dict[str, object]) -> None:
+        artifact_root = getattr(self, "local_artifact_root", None)
+        if not artifact_root:
+            self.test_sample_rows.clear()
+            self.test_prediction_rows.clear()
+            return
+        root = Path(artifact_root)
+        _write_dict_rows_csv(root / "per_sample_metrics.csv", self.test_sample_rows)
+        _write_dict_rows_csv(root / "test_predictions" / "prediction_manifest.csv", self.test_prediction_rows)
+        success_count = sum(bool(row.get("mesh_generation_success")) for row in self.test_prediction_rows)
+        payload = {
+            "checkpoint": "checkpoints/last.ckpt",
+            "num_samples": len(self.test_prediction_rows),
+            "mesh_generation_success": success_count,
+            "mesh_generation_failures": len(self.test_prediction_rows) - success_count,
+            "metrics": _json_safe(aggregate_metrics_payload),
+        }
+        (root / "aggregate_metrics.json").write_text(
+            json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        self.test_sample_rows.clear()
+        self.test_prediction_rows.clear()
 
     ############################
     # prediction/model forward #

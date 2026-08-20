@@ -1,14 +1,29 @@
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 import meshio
 import numpy as np
+import torch
 from hydra import compose, initialize_config_dir
+from omegaconf import OmegaConf
 
 from src.algorithm.dataloader import get_datasets
+from src.experiment_artifacts import (
+    ExperimentProtocolError,
+    _validate_formal_dataset_artifacts,
+    preflight_experiment_protocol,
+)
 from src.tasks.pipeline_condition_aware_dataset_preparator import _select_cells
+from src.tasks.pipeline_dataset_audit import PipelineDatasetAuditError, audit_pipeline_dataset
+from src.tasks.pipeline_dataset_fingerprint import (
+    DatasetFingerprintMismatch,
+    build_dataset_fingerprint,
+    verify_dataset_fingerprint,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -16,6 +31,242 @@ CONFIG_DIR = REPO_ROOT / "config"
 
 
 class PipelineConditionAwareAdapterTests(unittest.TestCase):
+    def test_formal_dataset_contract_requires_references_and_fingerprint_catalog(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            config = OmegaConf.create(
+                {"task": {"evaluation_reference_required_splits": ["test"]}}
+            )
+            record = {"sample_id": "sample_test", "_resolved_paths": {}}
+            audit = SimpleNamespace(
+                records_by_split={"test": [record]},
+                split_counts={"train": 1, "val": 1, "test": 1},
+                pipeline_output_root=str(root),
+            )
+            frozen = {"split_counts": audit.split_counts, "files": []}
+            with self.assertRaisesRegex(ExperimentProtocolError, "strong references"):
+                _validate_formal_dataset_artifacts(
+                    config=config,
+                    audit_result=audit,
+                    frozen=frozen,
+                )
+
+            reference = root / "evaluation_references" / "v1" / "sample_test" / "reference_solution.npz"
+            metadata = reference.with_name("metadata.json")
+            record["_resolved_paths"] = {
+                "optional_evaluation_reference_path": str(reference),
+                "evaluation_reference_metadata_path": str(metadata),
+            }
+            frozen["files"] = [
+                {"path": "pipeline_output/manifests/evaluation_reference_manifest.jsonl"},
+                {
+                    "path": "pipeline_output/evaluation_references/v1/sample_test/reference_solution.npz"
+                },
+                {"path": "pipeline_output/evaluation_references/v1/sample_test/metadata.json"},
+            ]
+            _validate_formal_dataset_artifacts(
+                config=config,
+                audit_result=audit,
+                frozen=frozen,
+            )
+
+    def test_m0_to_m4_configs_compose_and_preserve_comparison_contract(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            configs = {
+                method: _compose_pipeline_config(root=root, run_name=run_name, overrides=[])
+                for method, run_name in {
+                    "M0": "amber_pipeline_baseline",
+                    "M1": "amber_pipeline_weighted",
+                    "M2": "amber_pipeline_feature_only",
+                    "M3": "amber_pipeline_physics_correction_codex",
+                    "M4": "amber_pipeline_physics_correction_stage_field",
+                }.items()
+            }
+            self.assertEqual(
+                {
+                    method: str(config.experiment_protocol.method_id)
+                    for method, config in configs.items()
+                },
+                {method: method for method in configs},
+            )
+            for key in ("architecture", "dataloader", "optimizer", "inference_steps"):
+                self.assertEqual(configs["M0"].algorithm.get(key), configs["M1"].algorithm.get(key))
+            self.assertEqual(configs["M0"].trainer.max_epochs, configs["M1"].trainer.max_epochs)
+            self.assertFalse(configs["M0"].algorithm.weighted_imitation.enabled)
+            self.assertTrue(configs["M1"].algorithm.weighted_imitation.enabled)
+            self.assertEqual(float(configs["M2"].algorithm.gate_max), 0.0)
+            self.assertEqual(float(configs["M2"].algorithm.lambda_expert_aux), 0.0)
+            self.assertEqual(float(configs["M2"].algorithm.lambda_corr_aux), 0.0)
+            self.assertEqual(float(configs["M2"].algorithm.lambda_corr_reg), 0.0)
+            self.assertEqual(configs["M3"].task.physics_feature_source, "pipeline_indicator")
+            self.assertEqual(configs["M4"].task.physics_feature_source, "stage_field_fusion")
+            configs["M0"].experiment_protocol.formal_run = False
+            configs["M0"].experiment_protocol.require_clean_repositories = False
+            self.assertEqual(preflight_experiment_protocol(configs["M0"])["method_id"], "M0")
+            configs["M2"].experiment_protocol.formal_run = False
+            configs["M2"].experiment_protocol.require_clean_repositories = False
+            with self.assertRaisesRegex(ExperimentProtocolError, "Automatic same-seed M1 lookup"):
+                preflight_experiment_protocol(configs["M2"])
+
+    def test_relative_fixture_can_be_copied_and_loaded_from_a_new_root(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            original = _write_pipeline_fixture(Path(tmpdir) / "original")
+            moved = Path(tmpdir) / "moved"
+            shutil.copytree(original, moved)
+            cfg = _compose_pipeline_config(
+                root=moved,
+                run_name="amber_pipeline_weighted",
+                overrides=[
+                    "task.required_splits=[train,val]",
+                    "algorithm.sizing_field_interpolation_type=element_weighted_sum",
+                    "algorithm.initial_mesh_handling=exclude",
+                    "task.features.edge.edge_curvature=False",
+                ],
+            )
+            datasets = get_datasets(cfg.algorithm, cfg.task)
+            self.assertEqual((len(datasets["train"]), len(datasets["val"])), (1, 1))
+
+    def test_legacy_absolute_paths_use_only_explicit_relocation_when_missing(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            old_root = _write_pipeline_fixture(Path(tmpdir) / "old")
+            _rewrite_fixture_manifest_as_absolute(old_root)
+            new_root = Path(tmpdir) / "new"
+            shutil.copytree(old_root, new_root)
+            hidden_old_root = Path(tmpdir) / "old_hidden"
+            old_root.rename(hidden_old_root)
+
+            cfg = _compose_pipeline_config(
+                root=new_root,
+                run_name="amber_pipeline_weighted",
+                overrides=[
+                    "task.required_splits=[train,val]",
+                    "algorithm.sizing_field_interpolation_type=element_weighted_sum",
+                    "algorithm.initial_mesh_handling=exclude",
+                    "task.features.edge.edge_curvature=False",
+                ],
+            )
+            cfg.task.path_relocation.enabled = True
+            cfg.task.path_relocation.old_root = str(old_root)
+            cfg.task.path_relocation.new_root = str(new_root)
+            datasets = get_datasets(cfg.algorithm, cfg.task)
+            self.assertEqual((len(datasets["train"]), len(datasets["val"])), (1, 1))
+
+    def test_structural_path_errors_are_aggregated_and_never_silently_skipped(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = _write_pipeline_fixture(Path(tmpdir))
+            (root / "meshes" / "mesh_with_extra_triangle.vtk").unlink()
+            cfg = _compose_pipeline_config(
+                root=root,
+                run_name="amber_pipeline_weighted",
+                overrides=[
+                    "task.required_splits=[train]",
+                    "task.over_limit_policy=skip",
+                    "algorithm.sizing_field_interpolation_type=element_weighted_sum",
+                    "algorithm.initial_mesh_handling=exclude",
+                    "task.features.edge.edge_curvature=False",
+                ],
+            )
+            with self.assertRaises(PipelineDatasetAuditError) as caught:
+                get_datasets(cfg.algorithm, cfg.task)
+            message = str(caught.exception)
+            self.assertIn("path_not_found", message)
+            self.assertIn("original_records=4", message)
+            self.assertIn("First 3 issue(s)", message)
+
+    def test_fingerprint_hashes_consumed_content_and_filter_view(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = _write_pipeline_fixture(Path(tmpdir))
+            cfg = _compose_pipeline_config(
+                root=root,
+                run_name="amber_pipeline_weighted",
+                overrides=[
+                    "task.required_splits=[train,val]",
+                    "algorithm.sizing_field_interpolation_type=element_weighted_sum",
+                    "algorithm.initial_mesh_handling=exclude",
+                    "task.features.edge.edge_curvature=False",
+                ],
+            )
+            audit = audit_pipeline_dataset(cfg.task)
+            frozen = build_dataset_fingerprint(audit_result=audit, task_config=cfg.task)
+
+            # The frozen dataset identity is shared by M1/M3/M4.  Selecting an
+            # already-frozen indicator or stage field is method information,
+            # not a different retained dataset.
+            stage_view = cfg.task.copy()
+            stage_view.physics_feature_source = "stage_field_fusion"
+            stage_audit = audit_pipeline_dataset(stage_view)
+            stage_fingerprint = build_dataset_fingerprint(
+                audit_result=stage_audit,
+                task_config=stage_view,
+            )
+            self.assertEqual(
+                frozen["dataset_fingerprint_sha256"],
+                stage_fingerprint["dataset_fingerprint_sha256"],
+            )
+
+            changed_view = cfg.task.copy()
+            changed_view.pde_family_filter = ["scalar_elliptic"]
+            changed_audit = audit_pipeline_dataset(changed_view)
+            changed_view_fingerprint = build_dataset_fingerprint(
+                audit_result=changed_audit,
+                task_config=changed_view,
+            )
+            self.assertNotEqual(
+                frozen["dataset_fingerprint_sha256"],
+                changed_view_fingerprint["dataset_fingerprint_sha256"],
+            )
+
+            np.save(root / "meshes" / "error_indicator.npy", np.array([0.5], dtype=np.float32))
+            changed_content_audit = audit_pipeline_dataset(cfg.task)
+            changed_content = build_dataset_fingerprint(
+                audit_result=changed_content_audit,
+                task_config=cfg.task,
+            )
+            self.assertNotEqual(
+                frozen["dataset_fingerprint_sha256"],
+                changed_content["dataset_fingerprint_sha256"],
+            )
+            with self.assertRaises(DatasetFingerprintMismatch):
+                verify_dataset_fingerprint(
+                    frozen_payload=frozen,
+                    audit_result=changed_content_audit,
+                    task_config=cfg.task,
+                )
+
+    def test_formal_preflight_accepts_only_same_seed_m1_last_checkpoint(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            cfg = _compose_pipeline_config(
+                root=root,
+                run_name="amber_pipeline_feature_only",
+                overrides=[],
+            )
+            cfg.experiment_protocol.formal_run = False
+            cfg.experiment_protocol.require_clean_repositories = False
+            m1_root = root / "m1_seed0"
+            checkpoint = m1_root / "checkpoints" / "last.ckpt"
+            checkpoint.parent.mkdir(parents=True)
+            torch.save({"state_dict": {}}, checkpoint)
+            OmegaConf.save(
+                OmegaConf.create(
+                    {
+                        "seed": int(cfg.seed),
+                        "trainer": {"max_epochs": int(cfg.trainer.max_epochs)},
+                        "experiment_protocol": {"method_id": "M1"},
+                    }
+                ),
+                m1_root / "resolved_config.yaml",
+            )
+            cfg.algorithm.init_from_weighted_baseline_checkpoint = str(checkpoint)
+            result = preflight_experiment_protocol(cfg)
+            self.assertTrue(result["checkpoint_init_validated"])
+            self.assertEqual(Path(result["checkpoint_init_path"]), checkpoint.resolve())
+
+            cfg.seed = int(cfg.seed) + 1
+            with self.assertRaisesRegex(ExperimentProtocolError, "Seed mismatch"):
+                preflight_experiment_protocol(cfg)
+
     def test_pipeline_adapter_loads_tetra_records_and_connects_indicator_to_physics_feature(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = _write_pipeline_fixture(Path(tmpdir))
@@ -177,6 +428,7 @@ def _compose_pipeline_config(*, root: Path, run_name: str, overrides: list[str])
             overrides=[
                 f"+_runs/amber={run_name}",
                 f"task.pipeline_output_root={root.as_posix()}",
+                f"task.geometry_source_root={root.as_posix()}",
                 *overrides,
             ],
         )
@@ -219,6 +471,27 @@ def _write_pipeline_fixture(root: Path) -> Path:
     (manifests_dir / "split_manifest.json").write_text(json.dumps(split_manifest), encoding="utf-8")
     _write_smoke_report(root)
     return root
+
+
+def _rewrite_fixture_manifest_as_absolute(root: Path) -> None:
+    manifest_path = root / "manifests" / "sample_manifest.jsonl"
+    records = [json.loads(line) for line in manifest_path.read_text(encoding="utf-8").splitlines()]
+    for record in records:
+        record["initial_mesh_path"] = str((root / record["initial_mesh_path"]).resolve())
+        record["final_target_mesh_path"] = str((root / record["final_target_mesh_path"]).resolve())
+        record["optional_error_indicator_path"] = str(
+            (root / record["optional_error_indicator_path"]).resolve()
+        )
+        record["optional_stage_field_path"] = str(
+            (root / record["optional_stage_field_path"]).resolve()
+        )
+        artifacts = record["geometry_artifact_paths"]
+        artifacts["coarse_mesh_path"] = str((root / artifacts["coarse_mesh_path"]).resolve())
+        artifacts["source_path"] = str((root / artifacts["source_path"]).resolve())
+    manifest_path.write_text(
+        "".join(json.dumps(record) + "\n" for record in records),
+        encoding="utf-8",
+    )
 
 
 def _record(

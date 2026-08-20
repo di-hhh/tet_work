@@ -1,13 +1,13 @@
 # @package _global_
 
 defaults:
-  - _amber_physics_correction_codex
+  - _amber_weighted
   - override /task: pipeline_condition_aware
   - _self_
 
-exp_name: amber_pipeline_physics_correction_stage_field
+exp_name: amber_pipeline_baseline
 _version: 1
-idx: ambppcsf100
+idx: ambpm000
 
 trainer:
   max_epochs: 101
@@ -20,34 +20,25 @@ task:
     old_root: D:/SITP/tet_work/dataest-pipeline
     new_root: ../dataest-pipeline
   physics_weight_source: pipeline_indicator
-  physics_feature_source: stage_field_fusion
-  stage_field:
-    mode: single_field
-    single_field:
-      name: s_pde_raw
-      direction: high_is_important
-      transform: log1p
-      normalize: robust_minmax
+  physics_feature_source: pipeline_indicator
 
 algorithm:
-  enable_physics_correction_branch: True
-  physics_feature_mode: normalized_importance
-  init_from_weighted_baseline_checkpoint: auto
+  # M0 与 M1 仅在 loss weighting/correction 开关上不同。
+  enable_physics_correction_branch: false
   mesh_metrics:
-    physics_weighted_projected_l2_error: True
+    physics_weighted_projected_l2_error: true
   weighted_imitation:
-    enabled: True
-    metric_use_physics_weights: True
+    enabled: false
+    metric_use_physics_weights: true
     datasets: [pipeline_condition_aware]
     weight_source_mode: pipeline_indicator
-    auto_prepare: False
-    fallback_to_ones: False
+    auto_prepare: false
+    fallback_to_ones: false
 
 experiment_protocol:
-  method_id: M4
+  method_id: M0
   formal_run: true
-  require_seed_matched_m1_checkpoint: true
+  require_seed_matched_m1_checkpoint: false
   evaluation_checkpoint: last.ckpt
   training_budget_epochs: 101
   require_clean_repositories: true
-  m1_checkpoint_search_root: output/hydra/training

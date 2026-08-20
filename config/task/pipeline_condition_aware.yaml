@@ -6,7 +6,19 @@ name: pipeline_condition_aware
 dataset_preparator: pipeline_condition_aware
 
 pipeline_output_root: ???
+# Relative task roots are anchored to amber/, not to the caller's shell directory.
+geometry_source_root: ../dataest-pipeline/data/mold
 manifest_name: sample_manifest
+evaluation_reference_manifest_name: evaluation_reference_manifest
+require_evaluation_reference: false
+evaluation_reference_required_splits: [test]
+dataset_fingerprint_path: manifests/dataset_fingerprint.json
+
+# Legacy absolute manifests are supported only through this explicit mapping.
+path_relocation:
+  enabled: false
+  old_root: null
+  new_root: null
 
 input_mesh_mode: initial_mesh
 target_mode: final_target_mesh
@@ -24,6 +36,7 @@ require_single_budget: true
 pde_family_filter: null
 geometry_id_filter: null
 condition_id_filter: null
+sample_id_filter: null
 one_condition_per_geometry: false
 
 condition_spec_mode: metadata_only

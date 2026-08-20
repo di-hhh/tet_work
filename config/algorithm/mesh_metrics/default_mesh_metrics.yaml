@@ -2,6 +2,7 @@
 # Metrics between two meshes are computed between the expert mesh and the reconstructed mesh.
 # Solution-based metrics are computed on the reconstructed solution.
 element_delta: True  # whether to compute the element-wise difference between the meshes
+tetra_quality: True  # mean-ratio tetra quality and degenerate-element failure diagnostics
 projected_l2_error: True  # whether to compute the L2 error of the induced mesh sizing fields.
   # The error is calculated on the vertices, and normalized by the reference mesh's sizing field.
   # Also computes a reverse error, i.e., the error of the reference mesh's sizing field on the reconstructed mesh, and

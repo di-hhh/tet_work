@@ -117,12 +117,18 @@ class Amber(MeshGenerationAlgorithm):
         cumulative_elements = data.mesh.nelements
         evaluation_metrics = {}
         mesh_metrics = None
+        final_mesh = data.mesh
+        final_success = False
+        final_status = "not_run"
 
         for step in range(self.inference_steps):
             inference_output = self._inference_step(data)
             new_mesh = inference_output.output_mesh
             predictions = inference_output.predictions
             prediction_bundle = inference_output.prediction_bundle
+            final_mesh = new_mesh
+            final_success = bool(inference_output.refinement_okay)
+            final_status = str(inference_output.mesh_generation_status)
 
             cumulative_elements += new_mesh.nelements
             differences = self.criterion.get_differences(
@@ -182,6 +188,9 @@ class Amber(MeshGenerationAlgorithm):
                     remaining_dict = prefix_keys(remaining_dict, prefix=remaining_step_name)
                     evaluation_metrics |= remaining_dict
                 break
+        self._last_evaluation_mesh = final_mesh
+        self._last_evaluation_success = final_success
+        self._last_evaluation_status = final_status
         return evaluation_metrics
 
     def _visualize_data_point(self, data: AmberData) -> PlotDict:
