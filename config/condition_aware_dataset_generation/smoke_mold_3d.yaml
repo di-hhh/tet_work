@@ -4,6 +4,10 @@ random_seed: 19
 workers: 1
 overwrite: true
 log_level: INFO
+
+path_protocol:
+  enforce_output_root_inside_tet_work: true
+  enforce_geometry_source_inside_tet_work: true
 limit_geometries: 2
 
 geometry_source:

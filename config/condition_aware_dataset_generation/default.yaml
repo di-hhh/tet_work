@@ -4,6 +4,10 @@ workers: 1
 overwrite: false
 log_level: INFO
 
+path_protocol:
+  enforce_output_root_inside_tet_work: true
+  enforce_geometry_source_inside_tet_work: true
+
 geometry_source:
   name: local_directory
   source_name: mold_local_3d

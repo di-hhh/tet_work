@@ -1,13 +1,26 @@
 ﻿from __future__ import annotations
 
+import tempfile
 from pathlib import Path
+
+import pytest
 
 from src.condition_aware_dataset_generation.pipeline import ConditionAwareDatasetPipeline
 from src.condition_aware_dataset_generation.records import ConditionRecord
+from src.condition_aware_dataset_generation.serialization.path_protocol import PathProtocolError
 from src.condition_aware_dataset_generation.teacher_generation import TeacherGenerator
 from src.condition_aware_dataset_generation.utils import load_json, read_jsonl
 
 from tests.condition_aware_dataset_generation.test_ingestion_and_sampling import build_config
+
+
+def test_portable_policy_rejects_output_root_outside_tet_work(geometry_root: Path):
+    with tempfile.TemporaryDirectory() as directory:
+        config = build_config(geometry_root, Path(directory) / "external_output")
+        config["path_protocol"] = {"enforce_output_root_inside_tet_work": True}
+
+        with pytest.raises(PathProtocolError, match="output_root"):
+            ConditionAwareDatasetPipeline(config)
 
 
 def test_teacher_generation_and_manifest(geometry_root: Path, case_root: Path):
@@ -33,6 +46,24 @@ def test_teacher_generation_and_manifest(geometry_root: Path, case_root: Path):
     assert manifest_summary["num_samples"] == len(sample_records)
     manifest_rows = read_jsonl(pipeline.layout.manifest_path("sample_manifest"))
     assert len(manifest_rows) == len(sample_records)
+    for row in manifest_rows:
+        assert not Path(row["initial_mesh_path"]).is_absolute()
+        assert not Path(row["final_target_mesh_path"]).is_absolute()
+        assert not Path(row["geometry_artifact_paths"]["source_path"]).is_absolute()
+        if row.get("optional_error_indicator_path"):
+            assert not Path(row["optional_error_indicator_path"]).is_absolute()
+        if row.get("optional_stage_field_path"):
+            assert not Path(row["optional_stage_field_path"]).is_absolute()
+    path_protocol = load_json(pipeline.layout.manifests_dir / "path_protocol.json")
+    assert path_protocol["schema_version"] == 1
+
+    # Cached JSON is portable too, while the runtime loader rehydrates it to
+    # absolute paths without touching numeric artifacts.
+    cached_sample = load_json(pipeline.layout.sample_path(manifest_rows[0]["sample_id"]))
+    assert not Path(cached_sample["final_target_mesh_path"]).is_absolute()
+    rehydrated = pipeline._load_sample_records()[0]
+    assert Path(rehydrated.final_target_mesh_path).is_absolute()
+    assert Path(rehydrated.final_target_mesh_path).exists()
     split_manifest = load_json(pipeline.layout.split_manifest_path)
     assert split_manifest["geometry_to_split"]
 

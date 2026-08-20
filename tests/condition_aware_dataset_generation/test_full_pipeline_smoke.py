@@ -13,7 +13,12 @@ def test_full_pipeline_smoke(geometry_root: Path, case_root):
     pipeline = ConditionAwareDatasetPipeline(config)
 
     summary = pipeline.run_full_pipeline()
-    assert summary["manifest"]["num_samples"] > 0
+    teacher_failures = read_jsonl(pipeline.layout.failure_log_path("teacher"))
+    preprocess_failures = read_jsonl(pipeline.layout.failure_log_path("preprocess"))
+    assert summary["manifest"]["num_samples"] > 0, "; ".join(
+        f"{item.get('reason')}: {item.get('details')}"
+        for item in [*preprocess_failures, *teacher_failures]
+    )
     assert (pipeline.layout.output_root / "geometries").exists()
     assert (pipeline.layout.output_root / "teachers").exists()
     assert (pipeline.layout.output_root / "manifests" / "sample_manifest.jsonl").exists()

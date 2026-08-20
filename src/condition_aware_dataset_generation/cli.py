@@ -9,6 +9,7 @@ from src.condition_aware_dataset_generation.pipeline import ConditionAwareDatase
 
 
 DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[2] / 'config' / 'condition_aware_dataset_generation' / 'default.yaml'
+REPO_ROOT = Path(__file__).resolve().parents[2]
 SUPPORTED_COMMANDS = (
     'ingest_geometries',
     'preprocess_geometries',
@@ -23,6 +24,9 @@ SUPPORTED_COMMANDS = (
 
 def load_pipeline_config(config_path: str | None) -> dict:
     path = Path(config_path) if config_path else DEFAULT_CONFIG_PATH
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    path = path.resolve()
     config = OmegaConf.load(path)
     return OmegaConf.to_container(config, resolve=True)
 

@@ -70,6 +70,19 @@ def evaluate_solution_at_points(basis: Basis, solution_vector: np.ndarray, point
     return np.stack(component_values, axis=1)
 
 
+def _solution_at_basis_nodes(basis: Basis, solution_vector: np.ndarray) -> np.ndarray:
+    component_values = []
+    for component_vector, component_basis in basis.split(solution_vector):
+        nodal_dofs = np.asarray(component_basis.nodal_dofs)
+        expected_shape = (1, component_basis.mesh.nvertices)
+        if nodal_dofs.shape != expected_shape:
+            raise ValueError(
+                f'Expected one P1 nodal DOF per mesh vertex, got {nodal_dofs.shape}'
+            )
+        component_values.append(np.asarray(component_vector)[nodal_dofs[0]])
+    return np.stack(component_values, axis=1)
+
+
 def _solver_limits(solver_options: dict[str, Any] | None) -> tuple[int | None, int | None, str]:
     solver_options = solver_options or {}
     max_dofs = solver_options.get('max_dofs')
@@ -172,7 +185,7 @@ def solve_scalar_elliptic(
         )
     solve_start = time.perf_counter()
     solution_vector = solve(*condense(stiffness, rhs, D=np.unique(np.asarray(dirichlet_dofs, dtype=np.int32)), x=dirichlet_values))
-    nodal_values = evaluate_solution_at_points(basis, solution_vector, mesh.p)
+    nodal_values = _solution_at_basis_nodes(basis, solution_vector)
     metadata['assembly_time_sec'] = float(solve_start - assembly_start)
     metadata['solve_time_sec'] = float(time.perf_counter() - solve_start)
     return {
@@ -251,7 +264,7 @@ def solve_linear_elasticity_problem(
             x=constrained_values,
         )
     )
-    nodal_values = evaluate_solution_at_points(basis, solution_vector, mesh.p)
+    nodal_values = _solution_at_basis_nodes(basis, solution_vector)
     metadata['assembly_time_sec'] = float(solve_start - assembly_start)
     metadata['solve_time_sec'] = float(time.perf_counter() - solve_start)
     return {

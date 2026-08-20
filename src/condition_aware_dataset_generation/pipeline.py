@@ -1,6 +1,7 @@
 ﻿from __future__ import annotations
 
 import logging
+from copy import deepcopy
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, Callable, Iterable
@@ -23,6 +24,13 @@ from src.condition_aware_dataset_generation.records import (
 )
 from src.condition_aware_dataset_generation.runtime_controls import run_worker_subprocess
 from src.condition_aware_dataset_generation.serialization.layout import PipelineLayout
+from src.condition_aware_dataset_generation.serialization.path_protocol import (
+    PATH_PROTOCOL_SCHEMA_VERSION,
+    PathProtocolError,
+    anchor_repo_path,
+    resolve_record_paths,
+    serialize_record_paths,
+)
 from src.condition_aware_dataset_generation.smoke_analysis import build_smoke_report as build_smoke_report_payload
 from src.condition_aware_dataset_generation.teacher_generation import TeacherGenerator
 from src.condition_aware_dataset_generation.utils import configure_logging, dump_json, dump_jsonl, load_json, now_iso
@@ -50,18 +58,115 @@ def _is_success_status(status: str | None) -> bool:
 
 class ConditionAwareDatasetPipeline:
     def __init__(self, config: dict):
-        self.config = config
-        self.layout = PipelineLayout(config['output_root'])
-        self.overwrite = bool(config.get('overwrite', False))
-        self.workers = int(config.get('workers', 1))
-        self.prescreen_config = dict(config.get('prescreen', {}))
-        self.smoke_config = dict(config.get('smoke', {}))
-        configure_logging(config.get('log_level', 'INFO'))
-        self.preprocessor = GeometryPreprocessor(config.get('preprocessing', {}))
-        self.condition_sampler = ConditionSampler(config.get('condition_sampling', {}))
+        portable_config = OmegaConf.to_container(OmegaConf.create(config), resolve=True)
+        self.config = deepcopy(portable_config)
+        self.config['output_root'] = str(anchor_repo_path(self.config['output_root'], REPO_ROOT))
+        geometry_source = dict(self.config['geometry_source'])
+        geometry_source['root'] = str(anchor_repo_path(geometry_source['root'], REPO_ROOT))
+        self.config['geometry_source'] = geometry_source
+        self.geometry_source_root = Path(geometry_source['root']).resolve()
+        self._validate_portable_anchor_policy()
+
+        self.layout = PipelineLayout(self.config['output_root'])
+        self.overwrite = bool(self.config.get('overwrite', False))
+        self.workers = int(self.config.get('workers', 1))
+        self.prescreen_config = dict(self.config.get('prescreen', {}))
+        self.smoke_config = dict(self.config.get('smoke', {}))
+        configure_logging(self.config.get('log_level', 'INFO'))
+        self.preprocessor = GeometryPreprocessor(self.config.get('preprocessing', {}))
+        self.condition_sampler = ConditionSampler(self.config.get('condition_sampling', {}))
         self.prescreener = ConditionPrescreener(self.prescreen_config, self.smoke_config)
-        self.teacher_generator = TeacherGenerator(config.get('teacher', {}), self.smoke_config)
-        OmegaConf.save(config=OmegaConf.create(config), f=str(self.layout.output_root / 'config_snapshot.yaml'))
+        self.teacher_generator = TeacherGenerator(self.config.get('teacher', {}), self.smoke_config)
+        snapshot = self._portable_config_snapshot(portable_config)
+        OmegaConf.save(config=OmegaConf.create(snapshot), f=str(self.layout.output_root / 'config_snapshot.yaml'))
+
+    def _validate_portable_anchor_policy(self) -> None:
+        protocol_config = dict(self.config.get('path_protocol', {}))
+        anchors = (
+            (
+                'output_root',
+                Path(self.config['output_root']).resolve(),
+                bool(protocol_config.get('enforce_output_root_inside_tet_work', False)),
+            ),
+            (
+                'geometry_source.root',
+                self.geometry_source_root,
+                bool(protocol_config.get('enforce_geometry_source_inside_tet_work', False)),
+            ),
+        )
+        for field, path, enforce in anchors:
+            if not enforce:
+                continue
+            try:
+                path.relative_to(REPO_ROOT.parent)
+            except ValueError as exc:
+                raise PathProtocolError(
+                    f"{field} '{path}' is outside tet_work ('{REPO_ROOT.parent}'); "
+                    "a copied tet_work tree would be incomplete."
+                ) from exc
+
+    def _portable_config_snapshot(self, config: dict[str, Any]) -> dict[str, Any]:
+        snapshot = deepcopy(config)
+        snapshot['output_root'] = self._repo_relative_config_path(self.layout.output_root)
+        geometry_source = dict(snapshot['geometry_source'])
+        geometry_source['root'] = self._repo_relative_config_path(self.geometry_source_root)
+        snapshot['geometry_source'] = geometry_source
+        snapshot['path_protocol_schema_version'] = PATH_PROTOCOL_SCHEMA_VERSION
+        return snapshot
+
+    @staticmethod
+    def _repo_relative_config_path(path: Path) -> str:
+        try:
+            return path.resolve().relative_to(REPO_ROOT).as_posix()
+        except ValueError:
+            return str(path.resolve())
+
+    def _portable_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+        return serialize_record_paths(
+            payload,
+            pipeline_output_root=self.layout.output_root,
+            geometry_source_root=self.geometry_source_root,
+        )
+
+    def _runtime_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+        return resolve_record_paths(
+            payload,
+            pipeline_output_root=self.layout.output_root,
+            geometry_source_root=self.geometry_source_root,
+        )
+
+    def _write_portable_record_cache(
+        self,
+        *,
+        geometry_payloads: list[dict[str, Any]],
+        preprocess_payloads: list[dict[str, Any]],
+        prescreen_payloads: list[dict[str, Any]],
+        teacher_payloads: list[dict[str, Any]],
+        sample_payloads: list[dict[str, Any]],
+    ) -> None:
+        """Reserialize metadata only; numeric mesh/NPZ artifacts are untouched."""
+        for payload in geometry_payloads:
+            dump_json(self.layout.geometry_record_path(str(payload['geometry_id'])), payload)
+        for payload in preprocess_payloads:
+            dump_json(self.layout.preprocess_record_path(str(payload['geometry_id'])), payload)
+        for payload in prescreen_payloads:
+            dump_json(
+                self.layout.prescreen_record_path(str(payload['geometry_id']), str(payload['condition_id'])),
+                payload,
+            )
+        for payload in teacher_payloads:
+            dump_json(
+                self.layout.teacher_record_path(str(payload['geometry_id']), str(payload['condition_id'])),
+                payload,
+            )
+        for payload in sample_payloads:
+            dump_json(self.layout.sample_path(str(payload['sample_id'])), payload)
+
+    def _geometry_source_anchor_metadata(self) -> tuple[str, str]:
+        try:
+            return self.geometry_source_root.relative_to(REPO_ROOT.parent).as_posix(), 'tet_work'
+        except ValueError:
+            return str(self.geometry_source_root), 'external'
 
     def ingest_geometries(self) -> dict[str, Any]:
         source = build_geometry_source(self.config['geometry_source'])
@@ -225,13 +330,36 @@ class ConditionAwareDatasetPipeline:
         sample_records = self._load_sample_records()
         split_manifest = self._assign_geometry_level_splits(sample_records)
 
-        dump_jsonl(self.layout.manifest_path('geometry_records'), [record.to_dict() for record in geometry_records])
-        dump_jsonl(self.layout.manifest_path('preprocess_records'), [record.to_dict() for record in preprocess_records])
+        geometry_payloads = [self._portable_payload(record.to_dict()) for record in geometry_records]
+        preprocess_payloads = [self._portable_payload(record.to_dict()) for record in preprocess_records]
+        prescreen_payloads = [self._portable_payload(record.to_dict()) for record in prescreen_records]
+        teacher_payloads = [self._portable_payload(record.to_dict()) for record in teacher_records]
+        sample_payloads = [self._portable_payload(record.to_dict()) for record in sample_records]
+
+        dump_jsonl(self.layout.manifest_path('geometry_records'), geometry_payloads)
+        dump_jsonl(self.layout.manifest_path('preprocess_records'), preprocess_payloads)
         dump_jsonl(self.layout.manifest_path('condition_records'), [record.to_dict() for record in condition_records])
-        dump_jsonl(self.layout.manifest_path('prescreen_records'), [record.to_dict() for record in prescreen_records])
-        dump_jsonl(self.layout.manifest_path('teacher_records'), [record.to_dict() for record in teacher_records])
-        dump_jsonl(self.layout.manifest_path('sample_manifest'), [record.to_dict() for record in sample_records])
+        dump_jsonl(self.layout.manifest_path('prescreen_records'), prescreen_payloads)
+        dump_jsonl(self.layout.manifest_path('teacher_records'), teacher_payloads)
+        dump_jsonl(self.layout.manifest_path('sample_manifest'), sample_payloads)
         dump_json(self.layout.split_manifest_path, split_manifest)
+        self._write_portable_record_cache(
+            geometry_payloads=geometry_payloads,
+            preprocess_payloads=preprocess_payloads,
+            prescreen_payloads=prescreen_payloads,
+            teacher_payloads=teacher_payloads,
+            sample_payloads=sample_payloads,
+        )
+        geometry_source_anchor, geometry_source_anchor_base = self._geometry_source_anchor_metadata()
+        dump_json(
+            self.layout.manifests_dir / 'path_protocol.json',
+            {
+                'schema_version': PATH_PROTOCOL_SCHEMA_VERSION,
+                'pipeline_output_anchor': '.',
+                'geometry_source_anchor': geometry_source_anchor,
+                'geometry_source_anchor_base': geometry_source_anchor_base,
+            },
+        )
 
         summary = {
             'num_geometries': len(geometry_records),
@@ -936,14 +1064,17 @@ class ConditionAwareDatasetPipeline:
         return results
 
     def _load_geometry_records(self) -> list[GeometryRecord]:
-        return [GeometryRecord(**load_json(path)) for path in sorted(self.layout.geometries_dir.glob('*/geometry_record.json'))]
+        return [
+            GeometryRecord(**self._runtime_payload(load_json(path)))
+            for path in sorted(self.layout.geometries_dir.glob('*/geometry_record.json'))
+        ]
 
     def _load_preprocess_records(self) -> list[GeometryPreprocessRecord]:
         records = []
         for path in sorted(self.layout.geometries_dir.glob('*/preprocess_record.json')):
             payload = load_json(path)
             if payload is not None and payload.get('status') == 'success':
-                records.append(GeometryPreprocessRecord(**payload))
+                records.append(GeometryPreprocessRecord(**self._runtime_payload(payload)))
         return records
 
     def _load_successful_preprocess_pairs(self) -> list[tuple[GeometryRecord, GeometryPreprocessRecord]]:
@@ -954,13 +1085,22 @@ class ConditionAwareDatasetPipeline:
         return [ConditionRecord(**load_json(path)) for path in sorted(self.layout.conditions_dir.glob('**/*.json'))]
 
     def _load_prescreen_records(self) -> list[PrescreenRecord]:
-        return [PrescreenRecord(**load_json(path)) for path in sorted(self.layout.prescreens_dir.glob('**/*.json'))]
+        return [
+            PrescreenRecord(**self._runtime_payload(load_json(path)))
+            for path in sorted(self.layout.prescreens_dir.glob('**/*.json'))
+        ]
 
     def _load_teacher_records(self) -> list[TeacherRecord]:
-        return [TeacherRecord(**load_json(path)) for path in sorted(self.layout.teachers_dir.glob('**/teacher_record.json'))]
+        return [
+            TeacherRecord(**self._runtime_payload(load_json(path)))
+            for path in sorted(self.layout.teachers_dir.glob('**/teacher_record.json'))
+        ]
 
     def _load_sample_records(self) -> list[SampleRecord]:
-        return [SampleRecord(**load_json(path)) for path in sorted(self.layout.samples_dir.glob('*.json'))]
+        return [
+            SampleRecord(**self._runtime_payload(load_json(path)))
+            for path in sorted(self.layout.samples_dir.glob('*.json'))
+        ]
 
     def _assign_geometry_level_splits(self, sample_records: list[SampleRecord]) -> dict[str, Any]:
         split_config = self.config.get('split', {})
