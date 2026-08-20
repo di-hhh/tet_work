@@ -7,7 +7,7 @@ from typing import Any
 
 from omegaconf import DictConfig, ListConfig, OmegaConf
 
-from src.tasks.pipeline_dataset_audit import PipelineDatasetAuditResult
+from src.tasks.pipeline_dataset_audit import DatasetPathResolver, PipelineDatasetAuditResult
 
 
 FINGERPRINT_SCHEMA_VERSION = 1
@@ -52,15 +52,19 @@ def build_dataset_fingerprint(
 ) -> dict[str, Any]:
     audit_result.raise_for_errors()
     config = _plain_container(task_config)
+    resolver = DatasetPathResolver(config)
     unique_paths = sorted({Path(path).resolve() for path in audit_result.consumed_paths})
-    file_entries = [
-        {
-            "path": _portable_display_path(path, audit_result),
-            "size_bytes": path.stat().st_size,
-            "sha256": sha256_file(path),
-        }
-        for path in unique_paths
-    ]
+    file_entries = sorted(
+        (
+            {
+                "path": _portable_display_path(path, audit_result, resolver),
+                "size_bytes": path.stat().st_size,
+                "sha256": sha256_file(path),
+            }
+            for path in unique_paths
+        ),
+        key=lambda entry: entry["path"],
+    )
     view_config = {key: config.get(key) for key in VIEW_CONFIG_KEYS}
     identity_payload = {
         "schema_version": FINGERPRINT_SCHEMA_VERSION,
@@ -112,17 +116,27 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _portable_display_path(path: Path, audit_result: PipelineDatasetAuditResult) -> str:
+def _portable_display_path(
+    path: Path,
+    audit_result: PipelineDatasetAuditResult,
+    resolver: DatasetPathResolver,
+) -> str:
     output_root = Path(audit_result.pipeline_output_root).resolve()
     geometry_root = Path(audit_result.geometry_source_root).resolve()
-    try:
-        return f"pipeline_output/{path.relative_to(output_root).as_posix()}"
-    except ValueError:
-        pass
-    try:
-        return f"geometry_source/{path.relative_to(geometry_root).as_posix()}"
-    except ValueError:
-        return f"external/{path.name}"
+    candidates = [path]
+    relocated = resolver.relocate_legacy_absolute(str(path))
+    if relocated is not None and relocated.exists() and relocated != path:
+        candidates.append(relocated)
+    for candidate in candidates:
+        try:
+            return f"pipeline_output/{candidate.relative_to(output_root).as_posix()}"
+        except ValueError:
+            pass
+        try:
+            return f"geometry_source/{candidate.relative_to(geometry_root).as_posix()}"
+        except ValueError:
+            pass
+    return f"external/{path.name}"
 
 
 def _plain_container(value: Any) -> dict[str, Any]:

@@ -152,6 +152,44 @@ class PipelineConditionAwareAdapterTests(unittest.TestCase):
             datasets = get_datasets(cfg.algorithm, cfg.task)
             self.assertEqual((len(datasets["train"]), len(datasets["val"])), (1, 1))
 
+    def test_fingerprint_stays_stable_when_legacy_source_exists_after_copy(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            old_root = _write_pipeline_fixture(Path(tmpdir) / "old")
+            _rewrite_fixture_manifest_as_absolute(old_root)
+            overrides = [
+                "task.required_splits=[train,val]",
+                "algorithm.sizing_field_interpolation_type=element_weighted_sum",
+                "algorithm.initial_mesh_handling=exclude",
+                "task.features.edge.edge_curvature=False",
+            ]
+            old_cfg = _compose_pipeline_config(
+                root=old_root,
+                run_name="amber_pipeline_weighted",
+                overrides=overrides,
+            )
+            frozen = build_dataset_fingerprint(
+                audit_result=audit_pipeline_dataset(old_cfg.task),
+                task_config=old_cfg.task,
+            )
+
+            new_root = Path(tmpdir) / "new"
+            shutil.copytree(old_root, new_root)
+            new_cfg = _compose_pipeline_config(
+                root=new_root,
+                run_name="amber_pipeline_weighted",
+                overrides=overrides,
+            )
+            new_cfg.task.path_relocation.enabled = True
+            new_cfg.task.path_relocation.old_root = str(old_root)
+            new_cfg.task.path_relocation.new_root = str(new_root)
+            copied_audit = audit_pipeline_dataset(new_cfg.task)
+
+            verify_dataset_fingerprint(
+                frozen_payload=frozen,
+                audit_result=copied_audit,
+                task_config=new_cfg.task,
+            )
+
     def test_structural_path_errors_are_aggregated_and_never_silently_skipped(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = _write_pipeline_fixture(Path(tmpdir))

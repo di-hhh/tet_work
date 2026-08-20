@@ -129,7 +129,7 @@ class DatasetPathResolver:
         else:
             resolved = Path(raw).resolve()
             if not resolved.exists():
-                relocated = self._relocate_legacy_absolute(raw)
+                relocated = self.relocate_legacy_absolute(raw)
                 if relocated is not None:
                     resolved = relocated
         if must_exist and not resolved.exists():
@@ -138,7 +138,8 @@ class DatasetPathResolver:
             )
         return resolved
 
-    def _relocate_legacy_absolute(self, raw: str) -> Path | None:
+    def relocate_legacy_absolute(self, raw: str) -> Path | None:
+        """Return the explicitly configured target for a legacy absolute path."""
         if not bool(self.relocation.get("enabled", False)):
             return None
         old_root = self.relocation.get("old_root")
