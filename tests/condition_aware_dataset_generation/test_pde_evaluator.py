@@ -4,10 +4,12 @@ from pathlib import Path
 
 import meshio
 import numpy as np
-from skfem import Basis
+import pytest
+from skfem import Basis, MeshTet
 
 from src.condition_aware_dataset_generation.evaluation.pde_evaluator import (
     build_evaluation_references,
+    evaluate_p1_field_on_reference_points,
     evaluate_prediction_manifest,
     volume_weighted_relative_l2,
 )
@@ -25,6 +27,41 @@ def test_volume_weighted_l2_self_is_zero():
     )
     assert metrics["absolute_l2"] == 0.0
     assert metrics["relative_l2"] == 0.0
+
+
+def test_reference_point_evaluation_uses_bounded_boundary_extension():
+    points = _points()
+    mesh = MeshTet(points.T, np.array([[0, 1, 2, 3]], dtype=np.int64).T)
+    nodal_values = (points[:, 0] + 2.0 * points[:, 1] + 3.0 * points[:, 2])[:, None]
+    inside = np.repeat([[0.1, 0.1, 0.1]], repeats=10, axis=0)
+    just_outside = np.array([[0.34, 0.34, 0.34]])
+
+    values, diagnostics = evaluate_p1_field_on_reference_points(
+        mesh=mesh,
+        nodal_values=nodal_values,
+        reference_points=np.concatenate([inside, just_outside], axis=0),
+    )
+
+    assert np.allclose(values[:10, 0], 0.6)
+    assert np.isclose(values[-1, 0], 2.0)
+    assert diagnostics["extrapolated_point_count"] == 1
+    assert np.isclose(diagnostics["extrapolated_point_fraction"], 1.0 / 11.0)
+    assert diagnostics["max_extrapolation_distance_ratio"] < 0.03
+
+
+def test_reference_point_evaluation_rejects_large_boundary_extension():
+    points = _points()
+    mesh = MeshTet(points.T, np.array([[0, 1, 2, 3]], dtype=np.int64).T)
+    nodal_values = points[:, :1]
+    inside = np.repeat([[0.1, 0.1, 0.1]], repeats=20, axis=0)
+    far_outside = np.array([[1.0, 1.0, 1.0]])
+
+    with pytest.raises(ValueError, match="distance ratio"):
+        evaluate_p1_field_on_reference_points(
+            mesh=mesh,
+            nodal_values=nodal_values,
+            reference_points=np.concatenate([inside, far_outside], axis=0),
+        )
 
 
 def test_reference_build_does_not_probe_its_own_basis_nodes(case_root: Path, monkeypatch):

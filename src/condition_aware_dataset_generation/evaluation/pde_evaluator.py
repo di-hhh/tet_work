@@ -17,14 +17,15 @@ from skfem.io import from_meshio
 
 from src.condition_aware_dataset_generation.records import ConditionRecord, GeometryPreprocessRecord
 from src.condition_aware_dataset_generation.teacher_generation.pde_solvers import (
-    evaluate_solution_at_points,
     select_boundary_facets,
     solve_condition,
 )
 from src.condition_aware_dataset_generation.utils import dump_json, dump_jsonl, read_jsonl
 
 
-EVALUATION_PROTOCOL_VERSION = 1
+EVALUATION_PROTOCOL_VERSION = 2
+MAX_EXTRAPOLATED_POINT_FRACTION = 0.10
+MAX_EXTRAPOLATION_DISTANCE_RATIO = 0.03
 DEFAULT_ALLOWED_STATUSES = {"success_budget_closed", "success_near_desired_budget"}
 DEFAULT_ALLOWED_VERDICTS = {"PASS_STRONG", "PASS_WEAK"}
 PDE_RESULT_FIELDS = (
@@ -42,6 +43,10 @@ PDE_RESULT_FIELDS = (
     "solver_success",
     "failure_category",
     "failure_reason",
+    "extrapolated_point_count",
+    "extrapolated_point_fraction",
+    "max_extrapolation_distance",
+    "max_extrapolation_distance_ratio",
     "solution_l2_absolute",
     "solution_l2_relative",
     "qoi_predicted",
@@ -314,10 +319,10 @@ def evaluate_prediction_manifest(
                 reference_points = np.asarray(payload["points"], dtype=np.float64)
                 reference_connectivity = np.asarray(payload["connectivity"], dtype=np.int64)
                 reference_values = np.asarray(payload["values"], dtype=np.float64)
-            predicted_on_reference = evaluate_solution_at_points(
-                solve_result["basis"],
-                solve_result["solution_vector"],
-                reference_points.T,
+            predicted_on_reference, extrapolation = evaluate_p1_field_on_reference_points(
+                mesh=predicted_mesh,
+                nodal_values=solve_result["nodal_values"],
+                reference_points=reference_points,
             )
             solution_metrics = volume_weighted_relative_l2(
                 points=reference_points,
@@ -336,6 +341,7 @@ def evaluate_prediction_manifest(
             rows.append(
                 {
                     **base_row,
+                    **extrapolation,
                     "solver_success": True,
                     "solution_l2_absolute": solution_metrics["absolute_l2"],
                     "solution_l2_relative": solution_metrics["relative_l2"],
@@ -371,6 +377,160 @@ def evaluate_prediction_manifest(
             f"first failures={failures[:3]}"
         )
     return {"rows": rows, "aggregate": aggregate}
+
+
+def evaluate_p1_field_on_reference_points(
+    *,
+    mesh: MeshTet,
+    nodal_values: np.ndarray,
+    reference_points: np.ndarray,
+) -> tuple[np.ndarray, dict[str, float | int]]:
+    """Evaluate a P1 field on a fixed reference domain with bounded trace extension.
+
+    A finer faceted CAD boundary can lie just outside a coarser prediction mesh.
+    Interior points use their containing tetrahedron.  Outside points are
+    projected to the nearest prediction boundary triangle and evaluated with
+    that triangle's P1 barycentric weights.  Large or widespread extensions
+    remain hard failures.
+    """
+    points = np.asarray(reference_points, dtype=np.float64)
+    values = _as_component_matrix(nodal_values)
+    if points.ndim != 2 or points.shape[1] != 3:
+        raise ValueError(f"reference_points must have shape (n, 3), got {points.shape}")
+    if values.shape[0] != mesh.nvertices:
+        raise ValueError(
+            f"nodal_values length {values.shape[0]} != mesh vertices {mesh.nvertices}"
+        )
+    if not np.all(np.isfinite(points)) or not np.all(np.isfinite(values)):
+        raise ValueError("reference points and nodal values must be finite")
+
+    evaluated = np.empty((points.shape[0], values.shape[1]), dtype=np.float64)
+    finder = mesh.element_finder()
+    outside_indices: list[int] = []
+    for point_index, point in enumerate(points):
+        try:
+            element_index = int(finder(*point.reshape(3, 1))[0])
+        except ValueError:
+            outside_indices.append(point_index)
+            continue
+        vertex_ids = mesh.t[:, element_index]
+        tetra = mesh.p[:, vertex_ids].T
+        local = np.linalg.solve((tetra[1:] - tetra[0]).T, point - tetra[0])
+        barycentric = np.concatenate(([1.0 - float(np.sum(local))], local))
+        evaluated[point_index] = barycentric @ values[vertex_ids]
+
+    extrapolated_fraction = len(outside_indices) / max(points.shape[0], 1)
+    if extrapolated_fraction > MAX_EXTRAPOLATED_POINT_FRACTION:
+        raise ValueError(
+            "Reference-domain boundary extension fraction exceeds protocol limit: "
+            f"{extrapolated_fraction:.6f} > {MAX_EXTRAPOLATED_POINT_FRACTION:.6f}"
+        )
+
+    distances: list[float] = []
+    if outside_indices:
+        boundary_facets = mesh.boundary_facets()
+        if boundary_facets.size == 0:
+            raise ValueError("Prediction mesh has no boundary facets for reference-domain extension")
+        boundary_vertex_ids = mesh.facets[:, boundary_facets].T
+        boundary_triangles = mesh.p.T[boundary_vertex_ids]
+        for point_index in outside_indices:
+            triangle_index, barycentric, distance = _closest_triangle_projection(
+                points[point_index], boundary_triangles
+            )
+            evaluated[point_index] = (
+                barycentric @ values[boundary_vertex_ids[triangle_index]]
+            )
+            distances.append(distance)
+
+    bbox_diagonal = float(np.linalg.norm(np.ptp(mesh.p.T, axis=0)))
+    if bbox_diagonal <= 0.0 or not math.isfinite(bbox_diagonal):
+        raise ValueError("Prediction mesh has an invalid bounding-box diagonal")
+    max_distance = max(distances, default=0.0)
+    max_distance_ratio = max_distance / bbox_diagonal
+    if max_distance_ratio > MAX_EXTRAPOLATION_DISTANCE_RATIO:
+        raise ValueError(
+            "Reference-domain boundary extension distance ratio exceeds protocol limit: "
+            f"{max_distance_ratio:.6f} > {MAX_EXTRAPOLATION_DISTANCE_RATIO:.6f}"
+        )
+    if not np.all(np.isfinite(evaluated)):
+        raise ValueError("Reference-domain field evaluation produced non-finite values")
+    return evaluated, {
+        "extrapolated_point_count": len(outside_indices),
+        "extrapolated_point_fraction": float(extrapolated_fraction),
+        "max_extrapolation_distance": float(max_distance),
+        "max_extrapolation_distance_ratio": float(max_distance_ratio),
+    }
+
+
+def _closest_triangle_projection(
+    point: np.ndarray,
+    triangles: np.ndarray,
+) -> tuple[int, np.ndarray, float]:
+    """Return the exact closest point encoded as triangle barycentric weights."""
+    point = np.asarray(point, dtype=np.float64)
+    triangles = np.asarray(triangles, dtype=np.float64)
+    a = triangles[:, 0]
+    b = triangles[:, 1]
+    c = triangles[:, 2]
+    ab = b - a
+    ac = c - a
+    ap = point - a
+    d00 = np.einsum("ij,ij->i", ab, ab)
+    d01 = np.einsum("ij,ij->i", ab, ac)
+    d11 = np.einsum("ij,ij->i", ac, ac)
+    d20 = np.einsum("ij,ij->i", ap, ab)
+    d21 = np.einsum("ij,ij->i", ap, ac)
+    denominator = d00 * d11 - d01 * d01
+
+    best_distance_squared = np.full(triangles.shape[0], np.inf, dtype=np.float64)
+    best_weights = np.zeros((triangles.shape[0], 3), dtype=np.float64)
+
+    valid_plane = np.abs(denominator) > np.finfo(np.float64).eps
+    v = np.zeros_like(denominator)
+    w = np.zeros_like(denominator)
+    np.divide(d11 * d20 - d01 * d21, denominator, out=v, where=valid_plane)
+    np.divide(d00 * d21 - d01 * d20, denominator, out=w, where=valid_plane)
+    u = 1.0 - v - w
+    plane_inside = valid_plane & (u >= -1.0e-12) & (v >= -1.0e-12) & (w >= -1.0e-12)
+    plane_points = u[:, None] * a + v[:, None] * b + w[:, None] * c
+    plane_distance_squared = np.sum((plane_points - point) ** 2, axis=1)
+    best_distance_squared[plane_inside] = plane_distance_squared[plane_inside]
+    best_weights[plane_inside] = np.column_stack((u, v, w))[plane_inside]
+
+    segment_specs = (
+        (a, b, (0, 1)),
+        (b, c, (1, 2)),
+        (c, a, (2, 0)),
+    )
+    for start, end, (start_index, end_index) in segment_specs:
+        delta = end - start
+        length_squared = np.einsum("ij,ij->i", delta, delta)
+        parameter = np.zeros_like(length_squared)
+        np.divide(
+            np.einsum("ij,ij->i", point - start, delta),
+            length_squared,
+            out=parameter,
+            where=length_squared > np.finfo(np.float64).eps,
+        )
+        parameter = np.clip(parameter, 0.0, 1.0)
+        segment_points = start + parameter[:, None] * delta
+        distance_squared = np.sum((segment_points - point) ** 2, axis=1)
+        improves = distance_squared < best_distance_squared
+        if not np.any(improves):
+            continue
+        weights = np.zeros_like(best_weights)
+        weights[:, start_index] = 1.0 - parameter
+        weights[:, end_index] = parameter
+        best_distance_squared[improves] = distance_squared[improves]
+        best_weights[improves] = weights[improves]
+
+    triangle_index = int(np.argmin(best_distance_squared))
+    distance_squared = float(best_distance_squared[triangle_index])
+    if not math.isfinite(distance_squared):
+        raise ValueError("Could not project an outside reference point to the prediction boundary")
+    barycentric = np.clip(best_weights[triangle_index], 0.0, 1.0)
+    barycentric /= np.sum(barycentric)
+    return triangle_index, barycentric, math.sqrt(max(distance_squared, 0.0))
 
 
 def volume_weighted_relative_l2(
@@ -637,6 +797,8 @@ def _aggregate_successful_group(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "qoi_relative_error",
         "predicted_elements",
         "budget_ratio",
+        "extrapolated_point_fraction",
+        "max_extrapolation_distance_ratio",
         "runtime_seconds",
     )
     payload = {
