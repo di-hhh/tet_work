@@ -134,6 +134,9 @@ def test_scalar_and_elasticity_reference_self_evaluation_is_deterministic(case_r
 
     assert len(first["rows"]) == 2
     assert all(row["solver_success"] for row in first["rows"])
+    assert all(row["joint_success"] for row in first["rows"])
+    assert all(row["predicted_vertices"] > 0 for row in first["rows"])
+    assert all(row["solver_runtime_seconds"] >= 0.0 for row in first["rows"])
     assert all(row["solution_l2_relative"] < 1.0e-10 for row in first["rows"])
     assert all(row["qoi_relative_error"] < 1.0e-10 for row in first["rows"])
     assert [row["solution_l2_relative"] for row in first["rows"]] == [
@@ -211,6 +214,42 @@ def test_solver_or_mesh_failure_is_recorded_without_fake_metrics(case_root: Path
     header = result_csv.read_text(encoding="utf-8").splitlines()[0].split(",")
     assert "solution_l2_relative" in header
     assert "qoi_relative_error" in header
+
+
+def test_mesh_failure_is_not_hidden_by_a_successful_solver(case_root: Path):
+    output_root = _write_dataset(case_root, families=("scalar_elliptic",))
+    build_evaluation_references(
+        pipeline_output_root=output_root,
+        geometry_source_root=case_root,
+        reuse_audited_scalar_reference=False,
+    )
+    manifest = output_root / "test_predictions" / "prediction_manifest.csv"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    _write_csv(
+        manifest,
+        [
+            {
+                "sample_id": "sample_scalar",
+                "prediction_mesh_path": "target.vtk",
+                "mesh_generation_success": False,
+                "mesh_generation_status": "failed",
+            }
+        ],
+    )
+
+    result = evaluate_prediction_manifest(
+        pipeline_output_root=output_root,
+        geometry_source_root=case_root,
+        prediction_manifest_path=manifest,
+        fail_on_any_error=False,
+    )
+
+    row = result["rows"][0]
+    assert row["solver_success"] is True
+    assert row["joint_success"] is False
+    assert result["aggregate"]["solver_success"] == 1
+    assert result["aggregate"]["joint_success"] == 0
+    assert result["aggregate"]["num_success"] == 0
 
 
 def test_reference_condition_mismatch_is_a_recorded_failure(case_root: Path):

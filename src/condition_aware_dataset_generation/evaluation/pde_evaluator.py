@@ -34,13 +34,23 @@ PDE_RESULT_FIELDS = (
     "geometry_id",
     "condition_id",
     "pde_family",
+    "split",
+    "run_id",
     "method_id",
+    "analysis_id",
+    "method_role",
+    "oracle_only",
+    "evaluation_variant",
     "seed",
     "checkpoint",
     "dataset_fingerprint_sha256",
+    "manifest_sha256",
+    "amber_code_commit",
+    "pipeline_code_commit",
     "mesh_generation_success",
     "mesh_generation_status",
     "solver_success",
+    "joint_success",
     "failure_category",
     "failure_reason",
     "extrapolated_point_count",
@@ -54,11 +64,19 @@ PDE_RESULT_FIELDS = (
     "qoi_absolute_error",
     "qoi_relative_error",
     "predicted_elements",
+    "predicted_vertices",
     "desired_budget",
     "budget_ratio",
     "budget_deviation",
+    "absolute_budget_deviation",
+    "absolute_budget_relative_deviation",
+    "budget_close",
+    "budget_valid",
     "reference_elements",
     "reference_strength_ratio",
+    "reference_semantics",
+    "solver_runtime_seconds",
+    "pde_postprocess_runtime_seconds",
     "runtime_seconds",
 )
 
@@ -254,23 +272,38 @@ def evaluate_prediction_manifest(
     for prediction in predictions:
         sample_id = str(prediction.get("sample_id", ""))
         started = time.perf_counter()
+        solver_runtime_seconds = None
         base_row = {
             "protocol_version": EVALUATION_PROTOCOL_VERSION,
             "sample_id": sample_id,
+            "split": prediction.get("split", "test"),
+            "run_id": prediction.get("run_id"),
             "method_id": prediction.get("method_id"),
+            "analysis_id": prediction.get("analysis_id") or prediction.get("method_id"),
+            "method_role": prediction.get("method_role"),
+            "oracle_only": prediction.get("oracle_only"),
+            "evaluation_variant": prediction.get("evaluation_variant", "final"),
             "seed": prediction.get("seed"),
             "checkpoint": prediction.get("checkpoint"),
             "dataset_fingerprint_sha256": prediction.get("dataset_fingerprint_sha256"),
+            "manifest_sha256": prediction.get("manifest_sha256"),
+            "amber_code_commit": prediction.get("amber_code_commit"),
+            "pipeline_code_commit": prediction.get("pipeline_code_commit"),
             "mesh_generation_success": (
                 _as_bool(prediction.get("mesh_generation_success"))
                 if prediction.get("mesh_generation_success") not in {None, ""}
-                else None
+                else True
             ),
             "mesh_generation_status": prediction.get("mesh_generation_status"),
             "solver_success": False,
+            "joint_success": False,
             "failure_category": None,
             "failure_reason": None,
+            "reference_semantics": "discrepancy_relative_to_frozen_strong_reference",
         }
+        for key, value in prediction.items():
+            if key not in base_row and key not in {"prediction_mesh_path"}:
+                base_row[key] = value
         try:
             sample = sample_lookup[sample_id]
             desired_budget = int(sample.get("budget", 0) or 0)
@@ -289,12 +322,20 @@ def evaluate_prediction_manifest(
             )
             predicted_mesh = load_tetra_mesh(prediction_path)
             predicted_elements = int(predicted_mesh.t.shape[1])
+            predicted_vertices = int(predicted_mesh.p.shape[1])
+            absolute_budget_deviation = abs(predicted_elements - desired_budget)
+            absolute_budget_relative_deviation = absolute_budget_deviation / max(desired_budget, 1)
             base_row.update(
                 {
                     "predicted_elements": predicted_elements,
+                    "predicted_vertices": predicted_vertices,
                     "budget_ratio": predicted_elements / max(desired_budget, 1),
                     "budget_deviation": (predicted_elements - desired_budget)
                     / max(desired_budget, 1),
+                    "absolute_budget_deviation": absolute_budget_deviation,
+                    "absolute_budget_relative_deviation": absolute_budget_relative_deviation,
+                    "budget_close": absolute_budget_relative_deviation <= 0.18,
+                    "budget_valid": 0.8 <= predicted_elements / max(desired_budget, 1) <= 11000.0 / 7000.0,
                 }
             )
             preprocess_path = _resolve_output_path(
@@ -302,6 +343,7 @@ def evaluate_prediction_manifest(
             )
             preprocess_record = GeometryPreprocessRecord(**_load_json(preprocess_path))
             condition_record = condition_record_from_sample(sample)
+            solver_started = time.perf_counter()
             solve_result = solve_condition(
                 predicted_mesh,
                 preprocess_record,
@@ -312,6 +354,8 @@ def evaluate_prediction_manifest(
                     "solver_stage_name": "offline_prediction_solve",
                 },
             )
+            solver_runtime_seconds = float(time.perf_counter() - solver_started)
+            postprocess_started = time.perf_counter()
             reference_path = _resolve_output_path(
                 reference_row["evaluation_reference_path"], output_root
             )
@@ -343,6 +387,7 @@ def evaluate_prediction_manifest(
                     **base_row,
                     **extrapolation,
                     "solver_success": True,
+                    "joint_success": bool(base_row.get("mesh_generation_success")),
                     "solution_l2_absolute": solution_metrics["absolute_l2"],
                     "solution_l2_relative": solution_metrics["relative_l2"],
                     "qoi_predicted": qoi_metrics["predicted"],
@@ -351,6 +396,8 @@ def evaluate_prediction_manifest(
                     "qoi_relative_error": qoi_metrics["relative_error"],
                     "reference_elements": int(reference_connectivity.shape[0]),
                     "reference_strength_ratio": int(reference_connectivity.shape[0]) / max(predicted_elements, 1),
+                    "solver_runtime_seconds": solver_runtime_seconds,
+                    "pde_postprocess_runtime_seconds": float(time.perf_counter() - postprocess_started),
                     "runtime_seconds": float(time.perf_counter() - started),
                 }
             )
@@ -359,8 +406,10 @@ def evaluate_prediction_manifest(
                 {
                     **base_row,
                     "solver_success": False,
+                    "joint_success": False,
                     "failure_category": type(exc).__name__,
                     "failure_reason": str(exc),
+                    "solver_runtime_seconds": solver_runtime_seconds,
                     "runtime_seconds": float(time.perf_counter() - started),
                 }
             )
@@ -370,7 +419,7 @@ def evaluate_prediction_manifest(
     aggregate = aggregate_pde_rows(rows)
     if aggregate_json_path is not None:
         dump_json(Path(aggregate_json_path), aggregate)
-    failures = [row for row in rows if not bool(row.get("solver_success"))]
+    failures = [row for row in rows if not _as_bool(row.get("joint_success"))]
     if failures and fail_on_any_error:
         raise PdeEvaluationError(
             f"Offline PDE evaluation failed for {len(failures)}/{len(rows)} samples; "
@@ -636,16 +685,23 @@ def aggregate_pde_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
     groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
         groups[str(row.get("pde_family") or "unknown")].append(row)
+    mesh_success = sum(_as_bool(row.get("mesh_generation_success")) for row in rows)
+    solver_success = sum(_as_bool(row.get("solver_success")) for row in rows)
+    joint_success = sum(_as_bool(row.get("joint_success")) for row in rows)
     return {
         "protocol_version": EVALUATION_PROTOCOL_VERSION,
         "num_samples": len(rows),
-        "num_success": sum(_as_bool(row.get("solver_success")) for row in rows),
-        "num_failures": sum(not _as_bool(row.get("solver_success")) for row in rows),
-        "failure_rate": (
-            sum(not _as_bool(row.get("solver_success")) for row in rows) / len(rows) if rows else None
-        ),
+        "num_success": joint_success,
+        "num_failures": len(rows) - joint_success,
+        "failure_rate": (len(rows) - joint_success) / len(rows) if rows else None,
+        "mesh_generation_success": mesh_success,
+        "mesh_generation_success_rate": mesh_success / len(rows) if rows else None,
+        "solver_success": solver_success,
+        "solver_success_rate": solver_success / len(rows) if rows else None,
+        "joint_success": joint_success,
+        "joint_success_rate": joint_success / len(rows) if rows else None,
         "by_pde_family": {
-            family: _aggregate_successful_group(group) for family, group in sorted(groups.items())
+            family: _aggregate_joint_success_group(group) for family, group in sorted(groups.items())
         },
     }
 
@@ -789,22 +845,34 @@ def _validate_reference_row(sample: dict[str, Any], reference: dict[str, Any]) -
         raise ValueError(f"Evaluation reference metadata mismatch: {mismatches}")
 
 
-def _aggregate_successful_group(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    successful = [row for row in rows if _as_bool(row.get("solver_success"))]
+def _aggregate_joint_success_group(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    successful = [row for row in rows if _as_bool(row.get("joint_success"))]
     metrics = (
         "solution_l2_relative",
         "qoi_absolute_error",
         "qoi_relative_error",
         "predicted_elements",
+        "predicted_vertices",
         "budget_ratio",
+        "absolute_budget_deviation",
+        "absolute_budget_relative_deviation",
         "extrapolated_point_fraction",
         "max_extrapolation_distance_ratio",
+        "solver_runtime_seconds",
+        "pde_postprocess_runtime_seconds",
         "runtime_seconds",
     )
+    mesh_success = sum(_as_bool(row.get("mesh_generation_success")) for row in rows)
+    solver_success = sum(_as_bool(row.get("solver_success")) for row in rows)
     payload = {
         "num_samples": len(rows),
         "num_success": len(successful),
         "num_failures": len(rows) - len(successful),
+        "mesh_generation_success": mesh_success,
+        "solver_success": solver_success,
+        "joint_success": len(successful),
+        "budget_close": sum(_as_bool(row.get("budget_close")) for row in rows),
+        "budget_valid": sum(_as_bool(row.get("budget_valid")) for row in rows),
     }
     for metric in metrics:
         values = [float(row[metric]) for row in successful if row.get(metric) not in {None, ""}]
