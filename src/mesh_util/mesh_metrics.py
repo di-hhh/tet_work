@@ -111,14 +111,26 @@ class MeshMetrics:
             np.sum((vertices[:, left] - vertices[:, right]) ** 2, axis=1)
             for left, right in edge_pairs
         )
-        valid = (volumes > 1.0e-15) & np.isfinite(volumes) & (squared_edge_sum > 0.0)
+        repeated_vertex = np.asarray([len(set(row.tolist())) < 4 for row in tetra], dtype=bool)
+        finite = np.isfinite(signed_six_volume) & np.isfinite(squared_edge_sum)
+        degenerate = (~finite) | (volumes <= 1.0e-15) | (squared_edge_sum <= 0.0) | repeated_vertex
+        inverted = finite & (signed_six_volume < -6.0e-15)
+        invalid = degenerate | inverted
+        valid = ~invalid
         quality = np.zeros(len(tetra), dtype=np.float64)
         quality[valid] = 12.0 * np.power(3.0 * volumes[valid], 2.0 / 3.0) / squared_edge_sum[valid]
         return {
             "tetra_quality_mean": float(np.mean(quality)) if quality.size else float("nan"),
             "tetra_quality_min": float(np.min(quality)) if quality.size else float("nan"),
             "tetra_quality_p05": float(np.quantile(quality, 0.05)) if quality.size else float("nan"),
-            "tetra_degenerate_fraction": float(np.mean(~valid)) if quality.size else float("nan"),
+            "tetra_quality_q05": float(np.quantile(quality, 0.05)) if quality.size else float("nan"),
+            "tetra_quality_median": float(np.median(quality)) if quality.size else float("nan"),
+            "tetra_degenerate_count": int(np.sum(degenerate)),
+            "tetra_degenerate_fraction": float(np.mean(degenerate)) if quality.size else float("nan"),
+            "tetra_inverted_count": int(np.sum(inverted)),
+            "tetra_inverted_fraction": float(np.mean(inverted)) if quality.size else float("nan"),
+            "tetra_invalid_count": int(np.sum(invalid)),
+            "tetra_invalid_fraction": float(np.mean(invalid)) if quality.size else float("nan"),
         }
 
     def get_fem_metrics(self) -> MetricDict:
@@ -196,9 +208,13 @@ class MeshMetrics:
         if self.source_data is None:
             return {
                 "weighted_size_l2": float("nan"),
+                "weighted_size_mse": float("nan"),
                 "topk_high_importance_l2": float("nan"),
+                "topk_high_importance_mse": float("nan"),
                 "bucket_low_size_l2": float("nan"),
+                "bucket_low_size_mse": float("nan"),
                 "bucket_high_size_l2": float("nan"),
+                "bucket_high_size_mse": float("nan"),
                 "bucket_high_low_ratio": float("nan"),
             }
 

@@ -162,9 +162,13 @@ def compute_size_error_metrics_codex(
     if pred.size == 0 or target.size == 0 or pred.size != target.size:
         return {
             "weighted_size_l2": np.nan,
+            "weighted_size_mse": np.nan,
             "topk_high_importance_l2": np.nan,
+            "topk_high_importance_mse": np.nan,
             "bucket_low_size_l2": np.nan,
+            "bucket_low_size_mse": np.nan,
             "bucket_high_size_l2": np.nan,
+            "bucket_high_size_mse": np.nan,
             "bucket_high_low_ratio": np.nan,
         }
 
@@ -186,11 +190,20 @@ def compute_size_error_metrics_codex(
         bucket_count=bucket_count,
         epsilon=epsilon,
     )
-    return {
+    metrics = {
         "weighted_size_l2": weighted_size_l2,
+        "weighted_size_mse": weighted_size_l2,
         "topk_high_importance_l2": topk_high_importance_l2,
+        "topk_high_importance_mse": topk_high_importance_l2,
         **bucket_metrics,
     }
+    metrics["bucket_low_size_mse"] = metrics["bucket_low_size_l2"]
+    metrics["bucket_high_size_mse"] = metrics["bucket_high_size_l2"]
+    for bucket_idx in range(max(int(bucket_count), 1)):
+        legacy_key = f"bucket_{bucket_idx}_size_l2"
+        if legacy_key in metrics:
+            metrics[f"bucket_{bucket_idx}_size_mse"] = metrics[legacy_key]
+    return metrics
 
 
 def compute_projection_diagnostics_codex(
@@ -382,8 +395,11 @@ def _single_prediction_metrics_codex(
     if pred.size == 0 or pred.size != target.size:
         return {
             f"{prefix}size_l2": np.nan,
+            f"{prefix}size_mse": np.nan,
             f"{prefix}weighted_size_l2": np.nan,
+            f"{prefix}weighted_size_mse": np.nan,
             f"{prefix}topk_high_importance_l2": np.nan,
+            f"{prefix}topk_high_importance_mse": np.nan,
         }
 
     squared_error = np.square(pred - target)
@@ -396,10 +412,14 @@ def _single_prediction_metrics_codex(
         topk_percent=topk_percent,
         bucket_count=bucket_count,
     )
+    size_mse = float(np.mean(squared_error))
     return {
-        f"{prefix}size_l2": float(np.mean(squared_error)),
+        f"{prefix}size_l2": size_mse,
+        f"{prefix}size_mse": size_mse,
         f"{prefix}weighted_size_l2": base_metrics.get("weighted_size_l2", np.nan),
+        f"{prefix}weighted_size_mse": base_metrics.get("weighted_size_mse", np.nan),
         f"{prefix}topk_high_importance_l2": base_metrics.get("topk_high_importance_l2", np.nan),
+        f"{prefix}topk_high_importance_mse": base_metrics.get("topk_high_importance_mse", np.nan),
     }
 
 

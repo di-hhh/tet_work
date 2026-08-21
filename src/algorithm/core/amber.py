@@ -1,4 +1,5 @@
 import warnings
+import time
 from typing import Tuple
 
 import numpy as np
@@ -114,15 +115,32 @@ class Amber(MeshGenerationAlgorithm):
     ##########################
 
     def _evaluate_data_point(self, data: AmberData) -> MetricDict:
+        return self._evaluate_data_point_with_variant(data=data, prediction_variant="final")
+
+    def _evaluate_expert_only_data_point(self, data: AmberData) -> MetricDict:
+        return self._evaluate_data_point_with_variant(data=data, prediction_variant="expert_only")
+
+    def _evaluate_data_point_with_variant(
+        self,
+        *,
+        data: AmberData,
+        prediction_variant: str,
+    ) -> MetricDict:
         cumulative_elements = data.mesh.nelements
         evaluation_metrics = {}
         mesh_metrics = None
         final_mesh = data.mesh
         final_success = False
         final_status = "not_run"
+        timing_totals = {
+            "graph_preparation_seconds": 0.0,
+            "gnn_forward_seconds": 0.0,
+            "mesh_generation_seconds": 0.0,
+            "end_to_end_inference_seconds": 0.0,
+        }
 
         for step in range(self.inference_steps):
-            inference_output = self._inference_step(data)
+            inference_output = self._inference_step(data, prediction_variant=prediction_variant)
             new_mesh = inference_output.output_mesh
             predictions = inference_output.predictions
             prediction_bundle = inference_output.prediction_bundle
@@ -148,6 +166,10 @@ class Amber(MeshGenerationAlgorithm):
                 "min_sf": torch.min(predictions).item(),
                 "graph_size": data.observation.num_nodes + data.observation.num_edges,
             }
+            for key, value in (inference_output.timing or {}).items():
+                prediction_metrics[key] = float(value)
+                if key in timing_totals:
+                    timing_totals[key] += float(value)
             if prediction_bundle is not None and hasattr(self.criterion, "get_prediction_diagnostics"):
                 graph_batch = make_batch(data.observation).to(self.device)
                 prediction_metrics |= self.criterion.get_prediction_diagnostics(
@@ -191,6 +213,11 @@ class Amber(MeshGenerationAlgorithm):
         self._last_evaluation_mesh = final_mesh
         self._last_evaluation_success = final_success
         self._last_evaluation_status = final_status
+        self._last_evaluation_variant = prediction_variant
+        self._last_evaluation_timing = timing_totals
+        evaluation_metrics |= {
+            f"inference_{key}": value for key, value in timing_totals.items()
+        }
         return evaluation_metrics
 
     def _visualize_data_point(self, data: AmberData) -> PlotDict:
@@ -241,16 +268,30 @@ class Amber(MeshGenerationAlgorithm):
 
         return sizing_field
 
-    def _inference_step(self, data: AmberData) -> InferenceStepOutput:
+    def _inference_step(
+        self,
+        data: AmberData,
+        prediction_variant: str = "final",
+    ) -> InferenceStepOutput:
+        if prediction_variant not in {"final", "expert_only"}:
+            raise ValueError(f"Unsupported prediction_variant '{prediction_variant}'")
+        end_to_end_started = time.perf_counter()
+        graph_started = time.perf_counter()
         graph = data.observation
+        graph_preparation_seconds = time.perf_counter() - graph_started
         mesh = data.mesh
         mesh_generation_status: MeshGenerationStatus = "success"
 
         with torch.no_grad():
+            self._synchronize_inference_device()
+            gnn_started = time.perf_counter()
             prediction_bundle = self._predict(make_batch(graph), is_train=False, return_details=True)
-            predictions = prediction_bundle["final"]
+            self._synchronize_inference_device()
+            gnn_forward_seconds = time.perf_counter() - gnn_started
+            predictions = prediction_bundle["expert" if prediction_variant == "expert_only" else "final"]
         sizing_field = self._clip_detach_dampen(predictions, data.refinement_depth, is_train=self.training)
 
+        mesh_generation_started = time.perf_counter()
         if self.max_mesh_elements is not None:
             approx_new_num_elements = self._estimate_new_num_elements(mesh, sizing_field)
             if approx_new_num_elements > self.max_mesh_elements:
@@ -270,6 +311,12 @@ class Amber(MeshGenerationAlgorithm):
                         mesh,
                         "failed",
                         prediction_bundle=prediction_bundle,
+                        timing=self._finish_inference_timing(
+                            end_to_end_started=end_to_end_started,
+                            graph_preparation_seconds=graph_preparation_seconds,
+                            gnn_forward_seconds=gnn_forward_seconds,
+                            mesh_generation_started=mesh_generation_started,
+                        ),
                     )
 
         try:
@@ -285,6 +332,12 @@ class Amber(MeshGenerationAlgorithm):
                 mesh,
                 "failed",
                 prediction_bundle=prediction_bundle,
+                timing=self._finish_inference_timing(
+                    end_to_end_started=end_to_end_started,
+                    graph_preparation_seconds=graph_preparation_seconds,
+                    gnn_forward_seconds=gnn_forward_seconds,
+                    mesh_generation_started=mesh_generation_started,
+                ),
             )
 
         return InferenceStepOutput(
@@ -292,7 +345,33 @@ class Amber(MeshGenerationAlgorithm):
             new_mesh,
             mesh_generation_status=mesh_generation_status,
             prediction_bundle=prediction_bundle,
+            timing=self._finish_inference_timing(
+                end_to_end_started=end_to_end_started,
+                graph_preparation_seconds=graph_preparation_seconds,
+                gnn_forward_seconds=gnn_forward_seconds,
+                mesh_generation_started=mesh_generation_started,
+            ),
         )
+
+    def _finish_inference_timing(
+        self,
+        *,
+        end_to_end_started: float,
+        graph_preparation_seconds: float,
+        gnn_forward_seconds: float,
+        mesh_generation_started: float,
+    ) -> dict[str, float]:
+        self._synchronize_inference_device()
+        return {
+            "graph_preparation_seconds": float(graph_preparation_seconds),
+            "gnn_forward_seconds": float(gnn_forward_seconds),
+            "mesh_generation_seconds": float(time.perf_counter() - mesh_generation_started),
+            "end_to_end_inference_seconds": float(time.perf_counter() - end_to_end_started),
+        }
+
+    def _synchronize_inference_device(self) -> None:
+        if not self.training and torch.cuda.is_available() and self.device.type == "cuda":
+            torch.cuda.synchronize(self.device)
 
     def _estimate_new_num_elements(self, mesh: MeshWrapper, sizing_field: np.ndarray) -> float:
         from src.mesh_util.sizing_field_util import sizing_field_to_num_elements

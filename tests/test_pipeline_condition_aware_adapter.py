@@ -4,6 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import meshio
 import numpy as np
@@ -12,6 +13,7 @@ from hydra import compose, initialize_config_dir
 from omegaconf import OmegaConf
 
 from src.algorithm.dataloader import get_datasets
+from src.algorithm.util.fem_imitation_weights import get_imitation_weight_bundle
 from src.experiment_artifacts import (
     ExperimentProtocolError,
     _validate_formal_dataset_artifacts,
@@ -44,7 +46,10 @@ class PipelineConditionAwareAdapterTests(unittest.TestCase):
                 pipeline_output_root=str(root),
             )
             frozen = {"split_counts": audit.split_counts, "files": []}
-            with self.assertRaisesRegex(ExperimentProtocolError, "strong references"):
+            with patch("src.experiment_artifacts.verify_dataset_fingerprint"), self.assertRaisesRegex(
+                ExperimentProtocolError,
+                "strong references",
+            ):
                 _validate_formal_dataset_artifacts(
                     config=config,
                     audit_result=audit,
@@ -64,11 +69,12 @@ class PipelineConditionAwareAdapterTests(unittest.TestCase):
                 },
                 {"path": "pipeline_output/evaluation_references/v1/sample_test/metadata.json"},
             ]
-            _validate_formal_dataset_artifacts(
-                config=config,
-                audit_result=audit,
-                frozen=frozen,
-            )
+            with patch("src.experiment_artifacts.verify_dataset_fingerprint"):
+                _validate_formal_dataset_artifacts(
+                    config=config,
+                    audit_result=audit,
+                    frozen=frozen,
+                )
 
     def test_m0_to_m4_configs_compose_and_preserve_comparison_contract(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -83,6 +89,11 @@ class PipelineConditionAwareAdapterTests(unittest.TestCase):
                     "M4": "amber_pipeline_physics_correction_stage_field",
                 }.items()
             }
+            m1_ft = _compose_pipeline_config(
+                root=root,
+                run_name="amber_pipeline_weighted_fairness_control",
+                overrides=[],
+            )
             self.assertEqual(
                 {
                     method: str(config.experiment_protocol.method_id)
@@ -101,9 +112,29 @@ class PipelineConditionAwareAdapterTests(unittest.TestCase):
             self.assertEqual(float(configs["M2"].algorithm.lambda_corr_reg), 0.0)
             self.assertEqual(configs["M3"].task.physics_feature_source, "pipeline_indicator")
             self.assertEqual(configs["M4"].task.physics_feature_source, "stage_field_fusion")
+            self.assertEqual(m1_ft.experiment_protocol.method_id, "M1")
+            self.assertEqual(m1_ft.experiment_protocol.analysis_id, "M1-FT")
+            self.assertEqual(m1_ft.experiment_protocol.method_role, "auxiliary")
+            self.assertEqual(m1_ft.experiment_protocol.initialization_mode, "weights_only_fresh_optimizer")
+            self.assertIsNone(m1_ft.trainer.ckpt_path)
+            for key in ("architecture", "dataloader", "optimizer", "inference_steps", "loss_type"):
+                self.assertEqual(configs["M1"].algorithm.get(key), m1_ft.algorithm.get(key))
+            self.assertEqual(configs["M1"].algorithm.weighted_imitation, m1_ft.algorithm.weighted_imitation)
+            self.assertEqual(configs["M1"].trainer.max_epochs, m1_ft.trainer.max_epochs)
+            self.assertFalse(bool(configs["M0"].experiment_protocol.run_test_after_fit))
+            self.assertEqual(
+                list(configs["M4"].experiment_protocol.evaluation_prediction_variants),
+                ["final", "expert_only"],
+            )
+            self.assertEqual(configs["M3"].experiment_protocol.method_role, "oracle")
+            self.assertTrue(bool(configs["M3"].experiment_protocol.oracle_only))
             configs["M0"].experiment_protocol.formal_run = False
             configs["M0"].experiment_protocol.require_clean_repositories = False
             self.assertEqual(preflight_experiment_protocol(configs["M0"])["method_id"], "M0")
+            configs["M0"].experiment_protocol.run_test_after_fit = True
+            configs["M0"].experiment_protocol.formal_run = True
+            with self.assertRaisesRegex(ExperimentProtocolError, "defer test"):
+                preflight_experiment_protocol(configs["M0"])
             configs["M2"].experiment_protocol.formal_run = False
             configs["M2"].experiment_protocol.require_clean_repositories = False
             with self.assertRaisesRegex(ExperimentProtocolError, "Automatic same-seed M1 lookup"):
@@ -375,6 +406,44 @@ class PipelineConditionAwareAdapterTests(unittest.TestCase):
             self.assertEqual(float(graph.physics_feature_stage_field_loaded.max()), 1.0)
             self.assertEqual(float(graph.physics_feature_pipeline_indicator_loaded.max()), 0.0)
             self.assertGreater(float(graph.physics_feature.max()), 0.0)
+
+    def test_stage_field_projects_directly_to_current_learner_mesh_without_expert_mesh(self):
+        class ExpertMeshMustNotBeRead:
+            def __getattribute__(self, name):
+                raise AssertionError(f"Direct stage projection unexpectedly read expert_mesh.{name}")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = _write_pipeline_fixture(Path(tmpdir))
+            cfg = _compose_pipeline_config(
+                root=root,
+                run_name="amber_pipeline_physics_correction_stage_field",
+                overrides=[
+                    "task.required_splits=[train]",
+                    "algorithm.sizing_field_interpolation_type=interpolated_vertex",
+                    "algorithm.initial_mesh_handling=exclude",
+                    "task.features.edge.edge_curvature=False",
+                ],
+            )
+            data = get_datasets(cfg.algorithm, cfg.task)["train"][0]
+            source_data = SimpleNamespace(
+                imitation_weight_cache=dict(data.source_data.imitation_weight_cache),
+                expert_mesh=ExpertMeshMustNotBeRead(),
+            )
+            feature_config = OmegaConf.to_container(cfg.algorithm.weighted_imitation, resolve=True)
+            feature_config["weight_source_mode"] = "stage_field_fusion"
+
+            bundle = get_imitation_weight_bundle(
+                queried_mesh=data.mesh,
+                source_data=source_data,
+                sizing_field_interpolation_type="interpolated_vertex",
+                node_type="vertex",
+                weighted_imitation_config=feature_config,
+            )
+
+            self.assertTrue(bundle["loaded"])
+            self.assertFalse(bundle["fallback"])
+            self.assertEqual(bundle["raw_importance"].shape, (data.mesh.num_vertices,))
+            self.assertTrue(np.all(np.isfinite(bundle["normalized_importance"])))
 
     def test_quality_filter_excludes_fail_global_overrefine_by_default(self):
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -36,7 +36,15 @@ algorithm:
 
 experiment_protocol:
   method_id: M1
+  analysis_id: M1
+  method_role: core
+  protocol_id: formal-mold7000-v3
   formal_run: true
+  run_test_after_fit: false
+  evaluation_prediction_variants: [final]
+  budget_close_relative_tolerance: 0.18
+  budget_valid_min_ratio: 0.8
+  budget_valid_max_ratio: 1.5714285714285714
   require_seed_matched_m1_checkpoint: false
   evaluation_checkpoint: last.ckpt
   training_budget_epochs: 101

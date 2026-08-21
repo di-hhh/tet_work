@@ -51,6 +51,14 @@ def get_imitation_weight_bundle(
                 return _make_fallback_bundle(queried_mesh=queried_mesh, node_type=node_type, fallback=True)
             raise ValueError(f"Pipeline weights were requested from '{weight_mode}', but the source data is incomplete.")
         try:
+            if weight_mode in STAGE_FIELD_SOURCES:
+                return _bundle_from_pipeline_stage_probes(
+                    queried_mesh=queried_mesh,
+                    source_data=source_data,
+                    source=str(weight_mode),
+                    node_type=node_type,
+                    config=config,
+                )
             reference_fields = _get_pipeline_reference_fields(source_data=source_data, source=str(weight_mode))
             return _bundle_from_reference_fields(
                 queried_mesh=queried_mesh,
@@ -241,8 +249,6 @@ def _supports_pipeline_source(*, source_data: SourceData, source: str) -> bool:
 def _get_pipeline_reference_fields(*, source_data: SourceData, source: str) -> Dict[str, np.ndarray]:
     if source == "pipeline_indicator":
         return _get_pipeline_indicator_reference_fields(source_data=source_data)
-    if source in STAGE_FIELD_SOURCES:
-        return _get_pipeline_stage_field_reference_fields(source_data=source_data, source=source)
     raise ValueError(f"Unsupported pipeline source '{source}'.")
 
 
@@ -274,39 +280,78 @@ def _get_pipeline_indicator_reference_fields(*, source_data: SourceData) -> Dict
     return reference_fields
 
 
-def _get_pipeline_stage_field_reference_fields(*, source_data: SourceData, source: str) -> Dict[str, np.ndarray]:
+def _bundle_from_pipeline_stage_probes(
+    *,
+    queried_mesh: MeshWrapper,
+    source_data: SourceData,
+    source: str,
+    node_type: MeshNodeType,
+    config: Dict[str, Any],
+) -> Dict[str, Any]:
     cache = source_data.imitation_weight_cache or {}
-    cache_key = f"_pipeline_{source}_reference_fields"
-    cached_fields = cache.get(cache_key)
-    if cached_fields is not None:
-        return cached_fields
-
     stage_field_path = cache.get("stage_field_path")
     if not stage_field_path:
         raise ValueError("Pipeline stage field path is missing.")
     stage_field_config = cache.get("stage_field_config") or {}
-    probe_points, probe_importance = _load_stage_probe_importance(
-        stage_field_path=stage_field_path,
-        stage_field_config=stage_field_config,
-        source=source,
-    )
-    vertex_importance = _project_probe_field_to_points(
+    projection_target = str(stage_field_config.get("projection_target", "learner_mesh"))
+    if projection_target != "learner_mesh":
+        raise ValueError(
+            "Pipeline stage fields must be projected directly to the current learner mesh; "
+            f"got projection_target='{projection_target}'."
+        )
+
+    cache_key = f"_pipeline_{source}_probe_field"
+    cached_probe_field = cache.get(cache_key)
+    if cached_probe_field is None:
+        cached_probe_field = _load_stage_probe_importance(
+            stage_field_path=stage_field_path,
+            stage_field_config=stage_field_config,
+            source=source,
+        )
+        cache[cache_key] = cached_probe_field
+    probe_points, probe_importance = cached_probe_field
+
+    if node_type == "vertex":
+        query_points = np.asarray(queried_mesh.vertex_positions, dtype=np.float64)
+    elif node_type == "element":
+        vertices = np.asarray(queried_mesh.vertex_positions, dtype=np.float64)
+        simplices = np.asarray(queried_mesh.element_indices, dtype=np.int64)
+        query_points = vertices[simplices].mean(axis=1)
+    else:
+        raise ValueError(f"Unsupported node_type '{node_type}' for direct stage-field projection.")
+
+    projected_importance = _project_probe_field_to_points(
         probe_points=probe_points,
         probe_values=probe_importance,
-        query_points=np.asarray(source_data.expert_mesh.vertex_positions, dtype=np.float64),
+        query_points=query_points,
         stage_field_config=stage_field_config,
     )
-    vertex_importance = _normalize_stage_importance(vertex_importance, stage_field_config).astype(np.float32)
-    element_importance = _vertex_values_to_elements(
-        simplices=np.asarray(source_data.expert_mesh.element_indices, dtype=np.int64),
-        vertex_values=vertex_importance,
-    )
-    reference_fields = {
-        "element_importance": element_importance.astype(np.float32),
-        "vertex_importance": vertex_importance.astype(np.float32),
+    projected_importance = _normalize_stage_importance(
+        projected_importance,
+        stage_field_config,
+    ).astype(np.float32)
+    normalized_importance = normalize_importance_codex(projected_importance, config=config)
+    weights = build_weights_from_normalized_importance_codex(normalized_importance, config=config)
+    diagnostic_scalars = {
+        **compute_distribution_stats_codex(
+            weights,
+            topk_percent=float(config.get("topk_percent", 0.2)),
+            prefix="imitation_weight_",
+        ),
+        **compute_projection_diagnostics_codex(
+            reference_importance=probe_importance,
+            projected_importance=projected_importance,
+            topk_percent=float(config.get("topk_percent", 0.2)),
+        ),
     }
-    cache[cache_key] = reference_fields
-    return reference_fields
+    return {
+        "weights": weights,
+        "raw_importance": projected_importance,
+        "normalized_importance": np.asarray(normalized_importance, dtype=np.float32),
+        "loaded": True,
+        "fallback": False,
+        "diagnostic_scalars": diagnostic_scalars,
+    }
 
 
 def _load_stage_probe_importance(
@@ -476,11 +521,6 @@ def _element_values_to_vertices(*, num_vertices: int, simplices: np.ndarray, ele
     np.add.at(accum, simplices.reshape(-1), np.repeat(element_values, simplices.shape[1]))
     np.add.at(counts, simplices.reshape(-1), 1.0)
     return (accum / np.maximum(counts, 1.0)).astype(np.float32)
-
-
-def _vertex_values_to_elements(*, simplices: np.ndarray, vertex_values: np.ndarray) -> np.ndarray:
-    vertex_values = np.asarray(vertex_values, dtype=np.float32).reshape(-1)
-    return vertex_values[np.asarray(simplices, dtype=np.int64)].mean(axis=1).astype(np.float32)
 
 
 def _ones_for_mesh(mesh: MeshWrapper, node_type: MeshNodeType) -> np.ndarray:

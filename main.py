@@ -36,6 +36,7 @@ from src.logger.progress_bar import CustomProgressBar
 from src.experiment_artifacts import (
     FormalLastCheckpointCallback,
     LocalMetricsCallback,
+    TrainingRuntimeCallback,
     initialize_run_artifacts,
     preflight_experiment_protocol,
 )
@@ -126,7 +127,7 @@ def train(config: DictConfig) -> None:
             val_dataloaders=dataloaders.get("val"),
             ckpt_path=trainer_config.get("ckpt_path"),
         )
-        if protocol_preflight is not None:
+        if protocol_preflight is not None and protocol_preflight["run_test_after_fit"]:
             # 正式协议固定使用本次训练明确落盘的 last.ckpt，而不是内存中的最终状态。
             last_checkpoint = os.path.join(exp_root, "checkpoints", "last.ckpt")
             if not os.path.exists(last_checkpoint):
@@ -136,7 +137,7 @@ def train(config: DictConfig) -> None:
                 dataloaders=dataloaders.get("test"),
                 ckpt_path=last_checkpoint,
             )
-        else:
+        elif protocol_preflight is None:
             trainer.test(algorithm, dataloaders=dataloaders.get("test"))
 
     except Exception:
@@ -164,6 +165,7 @@ def get_callbacks(config: DictConfig, exp_root: str, wandb_logger, checkpoint_fr
     callbacks = [CustomProgressBar(), LocalMetricsCallback(exp_root)]
     if config.get("experiment_protocol"):
         callbacks.append(FormalLastCheckpointCallback(exp_root))
+        callbacks.append(TrainingRuntimeCallback(exp_root))
 
     # 如果启用了检查点保存，添加检查点回调
     if config.trainer.enable_checkpointing:

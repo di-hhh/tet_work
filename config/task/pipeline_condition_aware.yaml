@@ -12,7 +12,7 @@ manifest_name: sample_manifest
 evaluation_reference_manifest_name: evaluation_reference_manifest
 require_evaluation_reference: false
 evaluation_reference_required_splits: [test]
-dataset_fingerprint_path: manifests/dataset_fingerprint.json
+dataset_fingerprint_path: manifests/dataset_fingerprint_formal-mold7000-v3.json
 
 # Legacy absolute manifests are supported only through this explicit mapping.
 path_relocation:
@@ -56,6 +56,8 @@ quality_filter:
 stage_field:
   mode: single_field
   projection: idw
+  # Formal protocol: probes are projected directly to every current learner mesh.
+  projection_target: learner_mesh
   idw_k: 4
   idw_epsilon: 1.0e-12
   fail_on_missing: true

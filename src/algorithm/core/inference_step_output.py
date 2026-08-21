@@ -23,6 +23,7 @@ class InferenceStepOutput:
     output_mesh: MeshWrapper
     mesh_generation_status: MeshGenerationStatus
     prediction_bundle: dict | None = None
+    timing: dict[str, float] | None = None
 
     @property
     def refinement_success(self) -> bool:

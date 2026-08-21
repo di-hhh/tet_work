@@ -61,6 +61,29 @@ def _json_safe(value):
     return value
 
 
+def _steady_state_timing_summary(rows: List[Dict[str, object]]) -> Dict[str, object]:
+    timing_keys = (
+        "inference_graph_preparation_seconds",
+        "inference_gnn_forward_seconds",
+        "inference_mesh_generation_seconds",
+        "inference_end_to_end_inference_seconds",
+    )
+    steady_rows = [row for row in rows if not bool(row.get("timing_is_warmup"))]
+    summary: Dict[str, object] = {
+        "warmup_samples": len(rows) - len(steady_rows),
+        "steady_samples": len(steady_rows),
+    }
+    for key in timing_keys:
+        values = [
+            float(row[key])
+            for row in steady_rows
+            if row.get(key) is not None and np.isfinite(float(row[key]))
+        ]
+        summary[f"{key}_mean"] = float(np.mean(values)) if values else None
+        summary[f"{key}_median"] = float(np.median(values)) if values else None
+    return summary
+
+
 class MeshGenerationAlgorithm(LightningModule, ABC):
     """
     Abstract class for the full mesh generation algorithm. This class provides a structured approach
@@ -116,6 +139,9 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
         self.test_step_outputs = []
         self.test_sample_rows = []
         self.test_prediction_rows = []
+        self.expert_only_test_step_outputs = []
+        self.expert_only_sample_rows = []
+        self.expert_only_prediction_rows = []
         self.grad_norms = []
 
         self.save_hyperparameters("algorithm_config")
@@ -450,9 +476,26 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
         prediction_metadata = self._export_test_prediction(
             sample_metadata=sample_metadata,
             batch_idx=batch_idx,
+            evaluation_variant="final",
         )
         self.test_sample_rows.append(sample_metadata | prediction_metadata | evaluation_dict)
         self.test_prediction_rows.append(sample_metadata | prediction_metadata)
+
+        evaluation_variants = getattr(self, "local_evaluation_prediction_variants", ["final"])
+        if "expert_only" in evaluation_variants:
+            if not hasattr(self, "_evaluate_expert_only_data_point"):
+                raise RuntimeError("expert_only evaluation was requested but the algorithm does not support it")
+            expert_evaluation = self._evaluate_expert_only_data_point(data=batch)
+            self.expert_only_test_step_outputs.append(expert_evaluation)
+            expert_prediction_metadata = self._export_test_prediction(
+                sample_metadata=sample_metadata,
+                batch_idx=batch_idx,
+                evaluation_variant="expert_only",
+            )
+            self.expert_only_sample_rows.append(
+                sample_metadata | expert_prediction_metadata | expert_evaluation
+            )
+            self.expert_only_prediction_rows.append(sample_metadata | expert_prediction_metadata)
 
         if batch_idx in self.plotting_sample_idxs:
             plot_dict = self._visualize_data_point(data=batch)
@@ -482,9 +525,16 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
         test_step_outputs_df = pd.DataFrame(self.test_step_outputs)
         if experiment_logger is not None:
             experiment_logger.log({"test_table": test_step_outputs_df}, step=self.current_epoch)
+        expert_only_outputs = getattr(self, "expert_only_test_step_outputs", [])
         if hasattr(self, "_write_local_test_artifacts"):
-            self._write_local_test_artifacts(test_averages)
+            expert_only_averages = (
+                aggregate_metrics(metrics=expert_only_outputs)
+                if expert_only_outputs
+                else None
+            )
+            self._write_local_test_artifacts(test_averages, expert_only_averages)
         self.test_step_outputs.clear()
+        expert_only_outputs.clear()
 
         test_loader = self.trainer.test_dataloaders
         self._log_constant_plots(dataloader=test_loader, prefix="test")
@@ -498,12 +548,30 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
             "geometry_id": cache.get("geometry_id"),
             "condition_id": cache.get("condition_id"),
             "pde_family": cache.get("pde_family"),
+            "split": cache.get("split", "test"),
+            "desired_budget": cache.get("budget"),
             "budget": cache.get("budget"),
             "quality_verdict": cache.get("quality_verdict"),
+            "teacher_generation_time_seconds": cache.get("teacher_generation_time_seconds"),
+            "teacher_generation_time_scope": "whole_teacher_sample_not_isolated_stage_field",
+            "stage_field_generation_time_isolated": False,
+            "timing_is_warmup": bool(batch_idx == 0),
+            "run_id": run_metadata.get("run_id"),
             "method_id": run_metadata.get("method_id"),
+            "analysis_id": run_metadata.get("analysis_id"),
+            "method_role": run_metadata.get("method_role"),
+            "oracle_only": run_metadata.get("oracle_only"),
             "seed": run_metadata.get("seed"),
             "checkpoint": run_metadata.get("evaluation_checkpoint"),
             "dataset_fingerprint_sha256": run_metadata.get("dataset_fingerprint_sha256"),
+            "manifest_sha256": run_metadata.get("manifest_sha256"),
+            "amber_code_commit": run_metadata.get("amber_code_commit"),
+            "pipeline_code_commit": run_metadata.get("pipeline_code_commit"),
+            "initial_elements": int(source_data.initial_mesh.num_elements) if source_data is not None else None,
+            "initial_vertices": int(source_data.initial_mesh.num_vertices) if source_data is not None else None,
+            "target_elements": int(source_data.expert_mesh.num_elements) if source_data is not None else None,
+            "target_vertices": int(source_data.expert_mesh.num_vertices) if source_data is not None else None,
+            "sizing_mse_semantics": "legacy *_size_l2 columns are mean squared errors; use *_size_mse aliases",
         }
 
     def _export_test_prediction(
@@ -511,6 +579,7 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
         *,
         sample_metadata: Dict[str, object],
         batch_idx: int,
+        evaluation_variant: str,
     ) -> Dict[str, object]:
         artifact_root = getattr(self, "local_artifact_root", None)
         mesh = getattr(self, "_last_evaluation_mesh", None)
@@ -519,45 +588,91 @@ class MeshGenerationAlgorithm(LightningModule, ABC):
         if not artifact_root or mesh is None:
             return {
                 "prediction_mesh_path": None,
+                "evaluation_variant": evaluation_variant,
                 "mesh_generation_success": success,
                 "mesh_generation_status": status,
             }
         from src.mesh_util.save_mesh import save_as_vtk
 
         sample_id = _safe_filename(str(sample_metadata.get("sample_id") or f"test_{batch_idx:05d}"))
-        output_path = Path(artifact_root) / "test_predictions" / f"{sample_id}.vtk"
+        prediction_dir = Path(artifact_root) / "test_predictions"
+        if evaluation_variant == "expert_only":
+            prediction_dir = prediction_dir / "expert_only"
+        output_path = prediction_dir / f"{sample_id}.vtk"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         save_as_vtk(mesh, output_path)
+        desired_budget = int(sample_metadata.get("desired_budget") or 0)
+        predicted_elements = int(mesh.nelements)
+        budget_ratio = predicted_elements / max(desired_budget, 1)
+        relative_deviation = abs(predicted_elements - desired_budget) / max(desired_budget, 1)
+        run_metadata = getattr(self, "local_run_metadata", {}) or {}
+        close_tolerance = float(run_metadata.get("budget_close_relative_tolerance", 0.18))
+        valid_min = float(run_metadata.get("budget_valid_min_ratio", 0.8))
+        valid_max = float(run_metadata.get("budget_valid_max_ratio", 11000.0 / 7000.0))
         return {
             "prediction_mesh_path": output_path.relative_to(Path(artifact_root)).as_posix(),
+            "evaluation_variant": evaluation_variant,
             "mesh_generation_success": success,
             "mesh_generation_status": status,
-            "predicted_elements": int(mesh.nelements),
+            "predicted_elements": predicted_elements,
+            "predicted_vertices": int(mesh.nvertices),
+            "budget_ratio": budget_ratio,
+            "absolute_budget_deviation": abs(predicted_elements - desired_budget),
+            "absolute_budget_relative_deviation": relative_deviation,
+            "budget_close": relative_deviation <= close_tolerance,
+            "budget_valid": valid_min <= budget_ratio <= valid_max,
         }
 
-    def _write_local_test_artifacts(self, aggregate_metrics_payload: Dict[str, object]) -> None:
+    def _write_local_test_artifacts(
+        self,
+        aggregate_metrics_payload: Dict[str, object],
+        expert_only_aggregate_metrics_payload: Dict[str, object] | None = None,
+    ) -> None:
+        expert_only_sample_rows = getattr(self, "expert_only_sample_rows", [])
+        expert_only_prediction_rows = getattr(self, "expert_only_prediction_rows", [])
         artifact_root = getattr(self, "local_artifact_root", None)
         if not artifact_root:
             self.test_sample_rows.clear()
             self.test_prediction_rows.clear()
+            expert_only_sample_rows.clear()
+            expert_only_prediction_rows.clear()
             return
         root = Path(artifact_root)
         _write_dict_rows_csv(root / "per_sample_metrics.csv", self.test_sample_rows)
         _write_dict_rows_csv(root / "test_predictions" / "prediction_manifest.csv", self.test_prediction_rows)
+        if expert_only_prediction_rows:
+            _write_dict_rows_csv(root / "expert_only_per_sample_metrics.csv", expert_only_sample_rows)
+            _write_dict_rows_csv(
+                root / "test_predictions" / "expert_only_prediction_manifest.csv",
+                expert_only_prediction_rows,
+            )
         success_count = sum(bool(row.get("mesh_generation_success")) for row in self.test_prediction_rows)
         payload = {
             "checkpoint": "checkpoints/last.ckpt",
             "num_samples": len(self.test_prediction_rows),
             "mesh_generation_success": success_count,
             "mesh_generation_failures": len(self.test_prediction_rows) - success_count,
+            "steady_state_timing": _steady_state_timing_summary(self.test_sample_rows),
             "metrics": _json_safe(aggregate_metrics_payload),
         }
+        if expert_only_aggregate_metrics_payload is not None:
+            payload["expert_only"] = {
+                "num_samples": len(expert_only_prediction_rows),
+                "mesh_generation_success": sum(
+                    bool(row.get("mesh_generation_success"))
+                    for row in expert_only_prediction_rows
+                ),
+                "steady_state_timing": _steady_state_timing_summary(expert_only_sample_rows),
+                "metrics": _json_safe(expert_only_aggregate_metrics_payload),
+            }
         (root / "aggregate_metrics.json").write_text(
             json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False),
             encoding="utf-8",
         )
         self.test_sample_rows.clear()
         self.test_prediction_rows.clear()
+        expert_only_sample_rows.clear()
+        expert_only_prediction_rows.clear()
 
     ############################
     # prediction/model forward #
