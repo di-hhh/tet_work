@@ -1,0 +1,2998 @@
+﻿**********************
+Windows PowerShell 脚本开始
+开始时间: 20260827234200
+用户名: LEGION-DH-YS\13801
+RunAs 用户: LEGION-DH-YS\13801
+配置名称: 
+计算机: LEGION-DH-YS (Microsoft Windows NT 10.0.26200.0)
+主机应用程序: C:\Windows\system32\WindowsPowerShell\v1.0\PowerShell.exe
+进程 ID: 18360
+PSVersion: 5.1.26100.9168
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.9168
+BuildVersion: 10.0.26100.9168
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+已启动脚本，输出文件为 D:\SITP\tet_work\formal_evaluate_console_20260827_resume1.log
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  88%|████████████████████████████████████████████████████▊       | 37/42 [01:44<00:14,  0.35it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Warning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  90%|██████████████████████████████████████████████████████▎     | 38/42 [01:47<00:11,  0.35it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Warning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  93%|███████████████████████████████████████████████████████▋    | 39/42 [01:49<00:08,  0.36it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Warning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  95%|█████████████████████████████████████████████████████████▏  | 40/42 [01:51<00:05,  0.36it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Warning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  98%|██████████████████████████████████████████████████████████▌ | 41/42 [01:54<00:02,  0.36it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Warning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0: 100%|████████████████████████████████████████████████████████████| 42/42 [01:58<00:00,  0.36it/s]
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\amber\evaluate_formal_checkpoint.py --run-root D:\SITP\tet_w
+ork\amber\output\formal_experiments\formal-mold7000-v3\M3\seed_00
+Seed set to 0
+example_graph.x.shape:torch.Size([172, 4])
+example_graph.edge_attr.shape:torch.Size([1806, 2])
+embeding_config:None
+in_node_features:4
+in_edge_features:2
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+Restoring states from the checkpoint path at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M3\seed
+_00\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\call.py:277: Be aware that when using `ckpt_
+path`, callbacks used to create the checkpoint need to be provided during `Trainer` instantiation. Please add the follow
+ing callbacks: ["ModelCheckpoint{'monitor': None, 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 100, 'train
+_time_interval': None}"].
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+Loaded model weights from the checkpoint at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M3\seed_
+00\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\_pytree.py:21: `isinstance(treespec, LeafS
+pec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:425: The 'test_
+dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` arg
+ument` to `num_workers=31` in the `DataLoader` to improve performance.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\data.py:123: Your `IterableDataset` has `_
+_len__` defined. In combination with multi-process data loading (when num_workers > 1), `__len__` could be inaccurate if
+ each worker is not configured independently to avoid having duplicate data.
+Testing DataLoader 0:   0%|                                                                     | 0/42 [00:00<?, ?it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   2%|█▍                                                           | 1/42 [00:01<01:19,  0.52it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   5%|██▉                                                          | 2/42 [00:02<00:56,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   7%|████▎                                                        | 3/42 [00:04<00:52,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  10%|█████▊                                                       | 4/42 [00:06<00:59,  0.64it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  12%|███████▎                                                     | 5/42 [00:07<00:52,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  14%|████████▋                                                    | 6/42 [00:09<00:54,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  17%|██████████▏                                                  | 7/42 [00:10<00:50,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  19%|███████████▌                                                 | 8/42 [00:11<00:49,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  21%|█████████████                                                | 9/42 [00:13<00:47,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  24%|██████████████▎                                             | 10/42 [00:14<00:45,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  26%|███████████████▋                                            | 11/42 [00:16<00:45,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  29%|█████████████████▏                                          | 12/42 [00:18<00:45,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  31%|██████████████████▌                                         | 13/42 [00:19<00:42,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  33%|████████████████████                                        | 14/42 [00:20<00:41,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  36%|█████████████████████▍                                      | 15/42 [00:22<00:39,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  38%|██████████████████████▊                                     | 16/42 [00:24<00:39,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  40%|████████████████████████▎                                   | 17/42 [00:26<00:38,  0.65it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  43%|█████████████████████████▋                                  | 18/42 [00:28<00:37,  0.63it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  45%|███████████████████████████▏                                | 19/42 [00:29<00:35,  0.65it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  48%|████████████████████████████▌                               | 20/42 [00:30<00:33,  0.65it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  50%|██████████████████████████████                              | 21/42 [00:31<00:31,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  52%|███████████████████████████████▍                            | 22/42 [00:33<00:30,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  55%|████████████████████████████████▊                           | 23/42 [00:35<00:28,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  57%|██████████████████████████████████▎                         | 24/42 [00:36<00:27,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  60%|███████████████████████████████████▋                        | 25/42 [00:38<00:25,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  62%|█████████████████████████████████████▏                      | 26/42 [00:38<00:23,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  64%|██████████████████████████████████████▌                     | 27/42 [00:40<00:22,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  67%|████████████████████████████████████████                    | 28/42 [00:41<00:20,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  69%|█████████████████████████████████████████▍                  | 29/42 [00:42<00:19,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  71%|██████████████████████████████████████████▊                 | 30/42 [00:43<00:17,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  74%|████████████████████████████████████████████▎               | 31/42 [00:45<00:16,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  76%|█████████████████████████████████████████████▋              | 32/42 [00:46<00:14,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  79%|███████████████████████████████████████████████▏            | 33/42 [00:47<00:13,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  81%|████████████████████████████████████████████████▌           | 34/42 [00:48<00:11,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  83%|██████████████████████████████████████████████████          | 35/42 [00:49<00:09,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  86%|███████████████████████████████████████████████████▍        | 36/42 [00:50<00:08,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  88%|████████████████████████████████████████████████████▊       | 37/42 [00:51<00:07,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  90%|██████████████████████████████████████████████████████▎     | 38/42 [00:53<00:05,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  93%|███████████████████████████████████████████████████████▋    | 39/42 [00:54<00:04,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  95%|█████████████████████████████████████████████████████████▏  | 40/42 [00:55<00:02,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  98%|██████████████████████████████████████████████████████████▌ | 41/42 [00:57<00:01,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0: 100%|████████████████████████████████████████████████████████████| 42/42 [00:58<00:00,  0.71it/s]
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\amber\evaluate_formal_checkpoint.py --run-root D:\SITP\tet_w
+ork\amber\output\formal_experiments\formal-mold7000-v3\M2\seed_00 --mode condition_shuffle
+Seed set to 0
+example_graph.x.shape:torch.Size([172, 4])
+example_graph.edge_attr.shape:torch.Size([1806, 2])
+embeding_config:None
+in_node_features:4
+in_edge_features:2
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+Restoring states from the checkpoint path at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M2\seed
+_00\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\call.py:277: Be aware that when using `ckpt_
+path`, callbacks used to create the checkpoint need to be provided during `Trainer` instantiation. Please add the follow
+ing callbacks: ["ModelCheckpoint{'monitor': None, 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 100, 'train
+_time_interval': None}"].
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+Loaded model weights from the checkpoint at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M2\seed_
+00\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\_pytree.py:21: `isinstance(treespec, LeafS
+pec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:425: The 'test_
+dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` arg
+ument` to `num_workers=31` in the `DataLoader` to improve performance.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\data.py:123: Your `IterableDataset` has `_
+_len__` defined. In combination with multi-process data loading (when num_workers > 1), `__len__` could be inaccurate if
+ each worker is not configured independently to avoid having duplicate data.
+Testing DataLoader 0:   0%|                                                                     | 0/42 [00:00<?, ?it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   2%|█▍                                                           | 1/42 [00:01<01:19,  0.51it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   5%|██▉                                                          | 2/42 [00:02<00:57,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   7%|████▎                                                        | 3/42 [00:04<00:52,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  10%|█████▊                                                       | 4/42 [00:06<00:58,  0.65it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  12%|███████▎                                                     | 5/42 [00:07<00:52,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  14%|████████▋                                                    | 6/42 [00:08<00:53,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  17%|██████████▏                                                  | 7/42 [00:10<00:50,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  19%|███████████▌                                                 | 8/42 [00:11<00:47,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  21%|█████████████                                                | 9/42 [00:12<00:46,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  24%|██████████████▎                                             | 10/42 [00:13<00:44,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  26%|███████████████▋                                            | 11/42 [00:15<00:44,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  29%|█████████████████▏                                          | 12/42 [00:17<00:43,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  31%|██████████████████▌                                         | 13/42 [00:18<00:41,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  33%|████████████████████                                        | 14/42 [00:19<00:39,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  36%|█████████████████████▍                                      | 15/42 [00:21<00:38,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  38%|██████████████████████▊                                     | 16/42 [00:23<00:38,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  40%|████████████████████████▎                                   | 17/42 [00:25<00:37,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  43%|█████████████████████████▋                                  | 18/42 [00:27<00:36,  0.65it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  45%|███████████████████████████▏                                | 19/42 [00:28<00:34,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  48%|████████████████████████████▌                               | 20/42 [00:29<00:32,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  50%|██████████████████████████████                              | 21/42 [00:31<00:31,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  52%|███████████████████████████████▍                            | 22/42 [00:32<00:29,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  55%|████████████████████████████████▊                           | 23/42 [00:34<00:28,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  57%|██████████████████████████████████▎                         | 24/42 [00:36<00:27,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  60%|███████████████████████████████████▋                        | 25/42 [00:37<00:25,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  62%|█████████████████████████████████████▏                      | 26/42 [00:38<00:23,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  64%|██████████████████████████████████████▌                     | 27/42 [00:40<00:22,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  67%|████████████████████████████████████████                    | 28/42 [00:41<00:20,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  69%|█████████████████████████████████████████▍                  | 29/42 [00:42<00:19,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  71%|██████████████████████████████████████████▊                 | 30/42 [00:43<00:17,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  74%|████████████████████████████████████████████▎               | 31/42 [00:44<00:15,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  76%|█████████████████████████████████████████████▋              | 32/42 [00:45<00:14,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  79%|███████████████████████████████████████████████▏            | 33/42 [00:47<00:12,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  81%|████████████████████████████████████████████████▌           | 34/42 [00:48<00:11,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  83%|██████████████████████████████████████████████████          | 35/42 [00:48<00:09,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  86%|███████████████████████████████████████████████████▍        | 36/42 [00:49<00:08,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  88%|████████████████████████████████████████████████████▊       | 37/42 [00:51<00:06,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  90%|██████████████████████████████████████████████████████▎     | 38/42 [00:53<00:05,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  93%|███████████████████████████████████████████████████████▋    | 39/42 [00:54<00:04,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  95%|█████████████████████████████████████████████████████████▏  | 40/42 [00:55<00:02,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  98%|██████████████████████████████████████████████████████████▌ | 41/42 [00:56<00:01,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0: 100%|████████████████████████████████████████████████████████████| 42/42 [00:58<00:00,  0.71it/s]
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\amber\evaluate_formal_checkpoint.py --run-root D:\SITP\tet_w
+ork\amber\output\formal_experiments\formal-mold7000-v3\M2\seed_01 --mode condition_shuffle
+Seed set to 1
+example_graph.x.shape:torch.Size([172, 4])
+example_graph.edge_attr.shape:torch.Size([1806, 2])
+embeding_config:None
+in_node_features:4
+in_edge_features:2
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+Restoring states from the checkpoint path at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M2\seed
+_01\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\call.py:277: Be aware that when using `ckpt_
+path`, callbacks used to create the checkpoint need to be provided during `Trainer` instantiation. Please add the follow
+ing callbacks: ["ModelCheckpoint{'monitor': None, 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 100, 'train
+_time_interval': None}"].
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+Loaded model weights from the checkpoint at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M2\seed_
+01\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\_pytree.py:21: `isinstance(treespec, LeafS
+pec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:425: The 'test_
+dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` arg
+ument` to `num_workers=31` in the `DataLoader` to improve performance.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\data.py:123: Your `IterableDataset` has `_
+_len__` defined. In combination with multi-process data loading (when num_workers > 1), `__len__` could be inaccurate if
+ each worker is not configured independently to avoid having duplicate data.
+Testing DataLoader 0:   0%|                                                                     | 0/42 [00:00<?, ?it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   2%|█▍                                                           | 1/42 [00:01<01:11,  0.58it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   5%|██▉                                                          | 2/42 [00:02<00:51,  0.78it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   7%|████▎                                                        | 3/42 [00:03<00:47,  0.82it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  10%|█████▊                                                       | 4/42 [00:05<00:54,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  12%|███████▎                                                     | 5/42 [00:06<00:49,  0.75it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  14%|████████▋                                                    | 6/42 [00:08<00:51,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  17%|██████████▏                                                  | 7/42 [00:09<00:47,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  19%|███████████▌                                                 | 8/42 [00:10<00:45,  0.75it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  21%|█████████████                                                | 9/42 [00:12<00:44,  0.75it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  24%|██████████████▎                                             | 10/42 [00:13<00:42,  0.76it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  26%|███████████████▋                                            | 11/42 [00:15<00:43,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  29%|█████████████████▏                                          | 12/42 [00:16<00:42,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  31%|██████████████████▌                                         | 13/42 [00:18<00:40,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  33%|████████████████████                                        | 14/42 [00:20<00:40,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  36%|█████████████████████▍                                      | 15/42 [00:23<00:42,  0.64it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  38%|██████████████████████▊                                     | 16/42 [00:25<00:41,  0.63it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  40%|████████████████████████▎                                   | 17/42 [00:27<00:40,  0.62it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  43%|█████████████████████████▋                                  | 18/42 [00:29<00:39,  0.61it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  45%|███████████████████████████▏                                | 19/42 [00:30<00:36,  0.62it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  48%|████████████████████████████▌                               | 20/42 [00:31<00:35,  0.63it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  50%|██████████████████████████████                              | 21/42 [00:33<00:33,  0.63it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  52%|███████████████████████████████▍                            | 22/42 [00:35<00:32,  0.62it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  55%|████████████████████████████████▊                           | 23/42 [00:37<00:30,  0.61it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  57%|██████████████████████████████████▎                         | 24/42 [00:38<00:29,  0.62it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  60%|███████████████████████████████████▋                        | 25/42 [00:40<00:27,  0.62it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  62%|█████████████████████████████████████▏                      | 26/42 [00:41<00:25,  0.63it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  64%|██████████████████████████████████████▌                     | 27/42 [00:42<00:23,  0.63it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  67%|████████████████████████████████████████                    | 28/42 [00:44<00:22,  0.64it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  69%|█████████████████████████████████████████▍                  | 29/42 [00:45<00:20,  0.64it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  71%|██████████████████████████████████████████▊                 | 30/42 [00:46<00:18,  0.65it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  74%|████████████████████████████████████████████▎               | 31/42 [00:47<00:16,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  76%|█████████████████████████████████████████████▋              | 32/42 [00:48<00:15,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  79%|███████████████████████████████████████████████▏            | 33/42 [00:49<00:13,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  81%|████████████████████████████████████████████████▌           | 34/42 [00:50<00:11,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  83%|██████████████████████████████████████████████████          | 35/42 [00:51<00:10,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  86%|███████████████████████████████████████████████████▍        | 36/42 [00:52<00:08,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  88%|████████████████████████████████████████████████████▊       | 37/42 [00:53<00:07,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  90%|██████████████████████████████████████████████████████▎     | 38/42 [00:55<00:05,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  93%|███████████████████████████████████████████████████████▋    | 39/42 [00:56<00:04,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  95%|█████████████████████████████████████████████████████████▏  | 40/42 [00:57<00:02,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  98%|██████████████████████████████████████████████████████████▌ | 41/42 [00:59<00:01,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0: 100%|████████████████████████████████████████████████████████████| 42/42 [01:01<00:00,  0.69it/s]
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\amber\evaluate_formal_checkpoint.py --run-root D:\SITP\tet_w
+ork\amber\output\formal_experiments\formal-mold7000-v3\M2\seed_02 --mode condition_shuffle
+Seed set to 2
+example_graph.x.shape:torch.Size([172, 4])
+example_graph.edge_attr.shape:torch.Size([1806, 2])
+embeding_config:None
+in_node_features:4
+in_edge_features:2
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+Restoring states from the checkpoint path at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M2\seed
+_02\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\call.py:277: Be aware that when using `ckpt_
+path`, callbacks used to create the checkpoint need to be provided during `Trainer` instantiation. Please add the follow
+ing callbacks: ["ModelCheckpoint{'monitor': None, 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 100, 'train
+_time_interval': None}"].
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+Loaded model weights from the checkpoint at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M2\seed_
+02\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\_pytree.py:21: `isinstance(treespec, LeafS
+pec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:425: The 'test_
+dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` arg
+ument` to `num_workers=31` in the `DataLoader` to improve performance.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\data.py:123: Your `IterableDataset` has `_
+_len__` defined. In combination with multi-process data loading (when num_workers > 1), `__len__` could be inaccurate if
+ each worker is not configured independently to avoid having duplicate data.
+Testing DataLoader 0:   0%|                                                                     | 0/42 [00:00<?, ?it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   2%|█▍                                                           | 1/42 [00:01<01:12,  0.56it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   5%|██▉                                                          | 2/42 [00:02<00:54,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   7%|████▎                                                        | 3/42 [00:03<00:49,  0.78it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  10%|█████▊                                                       | 4/42 [00:05<00:55,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  12%|███████▎                                                     | 5/42 [00:06<00:50,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  14%|████████▋                                                    | 6/42 [00:08<00:52,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  17%|██████████▏                                                  | 7/42 [00:09<00:48,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  19%|███████████▌                                                 | 8/42 [00:10<00:46,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  21%|█████████████                                                | 9/42 [00:12<00:44,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  24%|██████████████▎                                             | 10/42 [00:13<00:42,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  26%|███████████████▋                                            | 11/42 [00:15<00:43,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  29%|█████████████████▏                                          | 12/42 [00:16<00:42,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  31%|██████████████████▌                                         | 13/42 [00:18<00:40,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  33%|████████████████████                                        | 14/42 [00:19<00:38,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  36%|█████████████████████▍                                      | 15/42 [00:21<00:38,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  38%|██████████████████████▊                                     | 16/42 [00:22<00:37,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  40%|████████████████████████▎                                   | 17/42 [00:25<00:36,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  43%|█████████████████████████▋                                  | 18/42 [00:27<00:36,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  45%|███████████████████████████▏                                | 19/42 [00:27<00:33,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  48%|████████████████████████████▌                               | 20/42 [00:29<00:32,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  50%|██████████████████████████████                              | 21/42 [00:30<00:30,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  52%|███████████████████████████████▍                            | 22/42 [00:32<00:29,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  55%|████████████████████████████████▊                           | 23/42 [00:34<00:28,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  57%|██████████████████████████████████▎                         | 24/42 [00:36<00:27,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  60%|███████████████████████████████████▋                        | 25/42 [00:37<00:25,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  62%|█████████████████████████████████████▏                      | 26/42 [00:38<00:23,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  64%|██████████████████████████████████████▌                     | 27/42 [00:40<00:22,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  67%|████████████████████████████████████████                    | 28/42 [00:41<00:20,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  69%|█████████████████████████████████████████▍                  | 29/42 [00:42<00:18,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  71%|██████████████████████████████████████████▊                 | 30/42 [00:43<00:17,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  74%|████████████████████████████████████████████▎               | 31/42 [00:44<00:15,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  76%|█████████████████████████████████████████████▋              | 32/42 [00:45<00:14,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  79%|███████████████████████████████████████████████▏            | 33/42 [00:46<00:12,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  81%|████████████████████████████████████████████████▌           | 34/42 [00:47<00:11,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  83%|██████████████████████████████████████████████████          | 35/42 [00:48<00:09,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  86%|███████████████████████████████████████████████████▍        | 36/42 [00:49<00:08,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  88%|████████████████████████████████████████████████████▊       | 37/42 [00:50<00:06,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  90%|██████████████████████████████████████████████████████▎     | 38/42 [00:52<00:05,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  93%|███████████████████████████████████████████████████████▋    | 39/42 [00:53<00:04,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  95%|█████████████████████████████████████████████████████████▏  | 40/42 [00:54<00:02,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  98%|██████████████████████████████████████████████████████████▌ | 41/42 [00:56<00:01,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0: 100%|████████████████████████████████████████████████████████████| 42/42 [00:58<00:00,  0.72it/s]
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\amber\evaluate_formal_checkpoint.py --run-root D:\SITP\tet_w
+ork\amber\output\formal_experiments\formal-mold7000-v3\M4\seed_00 --mode condition_shuffle
+Seed set to 0
+example_graph.x.shape:torch.Size([172, 4])
+example_graph.edge_attr.shape:torch.Size([1806, 2])
+embeding_config:None
+in_node_features:4
+in_edge_features:2
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+Restoring states from the checkpoint path at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M4\seed
+_00\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\call.py:277: Be aware that when using `ckpt_
+path`, callbacks used to create the checkpoint need to be provided during `Trainer` instantiation. Please add the follow
+ing callbacks: ["ModelCheckpoint{'monitor': None, 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 100, 'train
+_time_interval': None}"].
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+Loaded model weights from the checkpoint at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M4\seed_
+00\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\_pytree.py:21: `isinstance(treespec, LeafS
+pec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:425: The 'test_
+dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` arg
+ument` to `num_workers=31` in the `DataLoader` to improve performance.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\data.py:123: Your `IterableDataset` has `_
+_len__` defined. In combination with multi-process data loading (when num_workers > 1), `__len__` could be inaccurate if
+ each worker is not configured independently to avoid having duplicate data.
+Testing DataLoader 0:   0%|                                                                     | 0/42 [00:00<?, ?it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   2%|█▍                                                           | 1/42 [00:01<01:16,  0.53it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   5%|██▉                                                          | 2/42 [00:02<00:55,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   7%|████▎                                                        | 3/42 [00:03<00:51,  0.76it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  10%|█████▊                                                       | 4/42 [00:06<00:57,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  12%|███████▎                                                     | 5/42 [00:06<00:51,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  14%|████████▋                                                    | 6/42 [00:08<00:51,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  17%|██████████▏                                                  | 7/42 [00:09<00:48,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  19%|███████████▌                                                 | 8/42 [00:10<00:46,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  21%|█████████████                                                | 9/42 [00:12<00:45,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  24%|██████████████▎                                             | 10/42 [00:13<00:42,  0.75it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  26%|███████████████▋                                            | 11/42 [00:15<00:43,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  29%|█████████████████▏                                          | 12/42 [00:17<00:42,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  31%|██████████████████▌                                         | 13/42 [00:18<00:40,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  33%|████████████████████                                        | 14/42 [00:19<00:38,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  36%|█████████████████████▍                                      | 15/42 [00:21<00:38,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  38%|██████████████████████▊                                     | 16/42 [00:23<00:37,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  40%|████████████████████████▎                                   | 17/42 [00:25<00:36,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  43%|█████████████████████████▋                                  | 18/42 [00:26<00:35,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  45%|███████████████████████████▏                                | 19/42 [00:27<00:33,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  48%|████████████████████████████▌                               | 20/42 [00:28<00:31,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  50%|██████████████████████████████                              | 21/42 [00:30<00:30,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  52%|███████████████████████████████▍                            | 22/42 [00:32<00:29,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  55%|████████████████████████████████▊                           | 23/42 [00:34<00:28,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  57%|██████████████████████████████████▎                         | 24/42 [00:35<00:26,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  60%|███████████████████████████████████▋                        | 25/42 [00:37<00:25,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  62%|█████████████████████████████████████▏                      | 26/42 [00:37<00:23,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  64%|██████████████████████████████████████▌                     | 27/42 [00:39<00:21,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  67%|████████████████████████████████████████                    | 28/42 [00:40<00:20,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  69%|█████████████████████████████████████████▍                  | 29/42 [00:41<00:18,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  71%|██████████████████████████████████████████▊                 | 30/42 [00:42<00:17,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  74%|████████████████████████████████████████████▎               | 31/42 [00:43<00:15,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  76%|█████████████████████████████████████████████▋              | 32/42 [00:44<00:14,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  79%|███████████████████████████████████████████████▏            | 33/42 [00:46<00:12,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  81%|████████████████████████████████████████████████▌           | 34/42 [00:46<00:11,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  83%|██████████████████████████████████████████████████          | 35/42 [00:47<00:09,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  86%|███████████████████████████████████████████████████▍        | 36/42 [00:48<00:08,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  88%|████████████████████████████████████████████████████▊       | 37/42 [00:50<00:06,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  90%|██████████████████████████████████████████████████████▎     | 38/42 [00:51<00:05,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  93%|███████████████████████████████████████████████████████▋    | 39/42 [00:52<00:04,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  95%|█████████████████████████████████████████████████████████▏  | 40/42 [00:53<00:02,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  98%|██████████████████████████████████████████████████████████▌ | 41/42 [00:55<00:01,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0: 100%|████████████████████████████████████████████████████████████| 42/42 [00:57<00:00,  0.73it/s]
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\amber\evaluate_formal_checkpoint.py --run-root D:\SITP\tet_w
+ork\amber\output\formal_experiments\formal-mold7000-v3\M4\seed_01 --mode condition_shuffle
+Seed set to 1
+example_graph.x.shape:torch.Size([172, 4])
+example_graph.edge_attr.shape:torch.Size([1806, 2])
+embeding_config:None
+in_node_features:4
+in_edge_features:2
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+Restoring states from the checkpoint path at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M4\seed
+_01\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\call.py:277: Be aware that when using `ckpt_
+path`, callbacks used to create the checkpoint need to be provided during `Trainer` instantiation. Please add the follow
+ing callbacks: ["ModelCheckpoint{'monitor': None, 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 100, 'train
+_time_interval': None}"].
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+Loaded model weights from the checkpoint at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M4\seed_
+01\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\_pytree.py:21: `isinstance(treespec, LeafS
+pec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:425: The 'test_
+dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` arg
+ument` to `num_workers=31` in the `DataLoader` to improve performance.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\data.py:123: Your `IterableDataset` has `_
+_len__` defined. In combination with multi-process data loading (when num_workers > 1), `__len__` could be inaccurate if
+ each worker is not configured independently to avoid having duplicate data.
+Testing DataLoader 0:   0%|                                                                     | 0/42 [00:00<?, ?it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   2%|█▍                                                           | 1/42 [00:01<01:10,  0.58it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   5%|██▉                                                          | 2/42 [00:02<00:52,  0.76it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   7%|████▎                                                        | 3/42 [00:03<00:49,  0.79it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  10%|█████▊                                                       | 4/42 [00:05<00:55,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  12%|███████▎                                                     | 5/42 [00:06<00:50,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  14%|████████▋                                                    | 6/42 [00:08<00:52,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  17%|██████████▏                                                  | 7/42 [00:09<00:48,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  19%|███████████▌                                                 | 8/42 [00:10<00:45,  0.75it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  21%|█████████████                                                | 9/42 [00:12<00:44,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  24%|██████████████▎                                             | 10/42 [00:13<00:42,  0.75it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  26%|███████████████▋                                            | 11/42 [00:15<00:43,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  29%|█████████████████▏                                          | 12/42 [00:17<00:42,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  31%|██████████████████▌                                         | 13/42 [00:18<00:40,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  33%|████████████████████                                        | 14/42 [00:19<00:38,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  36%|█████████████████████▍                                      | 15/42 [00:21<00:38,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  38%|██████████████████████▊                                     | 16/42 [00:23<00:37,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  40%|████████████████████████▎                                   | 17/42 [00:25<00:37,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  43%|█████████████████████████▋                                  | 18/42 [00:27<00:36,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  45%|███████████████████████████▏                                | 19/42 [00:28<00:34,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  48%|████████████████████████████▌                               | 20/42 [00:29<00:32,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  50%|██████████████████████████████                              | 21/42 [00:30<00:30,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  52%|███████████████████████████████▍                            | 22/42 [00:32<00:29,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  55%|████████████████████████████████▊                           | 23/42 [00:35<00:28,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  57%|██████████████████████████████████▎                         | 24/42 [00:36<00:27,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  60%|███████████████████████████████████▋                        | 25/42 [00:37<00:25,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  62%|█████████████████████████████████████▏                      | 26/42 [00:38<00:23,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  64%|██████████████████████████████████████▌                     | 27/42 [00:40<00:22,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  67%|████████████████████████████████████████                    | 28/42 [00:41<00:20,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  69%|█████████████████████████████████████████▍                  | 29/42 [00:42<00:19,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  71%|██████████████████████████████████████████▊                 | 30/42 [00:43<00:17,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  74%|████████████████████████████████████████████▎               | 31/42 [00:44<00:15,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  76%|█████████████████████████████████████████████▋              | 32/42 [00:45<00:14,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  79%|███████████████████████████████████████████████▏            | 33/42 [00:47<00:12,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  81%|████████████████████████████████████████████████▌           | 34/42 [00:47<00:11,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  83%|██████████████████████████████████████████████████          | 35/42 [00:48<00:09,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  86%|███████████████████████████████████████████████████▍        | 36/42 [00:49<00:08,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  88%|████████████████████████████████████████████████████▊       | 37/42 [00:51<00:06,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  90%|██████████████████████████████████████████████████████▎     | 38/42 [00:52<00:05,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  93%|███████████████████████████████████████████████████████▋    | 39/42 [00:53<00:04,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  95%|█████████████████████████████████████████████████████████▏  | 40/42 [00:54<00:02,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  98%|██████████████████████████████████████████████████████████▌ | 41/42 [00:56<00:01,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0: 100%|████████████████████████████████████████████████████████████| 42/42 [00:58<00:00,  0.72it/s]
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\amber\evaluate_formal_checkpoint.py --run-root D:\SITP\tet_w
+ork\amber\output\formal_experiments\formal-mold7000-v3\M4\seed_02 --mode condition_shuffle
+Seed set to 2
+example_graph.x.shape:torch.Size([172, 4])
+example_graph.edge_attr.shape:torch.Size([1806, 2])
+embeding_config:None
+in_node_features:4
+in_edge_features:2
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+Restoring states from the checkpoint path at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M4\seed
+_02\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\call.py:277: Be aware that when using `ckpt_
+path`, callbacks used to create the checkpoint need to be provided during `Trainer` instantiation. Please add the follow
+ing callbacks: ["ModelCheckpoint{'monitor': None, 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 100, 'train
+_time_interval': None}"].
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+Loaded model weights from the checkpoint at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M4\seed_
+02\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\_pytree.py:21: `isinstance(treespec, LeafS
+pec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:425: The 'test_
+dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` arg
+ument` to `num_workers=31` in the `DataLoader` to improve performance.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\data.py:123: Your `IterableDataset` has `_
+_len__` defined. In combination with multi-process data loading (when num_workers > 1), `__len__` could be inaccurate if
+ each worker is not configured independently to avoid having duplicate data.
+Testing DataLoader 0:   0%|                                                                     | 0/42 [00:00<?, ?it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   2%|█▍                                                           | 1/42 [00:01<01:12,  0.57it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   5%|██▉                                                          | 2/42 [00:02<00:53,  0.75it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   7%|████▎                                                        | 3/42 [00:03<00:49,  0.79it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  10%|█████▊                                                       | 4/42 [00:05<00:54,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  12%|███████▎                                                     | 5/42 [00:06<00:49,  0.75it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  14%|████████▋                                                    | 6/42 [00:08<00:51,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  17%|██████████▏                                                  | 7/42 [00:09<00:47,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  19%|███████████▌                                                 | 8/42 [00:10<00:45,  0.75it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  21%|█████████████                                                | 9/42 [00:12<00:44,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  24%|██████████████▎                                             | 10/42 [00:13<00:42,  0.75it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  26%|███████████████▋                                            | 11/42 [00:15<00:43,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  29%|█████████████████▏                                          | 12/42 [00:16<00:42,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  31%|██████████████████▌                                         | 13/42 [00:17<00:40,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  33%|████████████████████                                        | 14/42 [00:19<00:38,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  36%|█████████████████████▍                                      | 15/42 [00:21<00:38,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  38%|██████████████████████▊                                     | 16/42 [00:23<00:37,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  40%|████████████████████████▎                                   | 17/42 [00:25<00:37,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  43%|█████████████████████████▋                                  | 18/42 [00:27<00:36,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  45%|███████████████████████████▏                                | 19/42 [00:28<00:33,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  48%|████████████████████████████▌                               | 20/42 [00:29<00:32,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  50%|██████████████████████████████                              | 21/42 [00:30<00:30,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  52%|███████████████████████████████▍                            | 22/42 [00:32<00:29,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  55%|████████████████████████████████▊                           | 23/42 [00:34<00:28,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  57%|██████████████████████████████████▎                         | 24/42 [00:36<00:27,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  60%|███████████████████████████████████▋                        | 25/42 [00:37<00:25,  0.66it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  62%|█████████████████████████████████████▏                      | 26/42 [00:38<00:23,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  64%|██████████████████████████████████████▌                     | 27/42 [00:40<00:22,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  67%|████████████████████████████████████████                    | 28/42 [00:41<00:20,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  69%|█████████████████████████████████████████▍                  | 29/42 [00:42<00:19,  0.68it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  71%|██████████████████████████████████████████▊                 | 30/42 [00:43<00:17,  0.69it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  74%|████████████████████████████████████████████▎               | 31/42 [00:44<00:15,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  76%|█████████████████████████████████████████████▋              | 32/42 [00:45<00:14,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  79%|███████████████████████████████████████████████▏            | 33/42 [00:46<00:12,  0.70it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  81%|████████████████████████████████████████████████▌           | 34/42 [00:47<00:11,  0.71it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  83%|██████████████████████████████████████████████████          | 35/42 [00:48<00:09,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  86%|███████████████████████████████████████████████████▍        | 36/42 [00:49<00:08,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  88%|████████████████████████████████████████████████████▊       | 37/42 [00:51<00:06,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  90%|██████████████████████████████████████████████████████▎     | 38/42 [00:52<00:05,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  93%|███████████████████████████████████████████████████████▋    | 39/42 [00:53<00:04,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  95%|█████████████████████████████████████████████████████████▏  | 40/42 [00:54<00:02,  0.73it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  98%|██████████████████████████████████████████████████████████▌ | 41/42 [00:56<00:01,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0: 100%|████████████████████████████████████████████████████████████| 42/42 [00:58<00:00,  0.72it/s]
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\amber\build_formal_reference_manifests.py --pipeline-root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --output-dir D:\SITP\tet_work\amber\output\formal_experiments\formal-mold700
+0-v3\static_references --protocol-id formal-mold7000-v3 --fingerprint-path D:\SITP\tet_work\dataest-pipeline\output\cond
+ition_aware_dataset_generation\default_fix_budget_run\manifests\dataset_fingerprint_formal-mold7000-v3.json
+{
+  "metadata_path": "D:\\SITP\\tet_work\\amber\\output\\formal_experiments\\formal-mold7000-v3\\static_references\\refere
+nce_manifest_metadata.json",
+  "references": {
+    "R0-Initial": {
+      "path_key": "input_mesh_path",
+      "role": "low_budget_sanity_reference",
+      "claim_boundary": "Not a budget-matched uniform baseline.",
+      "num_samples": 42,
+      "prediction_manifest": "D:\\SITP\\tet_work\\amber\\output\\formal_experiments\\formal-mold7000-v3\\static_referenc
+es\\r0_initial_prediction_manifest.csv"
+    },
+    "R1-Teacher": {
+      "path_key": "target_mesh_path",
+      "role": "frozen_teacher_target_reference",
+      "claim_boundary": "Reference/oracle mesh, not a strict performance upper bound.",
+      "num_samples": 42,
+      "prediction_manifest": "D:\\SITP\\tet_work\\amber\\output\\formal_experiments\\formal-mold7000-v3\\static_referenc
+es\\r1_teacher_prediction_manifest.csv"
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M0\seed_00\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experiments\
+formal-mold7000-v3\M0\seed_00\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\formal-m
+old7000-v3\M0\seed_00\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 0,
+      "budget_valid": 0,
+      "mean_solution_l2_relative": 0.35404798732038106,
+      "mean_qoi_absolute_error": 0.06771948091218685,
+      "mean_qoi_relative_error": 0.3174947083401665,
+      "mean_predicted_elements": 3525.3888888888887,
+      "mean_predicted_vertices": 1155.888888888889,
+      "mean_budget_ratio": 0.5036269841269841,
+      "mean_absolute_budget_deviation": 3474.6111111111113,
+      "mean_absolute_budget_relative_deviation": 0.49637301587301597,
+      "mean_extrapolated_point_fraction": 0.02852751795405052,
+      "mean_max_extrapolation_distance_ratio": 0.0070650850071302135,
+      "mean_solver_runtime_seconds": 0.29299271667130394,
+      "mean_pde_postprocess_runtime_seconds": 1.1969580611104094,
+      "mean_runtime_seconds": 1.510582461112386
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 0,
+      "budget_valid": 0,
+      "mean_solution_l2_relative": 0.026027009625796908,
+      "mean_qoi_absolute_error": 0.0011007021010502635,
+      "mean_qoi_relative_error": 0.0008067479655410898,
+      "mean_predicted_elements": 3461.3333333333335,
+      "mean_predicted_vertices": 1141.7222222222222,
+      "mean_budget_ratio": 0.49447619047619046,
+      "mean_absolute_budget_deviation": 3538.6666666666665,
+      "mean_absolute_budget_relative_deviation": 0.5055238095238095,
+      "mean_extrapolated_point_fraction": 0.027526557317411895,
+      "mean_max_extrapolation_distance_ratio": 0.006967320733588741,
+      "mean_solver_runtime_seconds": 0.030636927782325074,
+      "mean_pde_postprocess_runtime_seconds": 1.2606810500017471,
+      "mean_runtime_seconds": 1.3133399111102335
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M0\seed_01\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experiments\
+formal-mold7000-v3\M0\seed_01\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\formal-m
+old7000-v3\M0\seed_01\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 3,
+      "budget_valid": 5,
+      "mean_solution_l2_relative": 0.360957704804081,
+      "mean_qoi_absolute_error": 0.06655745200734033,
+      "mean_qoi_relative_error": 0.3173752084213459,
+      "mean_predicted_elements": 4562.0,
+      "mean_predicted_vertices": 1456.0,
+      "mean_budget_ratio": 0.6517142857142857,
+      "mean_absolute_budget_deviation": 2438.0,
+      "mean_absolute_budget_relative_deviation": 0.3482857142857143,
+      "mean_extrapolated_point_fraction": 0.03025735546272155,
+      "mean_max_extrapolation_distance_ratio": 0.007885261451110024,
+      "mean_solver_runtime_seconds": 0.379986605555233,
+      "mean_pde_postprocess_runtime_seconds": 1.2927715944436688,
+      "mean_runtime_seconds": 1.6979582444441297
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 0,
+      "budget_valid": 4,
+      "mean_solution_l2_relative": 0.02766703726402595,
+      "mean_qoi_absolute_error": 0.0010527698094934565,
+      "mean_qoi_relative_error": 0.0007428010821071848,
+      "mean_predicted_elements": 4541.333333333333,
+      "mean_predicted_vertices": 1448.6666666666667,
+      "mean_budget_ratio": 0.6487619047619048,
+      "mean_absolute_budget_deviation": 2458.6666666666665,
+      "mean_absolute_budget_relative_deviation": 0.35123809523809524,
+      "mean_extrapolated_point_fraction": 0.0316131622516069,
+      "mean_max_extrapolation_distance_ratio": 0.007938354497402173,
+      "mean_solver_runtime_seconds": 0.041201627774474524,
+      "mean_pde_postprocess_runtime_seconds": 1.3719635166699946,
+      "mean_runtime_seconds": 1.4354511333319049
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M0\seed_02\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experiments\
+formal-mold7000-v3\M0\seed_02\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\formal-m
+old7000-v3\M0\seed_02\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 0,
+      "budget_valid": 0,
+      "mean_solution_l2_relative": 0.3844846507885687,
+      "mean_qoi_absolute_error": 0.08726046445199288,
+      "mean_qoi_relative_error": 0.35520413821488417,
+      "mean_predicted_elements": 3981.5,
+      "mean_predicted_vertices": 1315.6666666666667,
+      "mean_budget_ratio": 0.5687857142857142,
+      "mean_absolute_budget_deviation": 3018.5,
+      "mean_absolute_budget_relative_deviation": 0.4312142857142857,
+      "mean_extrapolated_point_fraction": 0.0286841417928934,
+      "mean_max_extrapolation_distance_ratio": 0.00742835122170761,
+      "mean_solver_runtime_seconds": 0.31806818332471365,
+      "mean_pde_postprocess_runtime_seconds": 1.2425487777864974,
+      "mean_runtime_seconds": 1.5839130777846246
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 1,
+      "budget_valid": 1,
+      "mean_solution_l2_relative": 0.02669494159441961,
+      "mean_qoi_absolute_error": 0.00101373844215145,
+      "mean_qoi_relative_error": 0.0007170898279366901,
+      "mean_predicted_elements": 3885.4444444444443,
+      "mean_predicted_vertices": 1296.5555555555557,
+      "mean_budget_ratio": 0.5550634920634921,
+      "mean_absolute_budget_deviation": 3114.5555555555557,
+      "mean_absolute_budget_relative_deviation": 0.44493650793650796,
+      "mean_extrapolated_point_fraction": 0.03113222965757001,
+      "mean_max_extrapolation_distance_ratio": 0.007706606317754324,
+      "mean_solver_runtime_seconds": 0.036011794442957684,
+      "mean_pde_postprocess_runtime_seconds": 1.3343411777879939,
+      "mean_runtime_seconds": 1.3906728611101344
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M1\seed_00\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experiments\
+formal-mold7000-v3\M1\seed_00\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\formal-m
+old7000-v3\M1\seed_00\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 0,
+      "budget_valid": 0,
+      "mean_solution_l2_relative": 0.36432882669643357,
+      "mean_qoi_absolute_error": 0.05437689036304824,
+      "mean_qoi_relative_error": 0.3284511177083891,
+      "mean_predicted_elements": 3623.1111111111113,
+      "mean_predicted_vertices": 1180.611111111111,
+      "mean_budget_ratio": 0.5175873015873016,
+      "mean_absolute_budget_deviation": 3376.8888888888887,
+      "mean_absolute_budget_relative_deviation": 0.4824126984126984,
+      "mean_extrapolated_point_fraction": 0.030435135720513193,
+      "mean_max_extrapolation_distance_ratio": 0.007376709797230636,
+      "mean_solver_runtime_seconds": 0.2785768777701176,
+      "mean_pde_postprocess_runtime_seconds": 1.237703872223695,
+      "mean_runtime_seconds": 1.5367629555564943
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 0,
+      "budget_valid": 0,
+      "mean_solution_l2_relative": 0.027593154107074535,
+      "mean_qoi_absolute_error": 0.001333992567816479,
+      "mean_qoi_relative_error": 0.0009633353683184535,
+      "mean_predicted_elements": 3531.0,
+      "mean_predicted_vertices": 1155.388888888889,
+      "mean_budget_ratio": 0.5044285714285714,
+      "mean_absolute_budget_deviation": 3469.0,
+      "mean_absolute_budget_relative_deviation": 0.4955714285714286,
+      "mean_extrapolated_point_fraction": 0.028803637613613296,
+      "mean_max_extrapolation_distance_ratio": 0.0072657106017131705,
+      "mean_solver_runtime_seconds": 0.03317817221654372,
+      "mean_pde_postprocess_runtime_seconds": 1.28292174444909,
+      "mean_runtime_seconds": 1.3361715333271098
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M1\seed_01\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experiments\
+formal-mold7000-v3\M1\seed_01\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\formal-m
+old7000-v3\M1\seed_01\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 0,
+      "budget_valid": 0,
+      "mean_solution_l2_relative": 0.44474661455006703,
+      "mean_qoi_absolute_error": 0.10220026549052826,
+      "mean_qoi_relative_error": 0.4219043845127386,
+      "mean_predicted_elements": 3894.722222222222,
+      "mean_predicted_vertices": 1280.2777777777778,
+      "mean_budget_ratio": 0.5563888888888889,
+      "mean_absolute_budget_deviation": 3105.277777777778,
+      "mean_absolute_budget_relative_deviation": 0.44361111111111107,
+      "mean_extrapolated_point_fraction": 0.027843566930143313,
+      "mean_max_extrapolation_distance_ratio": 0.007884691229980673,
+      "mean_solver_runtime_seconds": 0.2959706555573373,
+      "mean_pde_postprocess_runtime_seconds": 1.227965683333524,
+      "mean_runtime_seconds": 1.545037461114892
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 0,
+      "budget_valid": 0,
+      "mean_solution_l2_relative": 0.02955207942689691,
+      "mean_qoi_absolute_error": 0.000992177894310325,
+      "mean_qoi_relative_error": 0.0007031625056210197,
+      "mean_predicted_elements": 3966.1666666666665,
+      "mean_predicted_vertices": 1298.6666666666667,
+      "mean_budget_ratio": 0.5665952380952382,
+      "mean_absolute_budget_deviation": 3033.8333333333335,
+      "mean_absolute_budget_relative_deviation": 0.43340476190476196,
+      "mean_extrapolated_point_fraction": 0.02971548441724139,
+      "mean_max_extrapolation_distance_ratio": 0.007872522687517999,
+      "mean_solver_runtime_seconds": 0.03592285556563487,
+      "mean_pde_postprocess_runtime_seconds": 1.3076413055467937,
+      "mean_runtime_seconds": 1.36381816666431
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M1\seed_02\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experiments\
+formal-mold7000-v3\M1\seed_02\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\formal-m
+old7000-v3\M1\seed_02\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 6,
+      "budget_valid": 6,
+      "mean_solution_l2_relative": 0.3554515266960672,
+      "mean_qoi_absolute_error": 0.07421523522564429,
+      "mean_qoi_relative_error": 0.32148619007334717,
+      "mean_predicted_elements": 5007.055555555556,
+      "mean_predicted_vertices": 1599.0555555555557,
+      "mean_budget_ratio": 0.7152936507936507,
+      "mean_absolute_budget_deviation": 2188.277777777778,
+      "mean_absolute_budget_relative_deviation": 0.3126111111111111,
+      "mean_extrapolated_point_fraction": 0.03021765161210266,
+      "mean_max_extrapolation_distance_ratio": 0.007585436115946858,
+      "mean_solver_runtime_seconds": 0.4210856333310302,
+      "mean_pde_postprocess_runtime_seconds": 1.3274117777764332,
+      "mean_runtime_seconds": 1.7804464555584774
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 6,
+      "budget_valid": 6,
+      "mean_solution_l2_relative": 0.02383733474465213,
+      "mean_qoi_absolute_error": 0.0009410884441416159,
+      "mean_qoi_relative_error": 0.0006830467203869816,
+      "mean_predicted_elements": 5066.611111111111,
+      "mean_predicted_vertices": 1615.2777777777778,
+      "mean_budget_ratio": 0.7238015873015873,
+      "mean_absolute_budget_deviation": 2140.3888888888887,
+      "mean_absolute_budget_relative_deviation": 0.3057698412698413,
+      "mean_extrapolated_point_fraction": 0.030572955686831257,
+      "mean_max_extrapolation_distance_ratio": 0.007613766391183062,
+      "mean_solver_runtime_seconds": 0.049823111120430336,
+      "mean_pde_postprocess_runtime_seconds": 1.4102242944354657,
+      "mean_runtime_seconds": 1.483139716661147
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M1-FT\seed_00\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experimen
+ts\formal-mold7000-v3\M1-FT\seed_00\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\fo
+rmal-mold7000-v3\M1-FT\seed_00\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 0,
+      "budget_valid": 0,
+      "mean_solution_l2_relative": 0.450384386230155,
+      "mean_qoi_absolute_error": 0.10467550396124493,
+      "mean_qoi_relative_error": 0.4328281091747434,
+      "mean_predicted_elements": 4207.5,
+      "mean_predicted_vertices": 1349.388888888889,
+      "mean_budget_ratio": 0.6010714285714286,
+      "mean_absolute_budget_deviation": 2792.5,
+      "mean_absolute_budget_relative_deviation": 0.39892857142857147,
+      "mean_extrapolated_point_fraction": 0.030961077606575252,
+      "mean_max_extrapolation_distance_ratio": 0.007539101200789174,
+      "mean_solver_runtime_seconds": 0.3561008833284076,
+      "mean_pde_postprocess_runtime_seconds": 1.2694056611152418,
+      "mean_runtime_seconds": 1.6487576444503955
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 0,
+      "budget_valid": 0,
+      "mean_solution_l2_relative": 0.027543134246990505,
+      "mean_qoi_absolute_error": 0.001135493811456112,
+      "mean_qoi_relative_error": 0.000798566554603536,
+      "mean_predicted_elements": 4271.666666666667,
+      "mean_predicted_vertices": 1363.2777777777778,
+      "mean_budget_ratio": 0.6102380952380952,
+      "mean_absolute_budget_deviation": 2728.3333333333335,
+      "mean_absolute_budget_relative_deviation": 0.38976190476190475,
+      "mean_extrapolated_point_fraction": 0.031112714167977132,
+      "mean_max_extrapolation_distance_ratio": 0.0076908923537844336,
+      "mean_solver_runtime_seconds": 0.03815470555370363,
+      "mean_pde_postprocess_runtime_seconds": 1.3455978777751119,
+      "mean_runtime_seconds": 1.405959655566322
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M1-FT\seed_01\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experimen
+ts\formal-mold7000-v3\M1-FT\seed_01\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\fo
+rmal-mold7000-v3\M1-FT\seed_01\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 0,
+      "budget_valid": 0,
+      "mean_solution_l2_relative": 0.3963583261816932,
+      "mean_qoi_absolute_error": 0.07663791108025086,
+      "mean_qoi_relative_error": 0.372985268189233,
+      "mean_predicted_elements": 3858.4444444444443,
+      "mean_predicted_vertices": 1275.3333333333333,
+      "mean_budget_ratio": 0.5512063492063493,
+      "mean_absolute_budget_deviation": 3141.5555555555557,
+      "mean_absolute_budget_relative_deviation": 0.4487936507936508,
+      "mean_extrapolated_point_fraction": 0.02915401157576616,
+      "mean_max_extrapolation_distance_ratio": 0.0075695924187607405,
+      "mean_solver_runtime_seconds": 0.29035328333783483,
+      "mean_pde_postprocess_runtime_seconds": 1.2437822222224593,
+      "mean_runtime_seconds": 1.558418572220641
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 0,
+      "budget_valid": 0,
+      "mean_solution_l2_relative": 0.027975642651637624,
+      "mean_qoi_absolute_error": 0.0010949333326722556,
+      "mean_qoi_relative_error": 0.0007984985026225931,
+      "mean_predicted_elements": 3840.6666666666665,
+      "mean_predicted_vertices": 1271.0555555555557,
+      "mean_budget_ratio": 0.5486666666666667,
+      "mean_absolute_budget_deviation": 3159.3333333333335,
+      "mean_absolute_budget_relative_deviation": 0.45133333333333336,
+      "mean_extrapolated_point_fraction": 0.03008133783191419,
+      "mean_max_extrapolation_distance_ratio": 0.007604936616078288,
+      "mean_solver_runtime_seconds": 0.03164568332916436,
+      "mean_pde_postprocess_runtime_seconds": 1.3009126944396283,
+      "mean_runtime_seconds": 1.3521114888879109
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M1-FT\seed_02\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experimen
+ts\formal-mold7000-v3\M1-FT\seed_02\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\fo
+rmal-mold7000-v3\M1-FT\seed_02\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 0,
+      "budget_valid": 1,
+      "mean_solution_l2_relative": 0.41166408690366846,
+      "mean_qoi_absolute_error": 0.09189881433358048,
+      "mean_qoi_relative_error": 0.3862834157496469,
+      "mean_predicted_elements": 4437.333333333333,
+      "mean_predicted_vertices": 1461.0,
+      "mean_budget_ratio": 0.633904761904762,
+      "mean_absolute_budget_deviation": 2562.6666666666665,
+      "mean_absolute_budget_relative_deviation": 0.36609523809523803,
+      "mean_extrapolated_point_fraction": 0.029705593826668524,
+      "mean_max_extrapolation_distance_ratio": 0.00757835304753877,
+      "mean_solver_runtime_seconds": 0.36479256666239557,
+      "mean_pde_postprocess_runtime_seconds": 1.2772828611099005,
+      "mean_runtime_seconds": 1.6668503055568888
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 0,
+      "budget_valid": 0,
+      "mean_solution_l2_relative": 0.02600765198386732,
+      "mean_qoi_absolute_error": 0.0009585854928852013,
+      "mean_qoi_relative_error": 0.0006762336818347202,
+      "mean_predicted_elements": 4259.277777777777,
+      "mean_predicted_vertices": 1413.111111111111,
+      "mean_budget_ratio": 0.608468253968254,
+      "mean_absolute_budget_deviation": 2740.722222222222,
+      "mean_absolute_budget_relative_deviation": 0.391531746031746,
+      "mean_extrapolated_point_fraction": 0.030254526914264352,
+      "mean_max_extrapolation_distance_ratio": 0.007414470232964606,
+      "mean_solver_runtime_seconds": 0.03798731666433418,
+      "mean_pde_postprocess_runtime_seconds": 1.33971990000767,
+      "mean_runtime_seconds": 1.4005112722128008
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M2\seed_00\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experiments\
+formal-mold7000-v3\M2\seed_00\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\formal-m
+old7000-v3\M2\seed_00\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 7,
+      "budget_valid": 7,
+      "mean_solution_l2_relative": 0.286858924136883,
+      "mean_qoi_absolute_error": 0.045543696531883275,
+      "mean_qoi_relative_error": 0.24554704573427533,
+      "mean_predicted_elements": 5227.611111111111,
+      "mean_predicted_vertices": 1640.1666666666667,
+      "mean_budget_ratio": 0.7468015873015873,
+      "mean_absolute_budget_deviation": 1789.611111111111,
+      "mean_absolute_budget_relative_deviation": 0.25565873015873014,
+      "mean_extrapolated_point_fraction": 0.032156963496441274,
+      "mean_max_extrapolation_distance_ratio": 0.00683976609218278,
+      "mean_solver_runtime_seconds": 0.44983903333195485,
+      "mean_pde_postprocess_runtime_seconds": 1.3514403111152609,
+      "mean_runtime_seconds": 1.8239937277782399
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 8,
+      "budget_valid": 10,
+      "mean_solution_l2_relative": 0.024469046298840624,
+      "mean_qoi_absolute_error": 0.0008846978411403818,
+      "mean_qoi_relative_error": 0.000650559375988333,
+      "mean_predicted_elements": 5422.388888888889,
+      "mean_predicted_vertices": 1685.9444444444443,
+      "mean_budget_ratio": 0.7746269841269842,
+      "mean_absolute_budget_deviation": 1659.9444444444443,
+      "mean_absolute_budget_relative_deviation": 0.23713492063492062,
+      "mean_extrapolated_point_fraction": 0.03398427875172986,
+      "mean_max_extrapolation_distance_ratio": 0.007948311748712683,
+      "mean_solver_runtime_seconds": 0.050612361108910084,
+      "mean_pde_postprocess_runtime_seconds": 1.4567758722276065,
+      "mean_runtime_seconds": 1.53038990000237
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M2\seed_00\diagnostics\condition_shuffle\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\am
+ber\output\formal_experiments\formal-mold7000-v3\M2\seed_00\diagnostics\condition_shuffle\pde_metrics.csv --aggregate-js
+on D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M2\seed_00\diagnostics\condition_shuffle\pde_aggr
+egate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 8,
+      "budget_valid": 11,
+      "mean_solution_l2_relative": 0.4412064738193606,
+      "mean_qoi_absolute_error": 0.10264086872449717,
+      "mean_qoi_relative_error": 0.4113976259812411,
+      "mean_predicted_elements": 5645.5,
+      "mean_predicted_vertices": 1777.6666666666667,
+      "mean_budget_ratio": 0.8065,
+      "mean_absolute_budget_deviation": 1410.611111111111,
+      "mean_absolute_budget_relative_deviation": 0.20151587301587304,
+      "mean_extrapolated_point_fraction": 0.03124297595637248,
+      "mean_max_extrapolation_distance_ratio": 0.00767255269892505,
+      "mean_solver_runtime_seconds": 0.47925175555671257,
+      "mean_pde_postprocess_runtime_seconds": 1.3617868222225096,
+      "mean_runtime_seconds": 1.8658937944500293
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 5,
+      "budget_valid": 6,
+      "mean_solution_l2_relative": 0.027841239095555564,
+      "mean_qoi_absolute_error": 0.0012270496126499293,
+      "mean_qoi_relative_error": 0.0009125554605867356,
+      "mean_predicted_elements": 5021.944444444444,
+      "mean_predicted_vertices": 1554.2222222222222,
+      "mean_budget_ratio": 0.7174206349206349,
+      "mean_absolute_budget_deviation": 2003.8333333333333,
+      "mean_absolute_budget_relative_deviation": 0.2862619047619048,
+      "mean_extrapolated_point_fraction": 0.028770387165395064,
+      "mean_max_extrapolation_distance_ratio": 0.007278967219929723,
+      "mean_solver_runtime_seconds": 0.04435946666247522,
+      "mean_pde_postprocess_runtime_seconds": 1.3676757500021874,
+      "mean_runtime_seconds": 1.4341347777776212
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M2\seed_01\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experiments\
+formal-mold7000-v3\M2\seed_01\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\formal-m
+old7000-v3\M2\seed_01\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 7,
+      "budget_valid": 7,
+      "mean_solution_l2_relative": 0.3414968590853408,
+      "mean_qoi_absolute_error": 0.06763539167818552,
+      "mean_qoi_relative_error": 0.31688905596939804,
+      "mean_predicted_elements": 4855.444444444444,
+      "mean_predicted_vertices": 1546.0555555555557,
+      "mean_budget_ratio": 0.6936349206349206,
+      "mean_absolute_budget_deviation": 2157.1111111111113,
+      "mean_absolute_budget_relative_deviation": 0.30815873015873013,
+      "mean_extrapolated_point_fraction": 0.031582719669987984,
+      "mean_max_extrapolation_distance_ratio": 0.006938582471462144,
+      "mean_solver_runtime_seconds": 0.4072939999880166,
+      "mean_pde_postprocess_runtime_seconds": 1.3410591833332244,
+      "mean_runtime_seconds": 1.7749871888857645
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 3,
+      "budget_valid": 7,
+      "mean_solution_l2_relative": 0.02549486843417285,
+      "mean_qoi_absolute_error": 0.0008813009870988394,
+      "mean_qoi_relative_error": 0.0006262243648067696,
+      "mean_predicted_elements": 4800.5,
+      "mean_predicted_vertices": 1533.5,
+      "mean_budget_ratio": 0.6857857142857142,
+      "mean_absolute_budget_deviation": 2212.8333333333335,
+      "mean_absolute_budget_relative_deviation": 0.31611904761904763,
+      "mean_extrapolated_point_fraction": 0.033821772020868314,
+      "mean_max_extrapolation_distance_ratio": 0.007936074231119288,
+      "mean_solver_runtime_seconds": 0.04756261111146563,
+      "mean_pde_postprocess_runtime_seconds": 1.4303070722251303,
+      "mean_runtime_seconds": 1.5018183888848096
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M2\seed_01\diagnostics\condition_shuffle\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\am
+ber\output\formal_experiments\formal-mold7000-v3\M2\seed_01\diagnostics\condition_shuffle\pde_metrics.csv --aggregate-js
+on D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M2\seed_01\diagnostics\condition_shuffle\pde_aggr
+egate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 5,
+      "budget_valid": 9,
+      "mean_solution_l2_relative": 0.3679203146025054,
+      "mean_qoi_absolute_error": 0.08148711582007977,
+      "mean_qoi_relative_error": 0.32891465625524396,
+      "mean_predicted_elements": 5328.833333333333,
+      "mean_predicted_vertices": 1694.388888888889,
+      "mean_budget_ratio": 0.7612619047619049,
+      "mean_absolute_budget_deviation": 1688.5,
+      "mean_absolute_budget_relative_deviation": 0.24121428571428571,
+      "mean_extrapolated_point_fraction": 0.029835960799559524,
+      "mean_max_extrapolation_distance_ratio": 0.007643361121157226,
+      "mean_solver_runtime_seconds": 0.44727029444442856,
+      "mean_pde_postprocess_runtime_seconds": 1.3215310944328342,
+      "mean_runtime_seconds": 1.8000840000070941
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 4,
+      "budget_valid": 5,
+      "mean_solution_l2_relative": 0.027571060325912538,
+      "mean_qoi_absolute_error": 0.0012752703422247312,
+      "mean_qoi_relative_error": 0.0009396974361187981,
+      "mean_predicted_elements": 4353.111111111111,
+      "mean_predicted_vertices": 1392.7777777777778,
+      "mean_budget_ratio": 0.6218730158730159,
+      "mean_absolute_budget_deviation": 2648.1111111111113,
+      "mean_absolute_budget_relative_deviation": 0.37830158730158725,
+      "mean_extrapolated_point_fraction": 0.02894449841024481,
+      "mean_max_extrapolation_distance_ratio": 0.007420588726285323,
+      "mean_solver_runtime_seconds": 0.040946583331484966,
+      "mean_pde_postprocess_runtime_seconds": 1.3408105388969287,
+      "mean_runtime_seconds": 1.4030584611140915
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M2\seed_02\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experiments\
+formal-mold7000-v3\M2\seed_02\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\formal-m
+old7000-v3\M2\seed_02\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 9,
+      "budget_valid": 12,
+      "mean_solution_l2_relative": 0.3176510779294416,
+      "mean_qoi_absolute_error": 0.05651216090693761,
+      "mean_qoi_relative_error": 0.2895821898897517,
+      "mean_predicted_elements": 5382.944444444444,
+      "mean_predicted_vertices": 1692.0,
+      "mean_budget_ratio": 0.7689920634920635,
+      "mean_absolute_budget_deviation": 1617.2777777777778,
+      "mean_absolute_budget_relative_deviation": 0.23103968253968254,
+      "mean_extrapolated_point_fraction": 0.03238525095158329,
+      "mean_max_extrapolation_distance_ratio": 0.007090336697131944,
+      "mean_solver_runtime_seconds": 0.4603912166720774,
+      "mean_pde_postprocess_runtime_seconds": 1.3651520000098065,
+      "mean_runtime_seconds": 1.8489246777802084
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 2,
+      "budget_valid": 4,
+      "mean_solution_l2_relative": 0.025793221500835975,
+      "mean_qoi_absolute_error": 0.0008895632023173672,
+      "mean_qoi_relative_error": 0.0006324125051095662,
+      "mean_predicted_elements": 4688.722222222223,
+      "mean_predicted_vertices": 1500.111111111111,
+      "mean_budget_ratio": 0.6698174603174603,
+      "mean_absolute_budget_deviation": 2311.277777777778,
+      "mean_absolute_budget_relative_deviation": 0.33018253968253974,
+      "mean_extrapolated_point_fraction": 0.03317762886983151,
+      "mean_max_extrapolation_distance_ratio": 0.007967253392243807,
+      "mean_solver_runtime_seconds": 0.042042644435746804,
+      "mean_pde_postprocess_runtime_seconds": 1.419682861121449,
+      "mean_runtime_seconds": 1.4839694722322747
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M2\seed_02\diagnostics\condition_shuffle\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\am
+ber\output\formal_experiments\formal-mold7000-v3\M2\seed_02\diagnostics\condition_shuffle\pde_metrics.csv --aggregate-js
+on D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M2\seed_02\diagnostics\condition_shuffle\pde_aggr
+egate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 7,
+      "budget_valid": 8,
+      "mean_solution_l2_relative": 0.4398852233328789,
+      "mean_qoi_absolute_error": 0.10747982577664777,
+      "mean_qoi_relative_error": 0.41071580507360106,
+      "mean_predicted_elements": 5384.444444444444,
+      "mean_predicted_vertices": 1706.4444444444443,
+      "mean_budget_ratio": 0.7692063492063492,
+      "mean_absolute_budget_deviation": 1639.888888888889,
+      "mean_absolute_budget_relative_deviation": 0.2342698412698413,
+      "mean_extrapolated_point_fraction": 0.030668728347343424,
+      "mean_max_extrapolation_distance_ratio": 0.007541859915368242,
+      "mean_solver_runtime_seconds": 0.4582818555613307,
+      "mean_pde_postprocess_runtime_seconds": 1.334121377779714,
+      "mean_runtime_seconds": 1.8185739944553159
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 4,
+      "budget_valid": 4,
+      "mean_solution_l2_relative": 0.028138713790729148,
+      "mean_qoi_absolute_error": 0.0012444123759416577,
+      "mean_qoi_relative_error": 0.0009002205145589135,
+      "mean_predicted_elements": 4626.333333333333,
+      "mean_predicted_vertices": 1469.888888888889,
+      "mean_budget_ratio": 0.660904761904762,
+      "mean_absolute_budget_deviation": 2373.6666666666665,
+      "mean_absolute_budget_relative_deviation": 0.33909523809523806,
+      "mean_extrapolated_point_fraction": 0.028038242871873897,
+      "mean_max_extrapolation_distance_ratio": 0.007354119993395737,
+      "mean_solver_runtime_seconds": 0.04091335000056359,
+      "mean_pde_postprocess_runtime_seconds": 1.3326751555561915,
+      "mean_runtime_seconds": 1.396433450000283
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M4\seed_00\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experiments\
+formal-mold7000-v3\M4\seed_00\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\formal-m
+old7000-v3\M4\seed_00\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 5,
+      "budget_valid": 5,
+      "mean_solution_l2_relative": 0.3414954343024905,
+      "mean_qoi_absolute_error": 0.0702747771195677,
+      "mean_qoi_relative_error": 0.3217679098589402,
+      "mean_predicted_elements": 4932.833333333333,
+      "mean_predicted_vertices": 1563.5,
+      "mean_budget_ratio": 0.7046904761904762,
+      "mean_absolute_budget_deviation": 2067.1666666666665,
+      "mean_absolute_budget_relative_deviation": 0.2953095238095238,
+      "mean_extrapolated_point_fraction": 0.03164552782946649,
+      "mean_max_extrapolation_distance_ratio": 0.006695489044742843,
+      "mean_solver_runtime_seconds": 0.41655584445106797,
+      "mean_pde_postprocess_runtime_seconds": 1.3221114555522542,
+      "mean_runtime_seconds": 1.7642767611089059
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 4,
+      "budget_valid": 4,
+      "mean_solution_l2_relative": 0.023548235132648344,
+      "mean_qoi_absolute_error": 0.0008941992140428049,
+      "mean_qoi_relative_error": 0.0006439629343373414,
+      "mean_predicted_elements": 4786.722222222223,
+      "mean_predicted_vertices": 1519.6666666666667,
+      "mean_budget_ratio": 0.6838174603174604,
+      "mean_absolute_budget_deviation": 2235.0555555555557,
+      "mean_absolute_budget_relative_deviation": 0.3192936507936508,
+      "mean_extrapolated_point_fraction": 0.034348199169053996,
+      "mean_max_extrapolation_distance_ratio": 0.007998560543109259,
+      "mean_solver_runtime_seconds": 0.04612354998890725,
+      "mean_pde_postprocess_runtime_seconds": 1.4316082277865563,
+      "mean_runtime_seconds": 1.5074575000099786
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M4\seed_00\test_predictions\expert_only_prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_
+experiments\formal-mold7000-v3\M4\seed_00\expert_only_pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\for
+mal_experiments\formal-mold7000-v3\M4\seed_00\expert_only_pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 6,
+      "budget_valid": 6,
+      "mean_solution_l2_relative": 0.3270902253595103,
+      "mean_qoi_absolute_error": 0.06037885045908854,
+      "mean_qoi_relative_error": 0.30300858641490114,
+      "mean_predicted_elements": 4912.5,
+      "mean_predicted_vertices": 1557.4444444444443,
+      "mean_budget_ratio": 0.7017857142857142,
+      "mean_absolute_budget_deviation": 2091.3888888888887,
+      "mean_absolute_budget_relative_deviation": 0.29876984126984124,
+      "mean_extrapolated_point_fraction": 0.03143726889383589,
+      "mean_max_extrapolation_distance_ratio": 0.006452001646997461,
+      "mean_solver_runtime_seconds": 0.4153005444418846,
+      "mean_pde_postprocess_runtime_seconds": 1.3264137722209044,
+      "mean_runtime_seconds": 1.7640658055542089
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 4,
+      "budget_valid": 4,
+      "mean_solution_l2_relative": 0.023885707818576886,
+      "mean_qoi_absolute_error": 0.000867930095514724,
+      "mean_qoi_relative_error": 0.0006204381944121569,
+      "mean_predicted_elements": 4910.166666666667,
+      "mean_predicted_vertices": 1545.2777777777778,
+      "mean_budget_ratio": 0.7014523809523809,
+      "mean_absolute_budget_deviation": 2223.5,
+      "mean_absolute_budget_relative_deviation": 0.3176428571428571,
+      "mean_extrapolated_point_fraction": 0.03403744707607795,
+      "mean_max_extrapolation_distance_ratio": 0.00794241398981256,
+      "mean_solver_runtime_seconds": 0.044003227770897664,
+      "mean_pde_postprocess_runtime_seconds": 1.4290019444371056,
+      "mean_runtime_seconds": 1.4972848222177062
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M4\seed_00\diagnostics\condition_shuffle\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\am
+ber\output\formal_experiments\formal-mold7000-v3\M4\seed_00\diagnostics\condition_shuffle\pde_metrics.csv --aggregate-js
+on D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M4\seed_00\diagnostics\condition_shuffle\pde_aggr
+egate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 5,
+      "budget_valid": 6,
+      "mean_solution_l2_relative": 0.4357184712874022,
+      "mean_qoi_absolute_error": 0.10480766484468167,
+      "mean_qoi_relative_error": 0.40373546723105225,
+      "mean_predicted_elements": 5274.0,
+      "mean_predicted_vertices": 1679.111111111111,
+      "mean_budget_ratio": 0.7534285714285713,
+      "mean_absolute_budget_deviation": 1733.5555555555557,
+      "mean_absolute_budget_relative_deviation": 0.24765079365079362,
+      "mean_extrapolated_point_fraction": 0.030343490294548716,
+      "mean_max_extrapolation_distance_ratio": 0.007737845129866,
+      "mean_solver_runtime_seconds": 0.444646577784119,
+      "mean_pde_postprocess_runtime_seconds": 1.324335488885279,
+      "mean_runtime_seconds": 1.7938085111058575
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 3,
+      "budget_valid": 3,
+      "mean_solution_l2_relative": 0.02912731061949257,
+      "mean_qoi_absolute_error": 0.0012336047006057146,
+      "mean_qoi_relative_error": 0.0009151334706214593,
+      "mean_predicted_elements": 4438.444444444444,
+      "mean_predicted_vertices": 1406.388888888889,
+      "mean_budget_ratio": 0.634063492063492,
+      "mean_absolute_budget_deviation": 2561.5555555555557,
+      "mean_absolute_budget_relative_deviation": 0.36593650793650795,
+      "mean_extrapolated_point_fraction": 0.028756016933427806,
+      "mean_max_extrapolation_distance_ratio": 0.007252746717193832,
+      "mean_solver_runtime_seconds": 0.03917322220836973,
+      "mean_pde_postprocess_runtime_seconds": 1.3283773277879745,
+      "mean_runtime_seconds": 1.3886652833316475
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M4\seed_01\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experiments\
+formal-mold7000-v3\M4\seed_01\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\formal-m
+old7000-v3\M4\seed_01\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 7,
+      "budget_valid": 8,
+      "mean_solution_l2_relative": 0.3391918948212175,
+      "mean_qoi_absolute_error": 0.06530108574746893,
+      "mean_qoi_relative_error": 0.31184634059713756,
+      "mean_predicted_elements": 5008.666666666667,
+      "mean_predicted_vertices": 1592.611111111111,
+      "mean_budget_ratio": 0.7155238095238096,
+      "mean_absolute_budget_deviation": 1991.3333333333333,
+      "mean_absolute_budget_relative_deviation": 0.2844761904761905,
+      "mean_extrapolated_point_fraction": 0.032913248315989865,
+      "mean_max_extrapolation_distance_ratio": 0.0069360474523258,
+      "mean_solver_runtime_seconds": 0.4242944388857318,
+      "mean_pde_postprocess_runtime_seconds": 1.3554653722191385,
+      "mean_runtime_seconds": 1.8020822111090335
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 7,
+      "budget_valid": 7,
+      "mean_solution_l2_relative": 0.02592417293265411,
+      "mean_qoi_absolute_error": 0.0008011112954324587,
+      "mean_qoi_relative_error": 0.000572058837209809,
+      "mean_predicted_elements": 4904.333333333333,
+      "mean_predicted_vertices": 1556.388888888889,
+      "mean_budget_ratio": 0.7006190476190476,
+      "mean_absolute_budget_deviation": 2095.6666666666665,
+      "mean_absolute_budget_relative_deviation": 0.2993809523809524,
+      "mean_extrapolated_point_fraction": 0.03406026089210686,
+      "mean_max_extrapolation_distance_ratio": 0.00783986282845089,
+      "mean_solver_runtime_seconds": 0.047121011105547145,
+      "mean_pde_postprocess_runtime_seconds": 1.4382842999960606,
+      "mean_runtime_seconds": 1.5121015055531946
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M4\seed_01\test_predictions\expert_only_prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_
+experiments\formal-mold7000-v3\M4\seed_01\expert_only_pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\for
+mal_experiments\formal-mold7000-v3\M4\seed_01\expert_only_pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 8,
+      "budget_valid": 9,
+      "mean_solution_l2_relative": 0.31912171593269284,
+      "mean_qoi_absolute_error": 0.05900476356136936,
+      "mean_qoi_relative_error": 0.2946882521899179,
+      "mean_predicted_elements": 5007.333333333333,
+      "mean_predicted_vertices": 1593.611111111111,
+      "mean_budget_ratio": 0.7153333333333333,
+      "mean_absolute_budget_deviation": 2000.7777777777778,
+      "mean_absolute_budget_relative_deviation": 0.2858253968253968,
+      "mean_extrapolated_point_fraction": 0.03175123891642143,
+      "mean_max_extrapolation_distance_ratio": 0.007035449511038828,
+      "mean_solver_runtime_seconds": 0.4297949333364765,
+      "mean_pde_postprocess_runtime_seconds": 1.3503651944370683,
+      "mean_runtime_seconds": 1.8033196499939852
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 6,
+      "budget_valid": 8,
+      "mean_solution_l2_relative": 0.025133284442577553,
+      "mean_qoi_absolute_error": 0.0008224306853320971,
+      "mean_qoi_relative_error": 0.0005847767985322012,
+      "mean_predicted_elements": 4876.0,
+      "mean_predicted_vertices": 1548.888888888889,
+      "mean_budget_ratio": 0.6965714285714286,
+      "mean_absolute_budget_deviation": 2124.0,
+      "mean_absolute_budget_relative_deviation": 0.30342857142857144,
+      "mean_extrapolated_point_fraction": 0.03381750609257081,
+      "mean_max_extrapolation_distance_ratio": 0.00795848298559666,
+      "mean_solver_runtime_seconds": 0.04527373333177012,
+      "mean_pde_postprocess_runtime_seconds": 1.4376494888921216,
+      "mean_runtime_seconds": 1.5065241611122877
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M4\seed_01\diagnostics\condition_shuffle\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\am
+ber\output\formal_experiments\formal-mold7000-v3\M4\seed_01\diagnostics\condition_shuffle\pde_metrics.csv --aggregate-js
+on D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M4\seed_01\diagnostics\condition_shuffle\pde_aggr
+egate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 9,
+      "budget_valid": 11,
+      "mean_solution_l2_relative": 0.40318574744126573,
+      "mean_qoi_absolute_error": 0.0954598728810358,
+      "mean_qoi_relative_error": 0.36744691583582895,
+      "mean_predicted_elements": 5416.722222222223,
+      "mean_predicted_vertices": 1719.7777777777778,
+      "mean_budget_ratio": 0.7738174603174603,
+      "mean_absolute_budget_deviation": 1583.2777777777778,
+      "mean_absolute_budget_relative_deviation": 0.2261825396825397,
+      "mean_extrapolated_point_fraction": 0.02955496424731111,
+      "mean_max_extrapolation_distance_ratio": 0.007664028185954868,
+      "mean_solver_runtime_seconds": 0.4605619111033674,
+      "mean_pde_postprocess_runtime_seconds": 1.3278654777774743,
+      "mean_runtime_seconds": 1.8128209555547476
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 4,
+      "budget_valid": 5,
+      "mean_solution_l2_relative": 0.02762252460032113,
+      "mean_qoi_absolute_error": 0.0012260256264260108,
+      "mean_qoi_relative_error": 0.000906216888989529,
+      "mean_predicted_elements": 4422.388888888889,
+      "mean_predicted_vertices": 1412.9444444444443,
+      "mean_budget_ratio": 0.6317698412698413,
+      "mean_absolute_budget_deviation": 2577.6111111111113,
+      "mean_absolute_budget_relative_deviation": 0.3682301587301587,
+      "mean_extrapolated_point_fraction": 0.028543132019879163,
+      "mean_max_extrapolation_distance_ratio": 0.00730459837450025,
+      "mean_solver_runtime_seconds": 0.03863747221314245,
+      "mean_pde_postprocess_runtime_seconds": 1.3319032277698473,
+      "mean_runtime_seconds": 1.3918663444379087
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M4\seed_02\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experiments\
+formal-mold7000-v3\M4\seed_02\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\formal-m
+old7000-v3\M4\seed_02\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 10,
+      "budget_valid": 10,
+      "mean_solution_l2_relative": 0.33788942304133046,
+      "mean_qoi_absolute_error": 0.058903829397089456,
+      "mean_qoi_relative_error": 0.31209134669583755,
+      "mean_predicted_elements": 5350.5,
+      "mean_predicted_vertices": 1680.7777777777778,
+      "mean_budget_ratio": 0.7643571428571427,
+      "mean_absolute_budget_deviation": 1653.8333333333333,
+      "mean_absolute_budget_relative_deviation": 0.23626190476190473,
+      "mean_extrapolated_point_fraction": 0.032308086198000775,
+      "mean_max_extrapolation_distance_ratio": 0.006922640762526353,
+      "mean_solver_runtime_seconds": 0.4576534722194386,
+      "mean_pde_postprocess_runtime_seconds": 1.3573309055581275,
+      "mean_runtime_seconds": 1.8391628666658006
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 2,
+      "budget_valid": 2,
+      "mean_solution_l2_relative": 0.02433913575739275,
+      "mean_qoi_absolute_error": 0.0009574978029177185,
+      "mean_qoi_relative_error": 0.000687709322647257,
+      "mean_predicted_elements": 4514.222222222223,
+      "mean_predicted_vertices": 1463.388888888889,
+      "mean_budget_ratio": 0.6448888888888888,
+      "mean_absolute_budget_deviation": 2485.777777777778,
+      "mean_absolute_budget_relative_deviation": 0.3551111111111111,
+      "mean_extrapolated_point_fraction": 0.03281236730725128,
+      "mean_max_extrapolation_distance_ratio": 0.007903578696071754,
+      "mean_solver_runtime_seconds": 0.04101800555104597,
+      "mean_pde_postprocess_runtime_seconds": 1.3982455111141059,
+      "mean_runtime_seconds": 1.461637477781753
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M4\seed_02\test_predictions\expert_only_prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_
+experiments\formal-mold7000-v3\M4\seed_02\expert_only_pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\for
+mal_experiments\formal-mold7000-v3\M4\seed_02\expert_only_pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 10,
+      "budget_valid": 11,
+      "mean_solution_l2_relative": 0.32926739077781986,
+      "mean_qoi_absolute_error": 0.06044467787906741,
+      "mean_qoi_relative_error": 0.30320807052170307,
+      "mean_predicted_elements": 5138.222222222223,
+      "mean_predicted_vertices": 1625.6666666666667,
+      "mean_budget_ratio": 0.734031746031746,
+      "mean_absolute_budget_deviation": 1861.7777777777778,
+      "mean_absolute_budget_relative_deviation": 0.26596825396825396,
+      "mean_extrapolated_point_fraction": 0.03198528109416185,
+      "mean_max_extrapolation_distance_ratio": 0.0068719880845757465,
+      "mean_solver_runtime_seconds": 0.4268762944363213,
+      "mean_pde_postprocess_runtime_seconds": 1.3520837499979987,
+      "mean_runtime_seconds": 1.8033672999978687
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 2,
+      "budget_valid": 3,
+      "mean_solution_l2_relative": 0.025554562941904238,
+      "mean_qoi_absolute_error": 0.0007677039104599258,
+      "mean_qoi_relative_error": 0.0005724521793024765,
+      "mean_predicted_elements": 4683.888888888889,
+      "mean_predicted_vertices": 1511.888888888889,
+      "mean_budget_ratio": 0.6691269841269842,
+      "mean_absolute_budget_deviation": 2316.1111111111113,
+      "mean_absolute_budget_relative_deviation": 0.3308730158730159,
+      "mean_extrapolated_point_fraction": 0.032966608879946936,
+      "mean_max_extrapolation_distance_ratio": 0.0078068380126103355,
+      "mean_solver_runtime_seconds": 0.0397878222219232,
+      "mean_pde_postprocess_runtime_seconds": 1.4119576388879471,
+      "mean_runtime_seconds": 1.4730131333344616
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M4\seed_02\diagnostics\condition_shuffle\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\am
+ber\output\formal_experiments\formal-mold7000-v3\M4\seed_02\diagnostics\condition_shuffle\pde_metrics.csv --aggregate-js
+on D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M4\seed_02\diagnostics\condition_shuffle\pde_aggr
+egate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 7,
+      "budget_valid": 7,
+      "mean_solution_l2_relative": 0.414905774662889,
+      "mean_qoi_absolute_error": 0.08498891764501486,
+      "mean_qoi_relative_error": 0.37224206769129425,
+      "mean_predicted_elements": 5219.333333333333,
+      "mean_predicted_vertices": 1660.9444444444443,
+      "mean_budget_ratio": 0.7456190476190475,
+      "mean_absolute_budget_deviation": 1780.6666666666667,
+      "mean_absolute_budget_relative_deviation": 0.2543809523809524,
+      "mean_extrapolated_point_fraction": 0.030779116169217555,
+      "mean_max_extrapolation_distance_ratio": 0.007455416087322762,
+      "mean_solver_runtime_seconds": 0.4444251388809385,
+      "mean_pde_postprocess_runtime_seconds": 1.3339907555556338,
+      "mean_runtime_seconds": 1.8015036388888903
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 6,
+      "budget_valid": 6,
+      "mean_solution_l2_relative": 0.028713366445917057,
+      "mean_qoi_absolute_error": 0.0010981920655951877,
+      "mean_qoi_relative_error": 0.0007891433598879099,
+      "mean_predicted_elements": 4674.833333333333,
+      "mean_predicted_vertices": 1486.1666666666667,
+      "mean_budget_ratio": 0.6678333333333333,
+      "mean_absolute_budget_deviation": 2335.8333333333335,
+      "mean_absolute_budget_relative_deviation": 0.33369047619047615,
+      "mean_extrapolated_point_fraction": 0.029015354964540108,
+      "mean_max_extrapolation_distance_ratio": 0.007278499089522716,
+      "mean_solver_runtime_seconds": 0.0430846111169861,
+      "mean_pde_postprocess_runtime_seconds": 1.3496103500041903,
+      "mean_runtime_seconds": 1.4156804444468838
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\M3\seed_00\test_predictions\prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experiments\
+formal-mold7000-v3\M3\seed_00\pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_experiments\formal-m
+old7000-v3\M3\seed_00\pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 36,
+  "num_failures": 6,
+  "failure_rate": 0.14285714285714285,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 36,
+  "solver_success_rate": 0.8571428571428571,
+  "joint_success": 36,
+  "joint_success_rate": 0.8571428571428571,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 6,
+      "budget_valid": 6,
+      "mean_solution_l2_relative": 0.2936009626697792,
+      "mean_qoi_absolute_error": 0.05273037758751144,
+      "mean_qoi_relative_error": 0.2673093619797571,
+      "mean_predicted_elements": 4994.722222222223,
+      "mean_predicted_vertices": 1565.7777777777778,
+      "mean_budget_ratio": 0.7135317460317459,
+      "mean_absolute_budget_deviation": 2052.0555555555557,
+      "mean_absolute_budget_relative_deviation": 0.29315079365079366,
+      "mean_extrapolated_point_fraction": 0.03215015575307074,
+      "mean_max_extrapolation_distance_ratio": 0.006805128036337791,
+      "mean_solver_runtime_seconds": 0.4194860999963971,
+      "mean_pde_postprocess_runtime_seconds": 1.3564747000022583,
+      "mean_runtime_seconds": 1.8007029833291501
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 18,
+      "num_failures": 2,
+      "mesh_generation_success": 20,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 5,
+      "budget_valid": 5,
+      "mean_solution_l2_relative": 0.024182329859116267,
+      "mean_qoi_absolute_error": 0.0007945980329761323,
+      "mean_qoi_relative_error": 0.0005687377282686223,
+      "mean_predicted_elements": 4526.888888888889,
+      "mean_predicted_vertices": 1443.2222222222222,
+      "mean_budget_ratio": 0.6466984126984127,
+      "mean_absolute_budget_deviation": 2474.4444444444443,
+      "mean_absolute_budget_relative_deviation": 0.3534920634920635,
+      "mean_extrapolated_point_fraction": 0.033291665834905344,
+      "mean_max_extrapolation_distance_ratio": 0.007820354840355606,
+      "mean_solver_runtime_seconds": 0.04121711666165437,
+      "mean_pde_postprocess_runtime_seconds": 1.4379428388945397,
+      "mean_runtime_seconds": 1.5001331555573012
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\static_references\r0_initial_prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experiments
+\formal-mold7000-v3\static_references\r0_initial_pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_e
+xperiments\formal-mold7000-v3\static_references\r0_initial_pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 34,
+  "num_failures": 8,
+  "failure_rate": 0.19047619047619047,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 34,
+  "solver_success_rate": 0.8095238095238095,
+  "joint_success": 34,
+  "joint_success_rate": 0.8095238095238095,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 18,
+      "num_failures": 4,
+      "mesh_generation_success": 22,
+      "solver_success": 18,
+      "joint_success": 18,
+      "budget_close": 0,
+      "budget_valid": 0,
+      "mean_solution_l2_relative": 0.6461558691831778,
+      "mean_qoi_absolute_error": 0.16662490031766242,
+      "mean_qoi_relative_error": 0.6283713295232393,
+      "mean_predicted_elements": 293.44444444444446,
+      "mean_predicted_vertices": 129.44444444444446,
+      "mean_budget_ratio": 0.041920634920634914,
+      "mean_absolute_budget_deviation": 6706.555555555556,
+      "mean_absolute_budget_relative_deviation": 0.9580793650793651,
+      "mean_extrapolated_point_fraction": 0.010942733137238626,
+      "mean_max_extrapolation_distance_ratio": 0.008055063503162275,
+      "mean_solver_runtime_seconds": 0.018810983333322737,
+      "mean_pde_postprocess_runtime_seconds": 1.0390194333255447,
+      "mean_runtime_seconds": 1.063927227770263
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 16,
+      "num_failures": 4,
+      "mesh_generation_success": 20,
+      "solver_success": 16,
+      "joint_success": 16,
+      "budget_close": 0,
+      "budget_valid": 0,
+      "mean_solution_l2_relative": 0.039749533068582976,
+      "mean_qoi_absolute_error": 0.006099781451186143,
+      "mean_qoi_relative_error": 0.004291809075166839,
+      "mean_predicted_elements": 274.0,
+      "mean_predicted_vertices": 120.875,
+      "mean_budget_ratio": 0.039142857142857146,
+      "mean_absolute_budget_deviation": 6726.0,
+      "mean_absolute_budget_relative_deviation": 0.9608571428571429,
+      "mean_extrapolated_point_fraction": 0.01263259447729399,
+      "mean_max_extrapolation_distance_ratio": 0.007845031692514475,
+      "mean_solver_runtime_seconds": 0.004569849999825237,
+      "mean_pde_postprocess_runtime_seconds": 1.0842561562494666,
+      "mean_runtime_seconds": 1.093764206249034
+    }
+  }
+}
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\dataest-pipeline\evaluate_pipeline_pde.py evaluate --root D:
+\SITP\tet_work\dataest-pipeline\output\condition_aware_dataset_generation\default_fix_budget_run --geometry-source-root
+D:\SITP\tet_work\dataest-pipeline\data\mold --predictions D:\SITP\tet_work\amber\output\formal_experiments\formal-mold70
+00-v3\static_references\r1_teacher_prediction_manifest.csv --output-csv D:\SITP\tet_work\amber\output\formal_experiments
+\formal-mold7000-v3\static_references\r1_teacher_pde_metrics.csv --aggregate-json D:\SITP\tet_work\amber\output\formal_e
+xperiments\formal-mold7000-v3\static_references\r1_teacher_pde_aggregate.json --allow-failures
+{
+  "protocol_version": 2,
+  "num_samples": 42,
+  "num_success": 40,
+  "num_failures": 2,
+  "failure_rate": 0.047619047619047616,
+  "mesh_generation_success": 42,
+  "mesh_generation_success_rate": 1.0,
+  "solver_success": 40,
+  "solver_success_rate": 0.9523809523809523,
+  "joint_success": 40,
+  "joint_success_rate": 0.9523809523809523,
+  "by_pde_family": {
+    "linear_elasticity": {
+      "num_samples": 22,
+      "num_success": 21,
+      "num_failures": 1,
+      "mesh_generation_success": 22,
+      "solver_success": 21,
+      "joint_success": 21,
+      "budget_close": 17,
+      "budget_valid": 22,
+      "mean_solution_l2_relative": 0.36159780847029954,
+      "mean_qoi_absolute_error": 0.0899048218035616,
+      "mean_qoi_relative_error": 0.3356428883514653,
+      "mean_predicted_elements": 7637.238095238095,
+      "mean_predicted_vertices": 1758.2380952380952,
+      "mean_budget_ratio": 1.0910340136054422,
+      "mean_absolute_budget_deviation": 962.952380952381,
+      "mean_absolute_budget_relative_deviation": 0.13756462585034016,
+      "mean_extrapolated_point_fraction": 0.00689988213441411,
+      "mean_max_extrapolation_distance_ratio": 0.00868905583330566,
+      "mean_solver_runtime_seconds": 0.6618820761962395,
+      "mean_pde_postprocess_runtime_seconds": 1.1564848571405968,
+      "mean_runtime_seconds": 1.8388510761876768
+    },
+    "scalar_elliptic": {
+      "num_samples": 20,
+      "num_success": 19,
+      "num_failures": 1,
+      "mesh_generation_success": 20,
+      "solver_success": 19,
+      "joint_success": 19,
+      "budget_close": 10,
+      "budget_valid": 20,
+      "mean_solution_l2_relative": 0.023479182118922703,
+      "mean_qoi_absolute_error": 0.0003643981659443749,
+      "mean_qoi_relative_error": 0.00024255468658321782,
+      "mean_predicted_elements": 8314.631578947368,
+      "mean_predicted_vertices": 1883.1052631578948,
+      "mean_budget_ratio": 1.1878045112781954,
+      "mean_absolute_budget_deviation": 1710.9473684210527,
+      "mean_absolute_budget_relative_deviation": 0.24442105263157896,
+      "mean_extrapolated_point_fraction": 0.01196508884904617,
+      "mean_max_extrapolation_distance_ratio": 0.019434636690761495,
+      "mean_solver_runtime_seconds": 0.08900242104918059,
+      "mean_pde_postprocess_runtime_seconds": 1.4759185421066114,
+      "mean_runtime_seconds": 1.5851667684221051
+    }
+  }
+}
+**********************
+Windows PowerShell 脚本结束
+结束时间: 20260828004317
+**********************

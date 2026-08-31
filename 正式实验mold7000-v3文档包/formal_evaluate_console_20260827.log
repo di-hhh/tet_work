@@ -1,0 +1,272 @@
+﻿**********************
+Windows PowerShell 脚本开始
+开始时间: 20260827232937
+用户名: LEGION-DH-YS\13801
+RunAs 用户: LEGION-DH-YS\13801
+配置名称: 
+计算机: LEGION-DH-YS (Microsoft Windows NT 10.0.26200.0)
+主机应用程序: C:\Windows\system32\WindowsPowerShell\v1.0\PowerShell.exe
+进程 ID: 3608
+PSVersion: 5.1.26100.9168
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.9168
+BuildVersion: 10.0.26100.9168
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+已启动脚本，输出文件为 D:\SITP\tet_work\formal_evaluate_console_20260827.log
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\amber\evaluate_formal_checkpoint.py --run-root D:\SITP\tet_w
+ork\amber\output\formal_experiments\formal-mold7000-v3\M0\seed_00
+Seed set to 0
+example_graph.x.shape:torch.Size([172, 3])
+example_graph.edge_attr.shape:torch.Size([1806, 2])
+embeding_config:None
+in_node_features:3
+in_edge_features:2
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+Restoring states from the checkpoint path at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M0\seed
+_00\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\call.py:277: Be aware that when using `ckpt_
+path`, callbacks used to create the checkpoint need to be provided during `Trainer` instantiation. Please add the follow
+ing callbacks: ["ModelCheckpoint{'monitor': None, 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 100, 'train
+_time_interval': None}"].
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+Loaded model weights from the checkpoint at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M0\seed_
+00\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\_pytree.py:21: `isinstance(treespec, LeafS
+pec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:425: The 'test_
+dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` arg
+ument` to `num_workers=31` in the `DataLoader` to improve performance.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\data.py:123: Your `IterableDataset` has `_
+_len__` defined. In combination with multi-process data loading (when num_workers > 1), `__len__` could be inaccurate if
+ each worker is not configured independently to avoid having duplicate data.
+Testing DataLoader 0:   0%|                                                                     | 0/42 [00:00<?, ?it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   2%|█▍                                                           | 1/42 [00:02<01:23,  0.49it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   5%|██▉                                                          | 2/42 [00:02<00:59,  0.67it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   7%|████▎                                                        | 3/42 [00:03<00:51,  0.76it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  10%|█████▊                                                       | 4/42 [00:05<00:52,  0.72it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  12%|███████▎                                                     | 5/42 [00:06<00:46,  0.80it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  14%|████████▋                                                    | 6/42 [00:07<00:47,  0.76it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  17%|██████████▏                                                  | 7/42 [00:08<00:43,  0.80it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  19%|███████████▌                                                 | 8/42 [00:10<00:42,  0.80it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  21%|█████████████                                                | 9/42 [00:11<00:41,  0.80it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  24%|██████████████▎                                             | 10/42 [00:12<00:39,  0.80it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  26%|███████████████▋                                            | 11/42 [00:14<00:39,  0.78it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  29%|█████████████████▏                                          | 12/42 [00:15<00:39,  0.77it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  31%|██████████████████▌                                         | 13/42 [00:16<00:37,  0.78it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  33%|████████████████████                                        | 14/42 [00:17<00:35,  0.78it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  36%|█████████████████████▍                                      | 15/42 [00:19<00:35,  0.77it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  38%|██████████████████████▊                                     | 16/42 [00:21<00:34,  0.75it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  40%|████████████████████████▎                                   | 17/42 [00:22<00:33,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  43%|█████████████████████████▋                                  | 18/42 [00:24<00:32,  0.74it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  45%|███████████████████████████▏                                | 19/42 [00:25<00:30,  0.76it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  48%|████████████████████████████▌                               | 20/42 [00:26<00:28,  0.76it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  50%|██████████████████████████████                              | 21/42 [00:27<00:27,  0.77it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  52%|███████████████████████████████▍                            | 22/42 [00:28<00:26,  0.76it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  55%|████████████████████████████████▊                           | 23/42 [00:30<00:25,  0.76it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  57%|██████████████████████████████████▎                         | 24/42 [00:31<00:23,  0.76it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  60%|███████████████████████████████████▋                        | 25/42 [00:33<00:22,  0.75it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  62%|█████████████████████████████████████▏                      | 26/42 [00:33<00:20,  0.77it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  64%|██████████████████████████████████████▌                     | 27/42 [00:35<00:19,  0.77it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  67%|████████████████████████████████████████                    | 28/42 [00:36<00:18,  0.78it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  69%|█████████████████████████████████████████▍                  | 29/42 [00:37<00:16,  0.78it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  71%|██████████████████████████████████████████▊                 | 30/42 [00:38<00:15,  0.79it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  74%|████████████████████████████████████████████▎               | 31/42 [00:39<00:13,  0.79it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  76%|█████████████████████████████████████████████▋              | 32/42 [00:40<00:12,  0.80it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  79%|███████████████████████████████████████████████▏            | 33/42 [00:41<00:11,  0.80it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  81%|████████████████████████████████████████████████▌           | 34/42 [00:42<00:09,  0.81it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  83%|██████████████████████████████████████████████████          | 35/42 [00:42<00:08,  0.82it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  86%|███████████████████████████████████████████████████▍        | 36/42 [00:43<00:07,  0.82it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  88%|████████████████████████████████████████████████████▊       | 37/42 [00:44<00:06,  0.82it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  90%|██████████████████████████████████████████████████████▎     | 38/42 [00:46<00:04,  0.82it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  93%|███████████████████████████████████████████████████████▋    | 39/42 [00:47<00:03,  0.82it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  95%|█████████████████████████████████████████████████████████▏  | 40/42 [00:48<00:02,  0.83it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  98%|██████████████████████████████████████████████████████████▌ | 41/42 [00:49<00:01,  0.83it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0: 100%|████████████████████████████████████████████████████████████| 42/42 [00:51<00:00,  0.82it/s]
+D:\anaconda3\envs\AMBER_neurips\python.exe D:\SITP\tet_work\amber\evaluate_formal_checkpoint.py --run-root D:\SITP\tet_w
+ork\amber\output\formal_experiments\formal-mold7000-v3\M0\seed_01
+Seed set to 1
+example_graph.x.shape:torch.Size([172, 3])
+example_graph.edge_attr.shape:torch.Size([1806, 2])
+embeding_config:None
+in_node_features:3
+in_edge_features:2
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+No embedding config 没没有有输输入入嵌嵌入入层层配配置置
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+Restoring states from the checkpoint path at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M0\seed
+_01\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\call.py:277: Be aware that when using `ckpt_
+path`, callbacks used to create the checkpoint need to be provided during `Trainer` instantiation. Please add the follow
+ing callbacks: ["ModelCheckpoint{'monitor': None, 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 100, 'train
+_time_interval': None}"].
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+Loaded model weights from the checkpoint at D:\SITP\tet_work\amber\output\formal_experiments\formal-mold7000-v3\M0\seed_
+01\checkpoints\last.ckpt
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\_pytree.py:21: `isinstance(treespec, LeafS
+pec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\trainer\connectors\data_connector.py:425: The 'test_
+dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` arg
+ument` to `num_workers=31` in the `DataLoader` to improve performance.
+D:\anaconda3\envs\AMBER_neurips\Lib\site-packages\lightning\pytorch\utilities\data.py:123: Your `IterableDataset` has `_
+_len__` defined. In combination with multi-process data loading (when num_workers > 1), `__len__` could be inaccurate if
+ each worker is not configured independently to avoid having duplicate data.
+Testing DataLoader 0:   0%|                                                                     | 0/42 [00:00<?, ?it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   2%|█▍                                                           | 1/42 [00:01<01:02,  0.65it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   5%|██▉                                                          | 2/42 [00:02<00:47,  0.85it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:   7%|████▎                                                        | 3/42 [00:03<00:41,  0.94it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  10%|█████▊                                                       | 4/42 [00:05<00:48,  0.79it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  12%|███████▎                                                     | 5/42 [00:05<00:43,  0.84it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  14%|████████▋                                                    | 6/42 [00:07<00:46,  0.77it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  17%|██████████▏                                                  | 7/42 [00:08<00:42,  0.82it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  19%|███████████▌                                                 | 8/42 [00:09<00:41,  0.82it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  21%|█████████████                                                | 9/42 [00:10<00:39,  0.83it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  24%|██████████████▎                                             | 10/42 [00:12<00:38,  0.83it/s]W
+arning: Appending zeros to replace the missing physical tag data.
+Warning: Appending zeros to replace the missing geometrical tag data.
+Testing DataLoader 0:  26%|███████████████▋                                            | 11/42 [00:13<00:39,  0.79it/s]f
+orrtl: error (200): program aborting due to control-C event
+Image              PC                Routine            Line        Source
+KERNELBASE.dll     00007FFC8BB33BDD  Unknown               Unknown  Unknown
+KERNEL32.DLL       00007FFC8DD6CCB7  Unknown               Unknown  Unknown
+ntdll.dll          00007FFC8E90AD6C  Unknown               Unknown  Unknown
+Traceback (most recent call last):
+  File "D:\SITP\tet_work\amber\run_formal_experiments.py", line 387, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "D:\SITP\tet_work\amber\run_formal_experiments.py", line 65, in main
+    evaluate_all(plan, dry_run=args.dry_run, overwrite=args.overwrite)
+  File "D:\SITP\tet_work\amber\run_formal_experiments.py", line 201, in evaluate_all
+    _execute(command, cwd=AMBER_REPO_ROOT, dry_run=dry_run)
+  File "D:\SITP\tet_work\amber\run_formal_experiments.py", line 383, in _execute
+    subprocess.run(command, cwd=cwd, check=True)
+  File "D:\anaconda3\envs\AMBER_neurips\Lib\subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\anaconda3\envs\AMBER_neurips\Lib\subprocess.py", line 1201, in communicate
+    self.wait()
+  File "D:\anaconda3\envs\AMBER_neurips\Lib\subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\anaconda3\envs\AMBER_neurips\Lib\subprocess.py", line 1590, in _wait
+    result = _winapi.WaitForSingleObject(self._handle,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+PS>TerminatingError():“管道已被停止。”
+>> TerminatingError():“管道已被停止。”
+PS D:\SITP\tet_work\amber>
