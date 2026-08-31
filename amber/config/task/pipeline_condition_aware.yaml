@@ -1,0 +1,91 @@
+defaults:
+  - default_task
+  - _self_
+
+name: pipeline_condition_aware
+dataset_preparator: pipeline_condition_aware
+
+pipeline_output_root: ???
+# Relative task roots are anchored to amber/, not to the caller's shell directory.
+geometry_source_root: ../dataest-pipeline/data/mold
+manifest_name: sample_manifest
+evaluation_reference_manifest_name: evaluation_reference_manifest
+require_evaluation_reference: false
+evaluation_reference_required_splits: [test]
+dataset_fingerprint_path: manifests/dataset_fingerprint_formal-mold7000-v3.json
+
+# Legacy absolute manifests are supported only through this explicit mapping.
+path_relocation:
+  enabled: false
+  old_root: null
+  new_root: null
+
+input_mesh_mode: initial_mesh
+target_mode: final_target_mesh
+
+split_source: sample_manifest
+required_splits: [train, val, test]
+empty_split_policy: fail
+
+allowed_statuses:
+  - success_budget_closed
+  - success_near_desired_budget
+
+budget_filter: null
+require_single_budget: true
+pde_family_filter: null
+geometry_id_filter: null
+condition_id_filter: null
+sample_id_filter: null
+one_condition_per_geometry: false
+
+condition_spec_mode: metadata_only
+physics_weight_source: pipeline_indicator
+physics_feature_source: pipeline_indicator
+require_indicator: true
+
+quality_filter:
+  enabled: true
+  report_relative_path: reports/smoke_report.json
+  allowed_verdicts:
+    - PASS_STRONG
+    - PASS_WEAK
+  missing_report_policy: fail
+  missing_sample_policy: fail
+
+stage_field:
+  mode: single_field
+  projection: idw
+  # Formal protocol: probes are projected directly to every current learner mesh.
+  projection_target: learner_mesh
+  idw_k: 4
+  idw_epsilon: 1.0e-12
+  fail_on_missing: true
+  normalize: robust_minmax
+  robust_lower_quantile: 0.05
+  robust_upper_quantile: 0.95
+  single_field:
+    name: s_pde_raw
+    direction: high_is_important
+    transform: log1p
+    normalize: robust_minmax
+  fusion:
+    combine: weighted_mean
+    renormalize: true
+    fields:
+      - name: s_pde_raw
+        direction: high_is_important
+        transform: log1p
+        normalize: robust_minmax
+        weight: 1.0
+
+mesh_cell_type: tetra
+cell_type_policy: filter_tetra_then_fail_if_empty
+
+min_initial_elements: null
+max_initial_elements: null
+min_target_elements: 1
+max_target_elements: null
+over_limit_policy: skip
+
+max_initial_element_volume: 0.0

@@ -1,0 +1,25 @@
+# [Claude Code] 新增：使用 U-Net 式消息传递网络的 AMBER 算法配置。
+# 和 amber.yaml 完全一样，只是将 architecture 从 mpn 改为 mpn_unet。
+defaults:
+  - default_algorithm
+  - override architecture: mpn_unet
+  - override dataloader: amber_dataloader
+  - _self_
+
+name: amber
+
+prediction_transform:
+  inverse_transform_in_loss: True
+  predict_residual: True
+  name: softplus
+
+loss_type: mse
+sizing_field_interpolation_type: sampled_vertex
+initial_mesh_handling: exclude
+# [Claude Code] U-Net 通过 graclus 粗化提供多尺度信息，不再需要拼接初始网格的分层图
+
+inference_steps: 3
+
+sizing_field_damping:
+  last_step_damping: 1.0
+  damping_factor: 0.618

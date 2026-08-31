@@ -1,0 +1,19 @@
+# @package _global_
+
+defaults:
+  - _amber_weighted
+  - _self_
+
+algorithm:
+  enable_physics_correction_branch: True
+  physics_feature_mode: normalized_importance
+  lambda_expert_aux: 0.1
+  lambda_corr_aux: 0.5
+  lambda_corr_reg: 1.0e-4
+  gate_activation: sigmoid
+  gate_max: 1.0
+  gate_init_bias: -2.5
+  physics_readout_init_std: 1.0e-3
+  correction_warmup_epochs: 3
+  init_from_weighted_baseline_checkpoint: null
+  inference_missing_physics_fallback: gate_zero

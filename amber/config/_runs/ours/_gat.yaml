@@ -1,0 +1,19 @@
+# @package _global_
+
+defaults:
+  - override /algorithm: ours        # 强制使用 algorithm/ours.yaml 配置
+  - override /logger: default_logger  # 强制使用 logger/default_logger.yaml 配置
+  - override /trainer: gpu_trainer    # 强制使用 trainer/cpu_trainer.yaml 配置
+  - _self_  # 包含当前文件自身的配置
+
+# Base configuration for AMBER experiments
+
+exp_name: ???   # 必需参数; 暂不指定实验名称
+
+hydra:
+  sweeper:
+    grid_params:
+      seed: 0, 1, 2, 3, 4 # 随机种子设置
+
+# 值范围: 0, 1, 2, 3, 4 表示将进行5次实验，分别使用这5个不同的随机种子
+# 实验目的: 通过多次不同种子的实验来评估算法的稳定性和平均性能

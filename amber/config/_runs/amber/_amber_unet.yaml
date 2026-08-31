@@ -1,0 +1,15 @@
+# @package _global_
+# [Claude Code] 新增：U-Net 版 AMBER 的基础运行配置，替换 _amber.yaml 中的 architecture。
+
+defaults:
+  - override /algorithm: amber_unet
+  - override /logger: default_logger
+  - override /trainer: gpu_trainer
+  - _self_
+
+exp_name: ???
+
+hydra:
+  sweeper:
+    grid_params:
+      seed: 0, 1, 2, 3, 4

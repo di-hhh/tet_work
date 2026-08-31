@@ -1,0 +1,100 @@
+defaults:
+  - architecture: ???
+  - dataloader: ???
+  - optimizer: adam
+  - normalizer: default_normalizer
+  - mesh_metrics: default_mesh_metrics
+  - _self_
+
+name: ???
+
+prediction_transform:
+  inverse_transform_in_loss: ???
+  predict_residual: False
+  name: ???
+
+sizing_field_interpolation_type: ???
+
+max_mesh_elements: auto
+force_mesh_generation: True
+
+gmsh:
+  min_sizing_field: x1.25
+  max_sizing_field: x1.25
+
+evaluation_frequency: 5
+
+# [CodeX] 下面这组配置用于“expert prior + physics residual”的最小模型侧修正实现，默认关闭以保持旧路径不变。
+enable_physics_correction_branch: False
+physics_feature_mode: normalized_importance
+lambda_expert_aux: 0.1
+lambda_corr_aux: 0.5
+lambda_corr_reg: 1.0e-4
+gate_activation: sigmoid
+gate_max: 1.0
+gate_init_bias: -2.5
+physics_readout_init_std: 1.0e-3
+correction_warmup_epochs: 3
+init_from_weighted_baseline_checkpoint: null
+inference_missing_physics_fallback: gate_zero
+
+weighted_imitation:
+  # [CodeX] Console/Mold 默认参考物理改为三维线弹性静力问题，其余训练链路保持不变。
+  enabled: False
+  metric_use_physics_weights: True
+  datasets: [console, mold]
+  weight_source_mode: console_mold_reference
+  reference_physics_type: linear_elasticity
+  importance_metric: strain_energy_density
+  cache_dir: data/weighted_imitation
+  auto_prepare: False
+  overwrite_cache: False
+  young_modulus: 1.0
+  poisson_ratio: 0.3
+  console_support_quantile: 0.08
+  console_load_quantile: 0.92
+  console_min_region_faces: 8
+  console_load_type: surface_traction
+  console_surface_traction_magnitude: 1.0
+  console_body_force_magnitude: 1.0
+  mold_inlet_radius_scale: 0.08
+  mold_far_region_quantile: 0.92
+  mold_min_region_faces: 8
+  mold_pressure_magnitude: 1.0
+  weight_mode: linear
+  beta: 1.0
+  gamma: 2.0
+  lambda_high: 4.0
+  lambda_mid: 2.0
+  topk_percent: 0.2
+  ternary_low_quantile: 0.5
+  ternary_high_quantile: 0.8
+  bucket_count: 5
+  epsilon: 1.0e-8
+  normalization_lower_quantile: 0.05
+  normalization_upper_quantile: 0.95
+  clip_min: 1.0
+  clip_max: 10.0
+  weight_clip_min: 1.0
+  weight_clip_max: 10.0
+  solver_regularization_epsilon: 1.0e-10
+  stage2_enable: False
+  stage2_epochs: 20
+  stage2_resume_mode: True
+  stage2_weight_mode: binary_topk
+  stage2_topk_percent: 0.2
+  stage2_high_importance_only: True
+  stage2_high_importance_emphasis: 1.0
+  stage2_low_weight: 1.0e-8
+  stage2_beta: 1.0
+  stage2_gamma: 3.0
+  stage2_lambda_mid: 2.0
+  stage2_lambda_high: 8.0
+  stage2_ternary_low_quantile: 0.5
+  stage2_ternary_high_quantile: 0.8
+  fallback_to_ones: True
+
+plotting:
+  sample_idxs: [0, 1]
+  frequency: 200
+  initial_epoch: False

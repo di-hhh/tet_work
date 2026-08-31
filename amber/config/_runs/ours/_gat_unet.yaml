@@ -1,0 +1,15 @@
+# @package _global_
+# Edge-Aware GAT U-Net 的基础运行配置
+
+defaults:
+  - override /algorithm: ours_unet
+  - override /logger: default_logger
+  - override /trainer: gpu_trainer
+  - _self_
+
+exp_name: ???
+
+hydra:
+  sweeper:
+    grid_params:
+      seed: 0, 1, 2, 3, 4

@@ -1,0 +1,6 @@
+defaults:
+  - pipeline_condition_aware
+  - _self_
+
+name: pipeline_condition_aware
+pde_family_filter: [scalar_elliptic]

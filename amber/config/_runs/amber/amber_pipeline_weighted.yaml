@@ -1,0 +1,51 @@
+# @package _global_
+
+defaults:
+  - _amber_weighted
+  - override /task: pipeline_condition_aware
+  - _self_
+
+exp_name: amber_pipeline_weighted
+_version: 1
+idx: ambpw100
+
+trainer:
+  max_epochs: 101
+
+task:
+  pipeline_output_root: ../dataest-pipeline/output/condition_aware_dataset_generation/default_fix_budget_run
+  geometry_source_root: ../dataest-pipeline/data/mold
+  path_relocation:
+    enabled: true
+    old_root: D:/SITP/tet_work/dataest-pipeline
+    new_root: ../dataest-pipeline
+  physics_weight_source: pipeline_indicator
+  physics_feature_source: pipeline_indicator
+
+algorithm:
+  enable_physics_correction_branch: False
+  mesh_metrics:
+    physics_weighted_projected_l2_error: True
+  weighted_imitation:
+    enabled: True
+    metric_use_physics_weights: True
+    datasets: [pipeline_condition_aware]
+    weight_source_mode: pipeline_indicator
+    auto_prepare: False
+    fallback_to_ones: False
+
+experiment_protocol:
+  method_id: M1
+  analysis_id: M1
+  method_role: core
+  protocol_id: formal-mold7000-v3
+  formal_run: true
+  run_test_after_fit: false
+  evaluation_prediction_variants: [final]
+  budget_close_relative_tolerance: 0.18
+  budget_valid_min_ratio: 0.8
+  budget_valid_max_ratio: 1.5714285714285714
+  require_seed_matched_m1_checkpoint: false
+  evaluation_checkpoint: last.ckpt
+  training_budget_epochs: 101
+  require_clean_repositories: true

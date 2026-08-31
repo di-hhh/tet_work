@@ -1,0 +1,116 @@
+schema_version: 1
+protocol_id: formal-mold7000-v3
+required_local_tag: preformal-mold7000-v3
+
+hard_constraints:
+  modify_model_architecture: false
+  modify_loss: false
+  stage_projection_target: learner_mesh
+  test_after_fit: false
+
+dataset:
+  pipeline_output_root: ../dataest-pipeline/output/condition_aware_dataset_generation/default_fix_budget_run
+  geometry_source_root: ../dataest-pipeline/data/mold
+  fingerprint_path: ../dataest-pipeline/output/condition_aware_dataset_generation/default_fix_budget_run/manifests/dataset_fingerprint_formal-mold7000-v3.json
+  fingerprint_sha256: 26f333eb00e4818225f98ad27a77cf0eea802903ff4be3af78d094bf0f085c7c
+  expected_split_samples: {train: 182, val: 34, test: 42}
+  expected_split_geometries: {train: 48, val: 10, test: 11}
+  expected_test_samples_by_pde: {scalar_elliptic: 20, linear_elasticity: 22}
+  expected_test_geometries_by_pde: {scalar_elliptic: 10, linear_elasticity: 11}
+
+execution:
+  conda_environment: AMBER_neurips
+  formal_root: output/formal_experiments/formal-mold7000-v3
+  train_all_before_any_test: true
+  disable_wandb: true
+  inference_steps: 3
+  training_budget_epochs: 101
+
+methods:
+  - analysis_id: M0
+    method_id: M0
+    role: core
+    run_config: amber_pipeline_baseline
+    seeds: [0, 1, 2]
+  - analysis_id: M1
+    method_id: M1
+    role: core
+    run_config: amber_pipeline_weighted
+    seeds: [0, 1, 2]
+  - analysis_id: M1-FT
+    method_id: M1
+    role: auxiliary
+    run_config: amber_pipeline_weighted_fairness_control
+    seeds: [0, 1, 2]
+    initialize_from: M1
+    initialization_mode: weights_only_fresh_optimizer
+  - analysis_id: M2
+    method_id: M2
+    role: core
+    run_config: amber_pipeline_feature_only
+    seeds: [0, 1, 2]
+    initialize_from: M1
+  - analysis_id: M4
+    method_id: M4
+    role: core
+    run_config: amber_pipeline_physics_correction_stage_field
+    seeds: [0, 1, 2]
+    initialize_from: M1
+    evaluation_prediction_variants: [final, expert_only]
+  - analysis_id: M3
+    method_id: M3
+    role: oracle
+    oracle_only: true
+    run_config: amber_pipeline_physics_correction_codex
+    seeds: [0]
+    initialize_from: M1
+
+static_references:
+  R0-Initial:
+    role: low_budget_sanity_reference
+    claim_boundary: not_budget_matched
+  R1-Teacher:
+    role: frozen_teacher_target_reference
+    claim_boundary: reference_not_strict_upper_bound
+
+diagnostics:
+  condition_responsiveness: [M2, M4]
+  same_geometry_condition_shuffle: [M2, M4]
+  shuffle_rule: lexicographic_cyclic_derangement_within_geometry
+
+metrics:
+  primary_pde_metric: solution_l2_relative
+  reference_wording: discrepancy_relative_to_frozen_strong_reference
+  secondary_pde_metrics: [qoi_absolute_error, qoi_relative_error]
+  primary_sizing_metric: projected_l2_error_symmetric
+  critical_region_metrics:
+    - physics_weighted_projected_l2_error
+    - weighted_size_mse
+    - topk_high_importance_mse
+  energy_or_h1_metric: null
+  legacy_sizing_l2_columns_are_mse: true
+  topk_percent: 0.20
+  bucket_count: 5
+  joint_success: mesh_generation_success_and_solver_success
+  retain_failure_rows: true
+
+budget:
+  desired_elements: 7000
+  close_relative_tolerance: 0.18
+  valid_min_ratio: 0.8
+  valid_max_ratio: 1.5714285714285714
+
+statistics:
+  independent_unit: geometry_id
+  within_geometry_reduction: condition_mean_by_pde
+  seed_reduction: mean_then_std
+  bootstrap_iterations: 10000
+  bootstrap_seed: 20260821
+  confidence_level: 0.95
+  paired_wilcoxon: true
+  multiple_comparison_correction: holm
+  planned_contrasts:
+    - {left: M1, right: M0, claim: weighted_loss}
+    - {left: M1-FT, right: M1, claim: additional_training}
+    - {left: M2, right: M1-FT, claim: stage_feature}
+    - {left: M4, right: M2, claim: full_gated_residual_stack}

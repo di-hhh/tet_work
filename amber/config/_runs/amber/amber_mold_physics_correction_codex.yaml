@@ -1,0 +1,25 @@
+# @package _global_
+
+defaults:
+  - _amber_physics_correction_codex
+  - override /task: mold
+  - _self_
+
+exp_name: amber_mold_physics_correction_codex
+_version: 1
+
+trainer:
+  max_epochs: 201
+
+idx: ambpc100
+
+algorithm:
+  # [CodeX] Mold 实验默认也对齐 weighted 基线的单步推理设置，便于直接复用已有缓存与评估流程。
+  inference_steps: 3
+
+hydra:
+  sweeper:
+    ablative_params:
+      # [CodeX] 继续沿用 Mold weighted 基线的初始网格体积设置，确保 physics correction 只是在成功版本上做模型侧增量。
+      - task.max_initial_element_volume: 0.000001
+        idx: msh100

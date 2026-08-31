@@ -1,0 +1,33 @@
+# [Claude Code] 新增：MPN U-Net 架构配置
+# 使用多尺度 U-Net 式消息传递网络替代原始的 flat MessagePassingStack。
+# 通过 graclus 图粗化构建多层层次，编码器从细到粗，解码器从粗到细，skip connection 融合多尺度信息。
+
+defaults:
+  - default_gnn
+  - _self_
+
+name: mpn  # [Claude Code] 保持 name: mpn，因为上层 SupervisedMPN 通过此名称注册，
+           # U-Net 只是替换了内部的 message_passing_stack，对外接口不变。
+
+create_graph_copy: True
+assert_graph_shapes: False
+edge_dropout: 0.1
+
+stack:
+  stack_type: unet          # [Claude Code] 关键字段：告诉 MessagePassingBase 使用 MessagePassingUNet
+  num_levels: 4             # 图层次的层数（G_0 ~ G_3，即最细到最粗共3层）
+  steps_per_level: 3        # 每层做几轮消息传递（编码器和解码器各 4 轮/层）
+
+  # 以下配置透传给每个 MessagePassingBlock（和原来的 mpn.yaml 中 stack 下的配置一样）
+  stack_config:
+    layer_norm: inner
+    residual_connections: inner
+    mlp:
+      activation_function: leakyrelu
+      num_layers: 2
+      add_output_layer: False
+      regularization:
+        dropout: 0
+        spectral_norm: False
+        latent_normalization: null
+

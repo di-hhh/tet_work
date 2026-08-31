@@ -1,0 +1,21 @@
+{
+  "conda_environment": "AMBER_neurips",
+  "freeze_date": "2026-08-20",
+  "platform": "win-64",
+  "python": "3.11.15",
+  "torch": "2.10.0+cu128",
+  "torch_cuda": "12.8",
+  "cuda_available_at_freeze": true,
+  "lightning": "2.5.0",
+  "pytorch_lightning": "2.6.1",
+  "torch_geometric": "2.6.1",
+  "torch_scatter": "2.1.2+pt210cu128",
+  "torch_cluster": "1.6.3+pt210cu128",
+  "torch_sparse": "0.6.18+pt210cu128",
+  "scikit_fem": "10.0.2",
+  "scikit_learn": "1.8.0",
+  "meshio": "5.3.5",
+  "gmsh": "4.15.2",
+  "pytest": "8.3.5",
+  "torch_scatter_import_and_operation": "verified"
+}
