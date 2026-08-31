@@ -1,0 +1,59 @@
+﻿output_root: output/condition_aware_dataset_generation/smoke_beam
+random_seed: 11
+workers: 1
+overwrite: true
+log_level: INFO
+
+path_protocol:
+  enforce_output_root_inside_tet_work: true
+  enforce_geometry_source_inside_tet_work: true
+limit_geometries: 2
+
+geometry_source:
+  name: local_directory
+  source_name: beam_smoke
+  root: data/beam/train
+  patterns:
+    - "001.step"
+    - "002.step"
+  recursive: false
+
+preprocessing:
+  coarse_element_volume: 0.08
+  min_extent: 1.0e-6
+
+condition_sampling:
+  default_conditions_per_geometry: 2
+  pde_families:
+    - scalar_elliptic
+    - linear_elasticity
+  budgets:
+    - 40
+    - 70
+  scalar_elliptic:
+    band_fraction: 0.14
+    diffusion_range: [0.8, 1.4]
+    dirichlet_value_range: [0.0, 0.8]
+    flux_probability: 0.5
+    source_amplitude_range: [-1.5, 1.5]
+  linear_elasticity:
+    band_fraction: 0.14
+    youngs_modulus_range: [80.0, 120.0]
+    poissons_ratio_range: [0.22, 0.30]
+    traction_magnitude_range: [0.3, 0.8]
+    body_force_probability: 0.2
+
+teacher:
+  initial_mesh_element_volume: 0.12
+  reference_refinement_levels: 1
+  max_adaptive_steps: 3
+  refine_theta: 0.6
+  store_trajectory: true
+  allow_budget_shortfall: true
+
+split:
+  seed: 11
+  ratios:
+    train: 0.5
+    val: 0.25
+    test: 0.25

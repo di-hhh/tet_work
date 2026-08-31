@@ -1,0 +1,197 @@
+﻿# Generated at 2026-04-09 21:05:00 +08:00 (Asia/Shanghai)
+output_root: output/condition_aware_dataset_generation/smoke_console_layered
+random_seed: 31
+workers: 1
+overwrite: true
+log_level: INFO
+
+path_protocol:
+  enforce_output_root_inside_tet_work: true
+  enforce_geometry_source_inside_tet_work: true
+limit_geometries: 3
+
+geometry_source:
+  name: local_directory
+  source_name: console_layered_smoke
+  root: data/console/test
+  patterns:
+    - "001.step"
+    - "002.step"
+    - "004.step"
+  recursive: false
+
+preprocessing:
+  coarse_element_volume: 1.0
+  min_extent: 1.0e-6
+  sharp_dihedral_deg: 40.0
+  save_geometry_feature_metadata: true
+
+condition_sampling:
+  default_conditions_per_geometry: 3
+  pde_families:
+    - scalar_elliptic
+    - linear_elasticity
+  budgets:
+    - 150000
+  scalar_elliptic:
+    band_fraction: 0.12
+    diffusion_range: [0.5, 2.0]
+    dirichlet_value_range: [0.0, 1.0]
+    flux_probability: 0.7
+    source_amplitude_range: [-2.5, 2.5]
+  linear_elasticity:
+    band_fraction: 0.12
+    youngs_modulus_range: [50.0, 220.0]
+    poissons_ratio_range: [0.2, 0.35]
+    traction_magnitude_range: [0.2, 1.2]
+    body_force_probability: 0.4
+
+prescreen:
+  enable_prescreen: false
+  prescreen_max_elements: 10000
+  prescreen_max_runtime_seconds: 30
+  prescreen_probe_count: 256
+  prescreen_hotspot_quantile: 0.9
+  prescreen_condition_overlap_threshold: 0.65
+  prescreen_min_hotspot_concentration: 0.34
+  prescreen_min_allocation_gain: 0.9
+  prescreen_max_dofs: 90000
+  prescreen_max_matrix_nnz: 12000000
+
+teacher:
+  initial_mesh_element_volume: 0.9
+  reference_refinement_levels: 1
+  max_adaptive_steps: 1
+  refine_theta: 0.6
+  store_trajectory: true
+  allow_budget_shortfall: true
+  enable_geometry_fidelity_constraints: true
+  min_circle_segments: 20
+  hole_edge_length_ratio: 0.24
+  hole_radial_refinement_layers: 3
+  hole_radial_growth_rate: 1.45
+  curvature_refinement_strength: 1.5
+  feature_size_refinement_strength: 1.5
+  surface_first_meshing: true
+  max_circle_fit_error: 0.04
+  max_boundary_deviation: 0.02
+  max_normal_deviation: 22.5
+  max_geometry_retry: 2
+  initial_target_num_elements: 2400
+  initial_target_num_surface_faces: 4800
+  initial_max_nodes: 6000
+  initial_max_dofs: 9000
+  initial_max_runtime_seconds: 20.0
+  initial_max_budget_fraction: 0.35
+  initial_measure_budget_factor: 3.0
+  initial_mesh_generation_mode: preprocess_coarse
+  initial_sizing_field_scale: 2.1
+  initial_sizing_field_retry_factor: 1.15
+  initial_preserve_feature_edges: true
+  initial_geometry_constraint_mode: full
+  initial_enable_transfinite_hole_curves: true
+  initial_geometry_locality_scale: 0.65
+  initial_hole_band_distance_scale: 0.65
+  initial_hole_min_segments: 20
+  initial_geometry_min_size_ratio: 0.38
+  initial_curvature_refinement_strength: 0.2
+  initial_feature_size_refinement_strength: 0.2
+  initial_absolute_caps_scale_with_budget: true
+  reject_if_initial_mesh_too_dense: false
+  enable_budget_calibration: true
+  budget_calibration_max_iters: 4
+  budget_calibration_tolerance: 0.15
+  budget_calibration_timeout_seconds: 20.0
+  minimum_viable_budget: 100000
+  desired_budget: 150000
+  hard_max_budget: 200000
+  high_budget_threshold: 50000
+  scalar_high_budget_reference_mode: cheap_reference
+  budget_growth_enable: true
+  budget_growth_max_steps: 10
+  budget_growth_max_steps_cap: 18
+  budget_growth_dynamic_step_enable: true
+  budget_growth_batch_refine_fraction: 0.24
+  budget_growth_batch_refine_fraction_max: 0.34
+  budget_growth_stop_on_diminishing_return: false
+  budget_growth_timeout_seconds: 120.0
+  budget_growth_use_local_refine: true
+  budget_growth_cad_cleanup_interval: 0
+  disable_predictive_growth_caps_for_high_budget: true
+  dof_cap_guard_fraction: 0.995
+  matrix_cap_guard_fraction: 0.995
+  budget_status_mode: layered
+  allow_success_partial_under_budget: true
+  save_final_allocation_diagnostics: true
+  save_parent_wall_clock: true
+  save_worker_elapsed_separately: true
+  field_stage_debug_dump: true
+  enable_low_importance_inflation: true
+  condition_difference_preservation_enable: true
+  geometry_pde_fusion_mode: base_budget_residual
+
+  adaptive_refinement_local_refine_for_complex_3d_enable: true
+  adaptive_refinement_local_refine_complexity_threshold: 1.85
+  adaptive_refinement_local_refine_reference_elements: 2500
+
+smoke:
+  smoke_target_num_elements: 150000
+  smoke_max_runtime_seconds_per_sample: 300
+  smoke_max_runtime_seconds_per_stage:
+    geometry_preprocessing: 40
+    prescreen_solve: 20
+    surface_meshing: 30
+    volume_meshing: 45
+    budget_growth: 120
+    budget_calibration: 30
+    pde_solve: 120
+    reference_solve: 120
+    adaptive_refinement: 60
+  adaptive_stage_timeouts_enable: true
+  adaptive_stage_timeout_reference_elements: 2500
+  adaptive_stage_timeout_min_multiplier: 1.0
+  adaptive_stage_timeout_max_multiplier: 4.0
+  adaptive_stage_timeout_3d_bonus: 0.65
+  adaptive_stage_timeout_elasticity_bonus: 0.15
+  adaptive_stage_timeout_boundary_patch_baseline: 8
+  adaptive_stage_timeout_boundary_patch_weight: 0.035
+  adaptive_stage_timeout_sharp_edge_baseline: 10
+  adaptive_stage_timeout_sharp_edge_weight: 0.015
+  adaptive_stage_timeout_hole_weight: 0.20
+  adaptive_stage_timeout_stage_bias:
+    surface_meshing: 0.75
+    volume_meshing: 0.9
+    budget_calibration: 0.6
+    pde_solve: 0.65
+    reference_solve: 0.75
+    adaptive_refinement: 1.35
+  adaptive_stage_timeout_sample_scale: 2.25
+  adaptive_stage_timeout_sample_slack_seconds: 20.0
+  adaptive_stage_timeout_max_sample_seconds: 300.0
+  smoke_max_refinement_steps: 3
+  smoke_max_retries: 1
+  smoke_max_dofs: 400000
+  smoke_max_matrix_nnz: 64000000
+  smoke_max_budget_overrun_ratio: 1.20
+  contrast_mode: hybrid
+  contrast_gamma: 2.4
+  hotspot_quantile: 0.9
+  medium_quantile: 0.7
+  low_importance_size_boost: 1.7
+  target_hotspot_size_ratio: 0.72
+  enable_global_budget_rescaling: true
+  scalar_smoke_enable: true
+  elasticity_smoke_enable: true
+  elasticity_smoke_mode: cheap_reference
+  elasticity_smoke_reference_level: 0
+  elasticity_smoke_max_samples: 1
+  elasticity_smoke_strict_cost_gate: true
+  skip_expensive_elasticity: true
+  separability_probe_count: 256
+
+split:
+  seed: 31
+  ratios:
+    train: 0.5
+    val: 0.25
+    test: 0.25
